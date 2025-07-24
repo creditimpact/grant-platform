@@ -1,8 +1,16 @@
 const express = require('express');
-const router = express.Router();
+const multer = require('multer');
 
-router.get('/', (req, res) => {
-  res.json({ message: 'files route' });
+const router = express.Router();
+const upload = multer({ dest: 'uploads/' });
+
+// @route   POST /api/files
+// @desc    Upload a file
+router.post('/', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+  res.json({ filename: req.file.filename, originalname: req.file.originalname });
 });
 
 module.exports = router;
