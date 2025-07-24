@@ -12,6 +12,7 @@ function validateEmail(email) {
 // @route   POST /api/auth/register
 // @desc    Register user and return token
 router.post('/register', async (req, res) => {
+  console.log('✅ POST /api/auth/register hit');
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
