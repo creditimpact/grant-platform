@@ -1,11 +1,4 @@
 const express = require('express');
-<<<<<<< HEAD
-const router = express.Router();
-
-// route זמני לבדיקה
-router.get('/', (req, res) => {
-  res.send('Auth route is working!');
-=======
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
@@ -86,7 +79,6 @@ router.post('/login', async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
->>>>>>> 9ac037ca9d654aa6e4ecb4ec307d561c9a6b7a87
 });
 
 module.exports = router;
