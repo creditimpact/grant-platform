@@ -4,6 +4,11 @@ const User = require('../models/User');
 
 const router = express.Router();
 
+// Quick test route to verify router is active
+router.get('/test', (req, res) => {
+  res.send('Auth route is active!');
+});
+
 function validateEmail(email) {
   const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
   return re.test(String(email).toLowerCase());
