@@ -19,6 +19,7 @@ app.use(morgan('dev'));
 
 // === API Routes ===
 app.use('/api/auth', require('./routes/auth'));
+console.log('✅ Auth routes registered');
 app.use('/api/eligibility', require('./routes/eligibility'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/files', require('./routes/files'));

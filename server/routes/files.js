@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  res.send('Files route works!');
+  res.json({ message: 'files route' });
 });
 
 module.exports = router;
