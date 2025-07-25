@@ -21,4 +21,9 @@ def test_engine():
         "tags": ["technology", "startup"],
     }
     results = analyze_eligibility(user, explain=True)
-    assert any(r["eligible"] for r in results)
+    # at least one grant should be fully eligible
+    assert any(r["eligible"] is True for r in results)
+    # all results should include a score and reasoning
+    for r in results:
+        assert "score" in r
+        assert isinstance(r["reasoning"], list)

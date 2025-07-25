@@ -26,8 +26,11 @@ def analyze_eligibility(
             results.append(
                 {
                     "name": grant.get("name"),
-                    "eligible": False,
-                    "reason": f"Missing: {missing}",
+                    "eligible": None,
+                    "score": 0,
+                    "estimated_amount": 0,
+                    "reasoning": [f"Missing required fields: {missing}"],
+                    "debug": {"checked_rules": {}, "missing_fields": missing},
                     "tag_score": tag_score,
                     "reasoning_steps": [],
                     "llm_summary": "",
@@ -35,24 +38,27 @@ def analyze_eligibility(
             )
             continue
 
-        passed, reason = check_rules(user_data, grant.get("eligibility_rules", {}))
+        rule_result = check_rules(user_data, grant.get("eligibility_rules", {}))
         amount = (
-            estimate_award(user_data, grant.get("estimated_award", {})) if passed else 0
+            estimate_award(user_data, grant.get("estimated_award", {}))
+            if rule_result["eligible"]
+            else 0
         )
         result = {
             "name": grant.get("name"),
-            "eligible": passed,
+            "eligible": rule_result["eligible"],
+            "score": rule_result["score"],
             "estimated_amount": amount,
+            "reasoning": rule_result["reasoning"],
+            "debug": rule_result["debug"],
             "tag_score": tag_score,
             "reasoning_steps": [],
             "llm_summary": "",
         }
-        if explain:
-            result["reason"] = reason
         results.append(result)
 
     if user_tags:
-        results.sort(key=lambda r: r.get("tag_score", 0), reverse=True)
+        results.sort(key=lambda r: r.get("score", 0), reverse=True)
 
     return results
 

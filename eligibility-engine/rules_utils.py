@@ -1,87 +1,120 @@
 """Utility helpers to evaluate eligibility rules and estimate award amounts."""
 
-from typing import Any, Dict, Tuple, List
+from typing import Any, Dict, List
 
 
-def _check_value(data: Dict[str, Any], key: str, rule_val: Any) -> Tuple[bool, str]:
-    """Check an individual value rule."""
-    if isinstance(rule_val, dict):
-        if "min" in rule_val and data.get(key, 0) < rule_val["min"]:
-            return False, f"{key} below minimum {rule_val['min']}"
-        if "max" in rule_val and data.get(key, 0) > rule_val["max"]:
-            return False, f"{key} above maximum {rule_val['max']}"
-        if "one_of" in rule_val and data.get(key) not in rule_val["one_of"]:
-            return False, f"{key} not in accepted values"
-        return True, "ok"
-
+def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
+    """Evaluate a single rule and return status, message and debug info."""
+    base_key = key
+    expectation = None
+    actual = None
     if key.endswith("_min"):
-        base = key.replace("_min", "")
-        if data.get(base, 0) < rule_val:
-            return False, f"{base} below minimum {rule_val}"
-        return True, "ok"
+        base_key = key[:-4]
+        expectation = f">= {rule_val}"
+        actual = data.get(base_key)
+        if actual is None:
+            return None, f"❌ {base_key} missing", actual, expectation
+        return actual >= rule_val, (
+            f"{'✅' if actual >= rule_val else '❌'} {base_key} = {actual}, expected >= {rule_val}"
+        ), actual, expectation
+
     if key.endswith("_max"):
-        base = key.replace("_max", "")
-        if data.get(base, 0) > rule_val:
-            return False, f"{base} above maximum {rule_val}"
-        return True, "ok"
+        base_key = key[:-4]
+        expectation = f"<= {rule_val}"
+        actual = data.get(base_key)
+        if actual is None:
+            return None, f"❌ {base_key} missing", actual, expectation
+        return actual <= rule_val, (
+            f"{'✅' if actual <= rule_val else '❌'} {base_key} = {actual}, expected <= {rule_val}"
+        ), actual, expectation
 
     if isinstance(rule_val, list):
-        if data.get(key) not in rule_val:
-            return False, f"{key} not in accepted values"
-    elif data.get(key) != rule_val:
-        return False, f"{key} must be {rule_val}"
-    return True, "ok"
+        expectation = f"in {rule_val}"
+        actual = data.get(key)
+        if actual is None:
+            return None, f"❌ {key} missing", actual, expectation
+        passed = actual in rule_val
+        return passed, (
+            f"{'✅' if passed else '❌'} {key} = {actual}, expected one of {rule_val}"
+        ), actual, expectation
+
+    if isinstance(rule_val, dict):
+        actual = data.get(key)
+        if actual is None:
+            expectation_parts = []
+            if "min" in rule_val:
+                expectation_parts.append(f">= {rule_val['min']}")
+            if "max" in rule_val:
+                expectation_parts.append(f"<= {rule_val['max']}")
+            if "one_of" in rule_val:
+                expectation_parts.append(f"in {rule_val['one_of']}")
+            expectation = " and ".join(expectation_parts)
+            return None, f"❌ {key} missing", actual, expectation
+
+        passed = True
+        msgs: List[str] = []
+        expectation_parts = []
+        if "min" in rule_val:
+            expectation_parts.append(f">= {rule_val['min']}")
+            ok = actual >= rule_val["min"]
+            passed = passed and ok
+        if "max" in rule_val:
+            expectation_parts.append(f"<= {rule_val['max']}")
+            ok = actual <= rule_val["max"]
+            passed = passed and ok
+        if "one_of" in rule_val:
+            expectation_parts.append(f"in {rule_val['one_of']}")
+            ok = actual in rule_val["one_of"]
+            passed = passed and ok
+        expectation = " and ".join(expectation_parts)
+        return passed, (
+            f"{'✅' if passed else '❌'} {key} = {actual}, expected {expectation}"
+        ), actual, expectation
+
+    # simple equality
+    expectation = str(rule_val)
+    actual = data.get(key)
+    if actual is None:
+        return None, f"❌ {key} missing", actual, expectation
+    passed = actual == rule_val
+    return passed, (
+        f"{'✅' if passed else '❌'} {key} = {actual}, expected {rule_val}"
+    ), actual, expectation
 
 
-def _eval_rules(data: Dict[str, Any], rules: Any) -> Tuple[bool, str]:
-    """Recursively evaluate rules supporting AND/OR/IF logic."""
-    if not rules:
-        return True, "no rules"
+def check_rules(data: Dict[str, Any], rules: Dict[str, Any]):
+    """Return detailed eligibility results for a set of rules."""
+    reasoning: List[str] = []
+    debug = {"checked_rules": {}, "missing_fields": []}
 
-    if isinstance(rules, list):
-        for sub in rules:
-            ok, reason = _eval_rules(data, sub)
-            if not ok:
-                return False, reason
-        return True, "list passed"
+    total = len(rules)
+    passed_count = 0
 
-    if isinstance(rules, dict):
-        if "any_of" in rules:
-            reasons: List[str] = []
-            for sub in rules["any_of"]:
-                ok, reason = _eval_rules(data, sub)
-                reasons.append(reason)
-                if ok:
-                    return True, f"any_of passed: {reason}"
-            return False, " or ".join(reasons)
+    for key, rule_val in rules.items():
+        status, msg, actual, expectation = _evaluate_rule(data, key, rule_val)
+        reasoning.append(msg)
+        debug["checked_rules"][key] = {"value": actual, "expected": expectation}
+        if status is None:
+            debug["missing_fields"].append(key if not key.endswith(("_min", "_max")) else key[:-4])
+        elif status:
+            passed_count += 1
 
-        if "all_of" in rules:
-            for sub in rules["all_of"]:
-                ok, reason = _eval_rules(data, sub)
-                if not ok:
-                    return False, reason
-            return True, "all_of passed"
+    if debug["missing_fields"]:
+        return {
+            "eligible": None,
+            "score": 0,
+            "reasoning": reasoning,
+            "debug": debug,
+        }
 
-        if "if" in rules and "then" in rules:
-            cond, _ = _eval_rules(data, rules["if"])
-            if cond:
-                ok, reason = _eval_rules(data, rules["then"])
-                if not ok:
-                    return False, f"conditional failed: {reason}"
-            return True, "conditional passed"
-
-        for k, v in rules.items():
-            ok, reason = _check_value(data, k, v)
-            if not ok:
-                return False, reason
-        return True, "rules passed"
-
-    return True, "unknown rule type"
-
-
-def check_rules(data: Dict[str, Any], rules: Dict[str, Any]) -> Tuple[bool, str]:
-    """Public wrapper returning whether data satisfies the given rules."""
-    return _eval_rules(data, rules)
+    score = int((passed_count / total) * 100) if total else 100
+    eligible = passed_count == total
+    return {
+        "eligible": eligible,
+        "score": score,
+        "reasoning": reasoning,
+        "debug": debug,
+    }
 
 
 def estimate_award(data: Dict[str, Any], rule: Dict[str, Any]) -> int:

@@ -13,7 +13,7 @@ async def check_eligibility(request: Request):
     try:
         data = await request.json()
         result = analyze_eligibility(data, explain=True)
-        return {"eligible_grants": result}
+        return result
     except Exception as e:
         return {"error": str(e)}
 
