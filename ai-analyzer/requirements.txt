@@ -1,2 +1,6 @@
 fastapi
 uvicorn
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
