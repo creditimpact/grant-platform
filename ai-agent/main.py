@@ -16,7 +16,7 @@ from reasoning_generator import (
     generate_llm_summary,
     generate_clarifying_questions,
 )
-from session_memory import append_memory, get_missing_fields
+from session_memory import append_memory, get_missing_fields, save_draft_form, get_conversation
 from nlp_utils import llm_semantic_inference
 from grants_loader import load_grants
 
@@ -95,6 +95,23 @@ async def form_fill(body: dict, file: UploadFile | None = None):
     return {"filled_form": filled}
 
 
+@app.post("/preview-form")
+async def preview_form(body: dict, file: UploadFile | None = None):
+    """Preview a form with reasoning before final submission."""
+    grant_key = body.get("grant")
+    data = body.get("data", {})
+    session_id = body.get("session_id")
+    file_bytes = await file.read() if file else None
+    filled = fill_form(grant_key, data, file_bytes)
+
+    reasoning = {k: ("provided" if v else "auto-filled") for k, v in filled.get("fields", {}).items()}
+
+    if session_id:
+        save_draft_form(session_id, grant_key, filled.get("fields", {}))
+
+    return {"filled_form": filled, "reasoning": reasoning, "files": filled.get("files", {})}
+
+
 @app.post("/chat")
 async def chat(message: dict):
     """Basic pre-LLM chat endpoint with several modes."""
@@ -124,6 +141,15 @@ async def chat(message: dict):
         append_memory(session_id, {"chat": message, "response": response})
 
     return {"response": response}
+
+
+@app.get("/llm-debug/{session_id}")
+async def llm_debug(session_id: str):
+    """Return a summary of agent actions for debugging."""
+    history = get_conversation(session_id)
+    summary = [list(record.keys())[0] for record in history if record]
+    inferred = [r.get("payload") for r in history if r.get("payload")]
+    return {"summary": summary, "inferred": inferred}
 
 
 if __name__ == "__main__":

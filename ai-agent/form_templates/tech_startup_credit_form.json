@@ -1,13 +1,13 @@
 {
   "name": "Tech Startup Credit Application",
   "fields": {
-    "business_id": {"type": "text", "required": true},
-    "owner_name": {"type": "text", "required": true},
-    "startup_year": {"type": "number", "required": true},
-    "payroll_total": {"type": "number", "required": true},
-    "state": {"type": "text", "required": true},
-    "pitch_deck": {"type": "file_upload", "required": false, "expected": "pdf"},
-    "mission": {"type": "text", "required": false, "prompt": "What is your mission?"}
+    "business_id": {"type": "text", "required": true, "ai_fillable": true},
+    "owner_name": {"type": "text", "required": true, "ai_fillable": true},
+    "startup_year": {"type": "number", "required": true, "ai_fillable": true},
+    "payroll_total": {"type": "number", "required": true, "ai_fillable": true},
+    "state": {"type": "text", "required": true, "ai_fillable": true},
+    "pitch_deck": {"type": "file_upload", "required": false, "expected_file": "pitch_deck.pdf", "ai_fillable": true},
+    "mission": {"type": "textarea", "required": false, "prompt": "What is your mission?", "example": "Our company helps modernize agriculture.", "ai_fillable": true}
   },
   "optional_fields": {
     "employees": 0
@@ -17,5 +17,13 @@
   },
   "conditional_fields": {
     "is_new_tech": {"if": "industry == 'technology' and business_age_years < 5", "value": true}
-  }
+  },
+  "sections": [
+    {
+      "name": "Owner Info",
+      "fields": {
+        "owner_bio": {"type": "textarea", "required": false, "ai_fillable": true, "example": "Jane Doe founded the company in 2020."}
+      }
+    }
+  ]
 }

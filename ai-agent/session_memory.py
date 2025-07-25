@@ -23,6 +23,11 @@ def append_memory(session_id: str, record: Dict[str, Any]) -> None:
         json.dump(data, f, indent=2)
 
 
+def save_draft_form(session_id: str, form_key: str, fields: Dict[str, Any]) -> None:
+    """Store draft form content for later review."""
+    append_memory(session_id, {"draft_form": form_key, "fields": fields})
+
+
 def get_missing_fields(session_id: str) -> List[str]:
     """Aggregate missing fields from stored eligibility results."""
     missing: List[str] = []

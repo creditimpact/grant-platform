@@ -2,6 +2,13 @@ import re
 from datetime import datetime
 from typing import Dict, Tuple, Any
 
+# State lookup for basic zip inference
+ZIP_PREFIX_STATE = {
+    "9": "CA",
+    "1": "NY",
+    "6": "IL",
+}
+
 # Simple synonyms that map human terminology to data fields
 SYNONYMS = {
     "headcount": "employees",
@@ -14,6 +21,7 @@ SYNONYMS = {
     "years_in_business": "business_age_years",
     "credit": "owner_credit_score",
     "credit_score": "owner_credit_score",
+    "postal_code": "zip",
 }
 
 BOOLEAN_HINTS = {
@@ -35,6 +43,29 @@ def resolve_field_name(name: str) -> str:
     """Return a canonical field name using synonyms and simple heuristics."""
     key = name.lower().replace(" ", "_")
     return SYNONYMS.get(key, key)
+
+
+def infer_state_from_zip(zip_code: str | int | None) -> str | None:
+    """Return US state abbreviation from a zip prefix."""
+    if not zip_code:
+        return None
+    zip_str = str(zip_code)
+    for prefix, state in ZIP_PREFIX_STATE.items():
+        if zip_str.startswith(prefix):
+            return state
+    return None
+
+
+def guess_default(field_name: str) -> Any:
+    """Return a naive default value for unknown fields."""
+    canonical = resolve_field_name(field_name)
+    defaults = {
+        "employees": 1,
+        "state": "CA",
+        "city": "San Francisco",
+        "industry": "general",
+    }
+    return defaults.get(canonical, "")
 
 def _parse_number(text: str) -> Any:
     text = text.replace(",", "").lower().strip()
@@ -62,7 +93,7 @@ def _parse_number(text: str) -> Any:
 
 def normalize_text_field(field_name: str, raw_value: str) -> Tuple[str, Any]:
     """Normalize a single text field into canonical name and value."""
-    canonical = SYNONYMS.get(field_name.lower(), field_name)
+    canonical = resolve_field_name(field_name)
     value = raw_value
     if isinstance(raw_value, str):
         lowered = raw_value.strip().lower()
@@ -104,6 +135,13 @@ def parse_user_phrase(phrase: str) -> Dict[str, Any]:
     if ("not veteran" in lower or "non-veteran" in lower) and "veteran" in lower:
         info["owner_veteran"] = False
 
+    m = re.search(r"\b(\d{5})\b", lower)
+    if m:
+        info["zip"] = m.group(1)
+        state = infer_state_from_zip(m.group(1))
+        if state:
+            info.setdefault("state", state)
+
     return info
 
 def infer_field_from_text(text: str) -> Dict[str, Any]:
@@ -120,8 +158,13 @@ def infer_field_from_text(text: str) -> Dict[str, Any]:
 def llm_semantic_inference(text: str, known: Dict[str, Any]) -> Dict[str, Any]:
     """Placeholder for GPT-style inference of missing fields."""
     inferred = infer_field_from_text(text)
-    # merge but don't overwrite existing known values
     for k, v in inferred.items():
         if k not in known:
             known[k] = v
+
+    # naive fallback defaults
+    for field in ["state", "industry", "employees"]:
+        if field not in known or known[field] in {"", None}:
+            known[field] = guess_default(field)
+
     return known
