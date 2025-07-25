@@ -1,7 +1,42 @@
 // Configuration mapping of grant rules for eligibility checks
 {
   "erc": {
-    "description": "Employee Retention Credit (IRS Form 941-X). Requires COVID operation and revenue drop.",
-    "required_fields": ["revenue_drop", "num_employees", "operated_during_covid"]
+    "name": "Employee Retention Credit",
+    "description": "Refundable payroll tax credit for businesses impacted by COVID-19.",
+    "required_fields": [
+      "revenue_by_quarter",
+      "business_type",
+      "covid_orders",
+      "payroll_data",
+      "ppp_received",
+      "startup_date"
+    ],
+    "required_documents": {
+      "payroll": ["payroll reports", "form 941"],
+      "tax": ["income tax returns"],
+      "business": ["articles of incorporation"]
+    },
+    "eligibility_rules": {
+      "2020": {
+        "revenue_drop_percent": 50,
+        "government_shutdown": true
+      },
+      "2021": {
+        "revenue_drop_percent": 20,
+        "government_shutdown": true
+      },
+      "recovery_startup": {
+        "startup_after": "2020-02-15"
+      }
+    },
+    "irs_forms": ["941-X", "1120"],
+    "warnings": ["IRS has increased audits for aggressive ERC claims."],
+    "references": ["Notice 2021-20", "Notice 2021-23", "Notice 2021-49", "Notice 2021-65"],
+    "ui_questions": [
+      "Did your business experience a significant revenue decline?",
+      "Were you subject to a government-mandated shutdown?",
+      "When was your business established?",
+      "Did you receive a PPP loan?"
+    ]
   }
 }
