@@ -1,9 +1,12 @@
 import json
+from pathlib import Path
+
 from engine import analyze_eligibility
 
 
 def test_partial_payload():
-    with open('test_payload_partial.json') as f:
+    payload_path = Path(__file__).parent / "test_payload_partial.json"
+    with payload_path.open() as f:
         payload = json.load(f)
     results = analyze_eligibility(payload, explain=True)
     assert any(r['score'] > 0 for r in results)

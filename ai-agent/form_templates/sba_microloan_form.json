@@ -1,0 +1,9 @@
+{
+  "name": "SBA Microloan Application",
+  "fields": {
+    "business_id": "",
+    "owner_name": "",
+    "owner_gender": "",
+    "annual_income": ""
+  }
+}
