@@ -2,7 +2,11 @@
   "name": "R&D Tax Credit",
   "year": 2025,
   "description": "Federal credit for qualifying R&D expenditures",
-  "required_fields": ["has_product_or_process_dev", "is_tech_based", "qre_total"],
+  "required_fields": [
+    "has_product_or_process_dev",
+    "is_tech_based",
+    "qre_total"
+  ],
   "eligibility_rules": {
     "has_product_or_process_dev": true,
     "is_tech_based": true,
@@ -13,10 +17,17 @@
     "percent": 6,
     "based_on": "qre_total"
   },
-  "tags": ["federal", "tax_credit", "innovation"],
+  "tags": [
+    "federal",
+    "tax_credit",
+    "innovation"
+  ],
   "ui_questions": [
     "Are you developing or improving a product or process?",
     "Is your activity based on technology or science?",
     "How much have you spent on R&D?"
-  ]
+  ],
+  "complexity_level": "medium",
+  "human_summary": "Federal credit for qualifying R&D expenditures",
+  "risk_notes": ""
 }

@@ -2,7 +2,11 @@
   "name": "Minority Female Founder Grant",
   "year": 2025,
   "description": "Grant for early stage companies led by minority women",
-  "required_fields": ["owner_gender", "owner_minority", "business_age_years"],
+  "required_fields": [
+    "owner_gender",
+    "owner_minority",
+    "business_age_years"
+  ],
   "eligibility_rules": {
     "owner_gender": "female",
     "owner_minority": true,
@@ -12,11 +16,18 @@
     "type": "base",
     "base": 20000
   },
-  "tags": ["federal", "women", "minority"],
+  "tags": [
+    "federal",
+    "women",
+    "minority"
+  ],
   "ui_questions": [
     "Is the founder a woman?",
     "Does the founder belong to a minority group?",
     "How many years has the business been in operation?"
   ],
-  "notes": "Founder must own at least 51% of the company"
+  "notes": "Founder must own at least 51% of the company",
+  "complexity_level": "medium",
+  "human_summary": "Grant for early stage companies led by minority women",
+  "risk_notes": ""
 }

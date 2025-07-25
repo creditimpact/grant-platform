@@ -2,7 +2,10 @@
   "name": "Rural Development Grant",
   "year": 2025,
   "description": "Funding for businesses operating in rural areas",
-  "required_fields": ["rural_area", "employees"],
+  "required_fields": [
+    "rural_area",
+    "employees"
+  ],
   "eligibility_rules": {
     "rural_area": true,
     "employees_max": 50
@@ -11,9 +14,15 @@
     "type": "base",
     "base": 25000
   },
-  "tags": ["federal", "rural"],
+  "tags": [
+    "federal",
+    "rural"
+  ],
   "ui_questions": [
     "Is your business located in a rural area?",
     "How many employees do you have?"
-  ]
+  ],
+  "complexity_level": "medium",
+  "human_summary": "Funding for businesses operating in rural areas",
+  "risk_notes": ""
 }

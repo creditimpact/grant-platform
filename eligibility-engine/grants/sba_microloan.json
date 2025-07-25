@@ -2,7 +2,10 @@
   "name": "SBA Microloan Program",
   "year": 2025,
   "description": "Loans up to $50,000 for small businesses",
-  "required_fields": ["business_age_years", "owner_credit_score"],
+  "required_fields": [
+    "business_age_years",
+    "owner_credit_score"
+  ],
   "eligibility_rules": {
     "business_age_years_min": 1,
     "owner_credit_score_min": 620
@@ -11,9 +14,15 @@
     "type": "base",
     "base": 50000
   },
-  "tags": ["federal", "loan"],
+  "tags": [
+    "federal",
+    "loan"
+  ],
   "ui_questions": [
     "How long has your business been operating?",
     "What is the owner's credit score?"
-  ]
+  ],
+  "complexity_level": "medium",
+  "human_summary": "Loans up to $50,000 for small businesses",
+  "risk_notes": ""
 }

@@ -2,9 +2,16 @@
   "name": "City COVID Recovery Program",
   "year": 2025,
   "description": "Local relief for businesses still recovering from the pandemic",
-  "required_fields": ["city", "revenue_drop"],
+  "required_fields": [
+    "city",
+    "revenue_drop"
+  ],
   "eligibility_rules": {
-    "city": ["New York", "Los Angeles", "Chicago"],
+    "city": [
+      "New York",
+      "Los Angeles",
+      "Chicago"
+    ],
     "revenue_drop_min": 30
   },
   "estimated_award": {
@@ -12,10 +19,16 @@
     "percent": 5,
     "based_on": "revenue_drop_amount"
   },
-  "tags": ["city", "covid"],
+  "tags": [
+    "city",
+    "covid"
+  ],
   "ui_questions": [
     "Which city is your business located in?",
     "What percentage did revenue drop during COVID?",
     "What was the dollar amount of that drop?"
-  ]
+  ],
+  "complexity_level": "medium",
+  "human_summary": "Local relief for businesses still recovering from the pandemic",
+  "risk_notes": ""
 }
