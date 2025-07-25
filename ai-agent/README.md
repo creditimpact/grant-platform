@@ -12,11 +12,13 @@ uvicorn main:app --reload
 
 ## Endpoints
 
-- `POST /check` – submit user data or an uploaded document. Data is merged and
-  evaluated with the eligibility engine.
+- `POST /check` – submit user data, notes or an uploaded document. Free-form
+  text is semantically parsed and merged with the eligibility engine. Results
+  include `llm_summary`, `clarifying_questions` and richer `reasoning_steps`.
 - `POST /form-fill` – provide a grant key and user data to receive a filled form
-  from `form_templates/`.
-- `POST /chat` – placeholder endpoint for future LLM powered conversations.
+  from `form_templates/`. Conditional and computed fields will be evaluated.
+- `POST /chat` – simple conversational endpoint that stores context in
+  `session_id` records.
 
 ## Adding Forms
 
@@ -30,5 +32,6 @@ by the demo OCR parser.
 
 ## Future GPT/LLM Capabilities
 
-The API responses include placeholder `llm_summary` and `reasoning_steps` fields
-ready for richer explanations from a language model.
+The service includes helper functions for semantic inference and session
+tracking so a future LLM can generate summaries, request additional documents or
+even create dashboard tickets automatically.

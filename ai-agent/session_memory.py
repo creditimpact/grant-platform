@@ -21,3 +21,19 @@ def append_memory(session_id: str, record: Dict[str, Any]) -> None:
     path = MEM_DIR / f"{session_id}.json"
     with path.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
+
+
+def get_missing_fields(session_id: str) -> List[str]:
+    """Aggregate missing fields from stored eligibility results."""
+    missing: List[str] = []
+    for entry in load_memory(session_id):
+        res = entry.get("results")
+        if isinstance(res, list):
+            for r in res:
+                missing.extend(r.get("debug", {}).get("missing_fields", []))
+    return sorted(set(missing))
+
+
+def get_conversation(session_id: str) -> List[Dict[str, Any]]:
+    """Return full conversation history for this session."""
+    return load_memory(session_id)

@@ -4,6 +4,16 @@
     "business_id": "",
     "owner_name": "",
     "startup_year": "",
-    "payroll_total": ""
+    "payroll_total": "",
+    "state": ""
+  },
+  "optional_fields": {
+    "employees": 0
+  },
+  "computed_fields": {
+    "business_age_years": "current_year - int(startup_year) if startup_year else 0"
+  },
+  "conditional_fields": {
+    "is_new_tech": {"if": "industry == 'technology' and business_age_years < 5", "value": true}
   }
 }

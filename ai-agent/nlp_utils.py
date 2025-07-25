@@ -6,18 +6,35 @@ from typing import Dict, Tuple, Any
 SYNONYMS = {
     "headcount": "employees",
     "team_size": "employees",
+    "number_of_staff": "employees",
+    "staff_size": "employees",
+    "biz_age": "business_age_years",
+    "business_age": "business_age_years",
     "founded": "business_age_years",
     "years_in_business": "business_age_years",
+    "credit": "owner_credit_score",
+    "credit_score": "owner_credit_score",
 }
 
 BOOLEAN_HINTS = {
     "woman": ("owner_gender", "female"),
+    "woman-led": ("owner_gender", "female"),
+    "women-led": ("owner_gender", "female"),
     "female founder": ("owner_gender", "female"),
+    "woman owned": ("owner_gender", "female"),
     "minority": ("owner_minority", True),
+    "minority-owned": ("owner_minority", True),
     "veteran": ("owner_veteran", True),
+    "veteran-owned": ("owner_veteran", True),
 }
 
 NUMBER_RE = re.compile(r"(?i)(\$?\d+[\d,]*\.?\d*\s*(?:k|m)?)")
+
+
+def resolve_field_name(name: str) -> str:
+    """Return a canonical field name using synonyms and simple heuristics."""
+    key = name.lower().replace(" ", "_")
+    return SYNONYMS.get(key, key)
 
 def _parse_number(text: str) -> Any:
     text = text.replace(",", "").lower().strip()
@@ -63,20 +80,48 @@ def normalize_text_field(field_name: str, raw_value: str) -> Tuple[str, Any]:
     return canonical, value
 
 
+def parse_user_phrase(phrase: str) -> Dict[str, Any]:
+    """Interpret a short natural language phrase and infer data fields."""
+    info: Dict[str, Any] = {}
+    lower = phrase.lower()
+
+    for hint, (key, val) in BOOLEAN_HINTS.items():
+        if hint in lower:
+            info[key] = val
+
+    m = re.search(r"(\d+)\s+(?:employees|staff|workers)", lower)
+    if m:
+        info["employees"] = int(m.group(1))
+
+    m = re.search(r"(?:founded|since|around)\s+(\d{4})", lower)
+    if m:
+        year = int(m.group(1))
+        info["business_age_years"] = datetime.utcnow().year - year
+
+    if "biotech" in lower or "bio tech" in lower:
+        info["industry"] = "biotech"
+
+    if ("not veteran" in lower or "non-veteran" in lower) and "veteran" in lower:
+        info["owner_veteran"] = False
+
+    return info
+
 def infer_field_from_text(text: str) -> Dict[str, Any]:
     """Infer structured fields from a blob of text."""
     result: Dict[str, Any] = {}
-    blob = text.lower()
-    for hint, (key, val) in BOOLEAN_HINTS.items():
-        if hint in blob:
-            result[key] = val
-    # employees extraction
-    m = re.search(r"(\d+)\s+(?:employees|staff|workers)", blob)
-    if m:
-        result["employees"] = int(m.group(1))
-    # business age / founding year
-    m = re.search(r"founded\s+(\d{4})", blob)
-    if m:
-        year = int(m.group(1))
-        result["business_age_years"] = datetime.utcnow().year - year
+    for part in re.split(r"[\.\n]", text):
+        part = part.strip()
+        if not part:
+            continue
+        result.update(parse_user_phrase(part))
     return result
+
+
+def llm_semantic_inference(text: str, known: Dict[str, Any]) -> Dict[str, Any]:
+    """Placeholder for GPT-style inference of missing fields."""
+    inferred = infer_field_from_text(text)
+    # merge but don't overwrite existing known values
+    for k, v in inferred.items():
+        if k not in known:
+            known[k] = v
+    return known

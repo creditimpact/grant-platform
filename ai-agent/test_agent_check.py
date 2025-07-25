@@ -56,9 +56,12 @@ def test_check_document():
 
 def test_form_fill():
     payload = load_payload()
-    data = asyncio.run(form_fill({"grant": "sba_microloan_form", "data": payload}))
-    assert "filled_form" in data
-    assert "fields" in data["filled_form"]
+    payload["startup_year"] = "2022"
+    payload["industry"] = "technology"
+    data = asyncio.run(form_fill({"grant": "tech_startup_credit_form", "data": payload}))
+    form = data["filled_form"]
+    assert form["fields"]["state"] != ""
+    assert form["fields"].get("is_new_tech") is True
 
 
 def test_nlp_utils():
@@ -73,3 +76,18 @@ def test_nlp_utils():
 def test_chat_info():
     resp = asyncio.run(chat({"mode": "info"}))
     assert "response" in resp
+
+
+def test_freeform_notes():
+    notes = "We started around 2021. We're women-led in biotech. No, not veteran-owned."
+
+    class DummyRequest:
+        def __init__(self, data):
+            self._data = data
+            self.headers = {"content-type": "application/json"}
+
+        async def json(self):
+            return self._data
+
+    data = asyncio.run(check(DummyRequest({"notes": notes}), explain=True))
+    assert any(r.get("reasoning_steps") is not None for r in data)
