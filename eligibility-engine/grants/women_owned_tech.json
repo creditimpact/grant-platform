@@ -1,0 +1,19 @@
+{
+  "name": "Women-Owned Tech Grant",
+  "year": 2025,
+  "description": "Support for tech companies owned by women",
+  "required_fields": ["owner_gender", "industry"],
+  "eligibility_rules": {
+    "owner_gender": "female",
+    "industry": ["technology", "software"]
+  },
+  "estimated_award": {
+    "type": "base",
+    "base": 20000
+  },
+  "tags": ["federal", "women", "technology"],
+  "ui_questions": [
+    "Is your business majority owned by women?",
+    "What industry are you in?"
+  ]
+}

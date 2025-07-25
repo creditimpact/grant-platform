@@ -1,0 +1,19 @@
+{
+  "name": "NYC Minority Business Grant",
+  "year": 2025,
+  "description": "Support for minority-owned businesses in NYC",
+  "required_fields": ["city", "owner_minority"],
+  "eligibility_rules": {
+    "city": ["New York"],
+    "owner_minority": true
+  },
+  "estimated_award": {
+    "type": "base",
+    "base": 15000
+  },
+  "tags": ["city", "minority"],
+  "ui_questions": [
+    "Is your business located in New York City?",
+    "Is the owner part of a minority group?"
+  ]
+}

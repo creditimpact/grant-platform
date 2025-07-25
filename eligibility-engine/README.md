@@ -1,8 +1,19 @@
 # Eligibility Engine
 
-This microservice will evaluate business data against government grant
-criteria and return a list of programs that the business qualifies for.
-Future versions will load rule definitions from `grants_config.json` and
-use them to determine eligibility. The goal is to keep the service
-modular so it can be expanded with more sophisticated logic and easily
-integrated with other components of the platform.
+This engine loads grant definitions from the `grants/` directory and matches
+user business data against each program. Grants are described in simple JSON
+files so new programs can be added without changing the code.
+
+## Usage
+
+Run the engine directly to see a basic example:
+
+```bash
+python engine.py
+```
+
+Or run the test suite:
+
+```bash
+python -m pytest
+```

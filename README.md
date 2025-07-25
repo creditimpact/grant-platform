@@ -24,5 +24,5 @@ This repository contains three microservices used to test a grant eligibility wo
 3. Run the eligibility engine tests
    ```bash
    cd eligibility-engine
-   python engine.py
+   python -m pytest
    ```
