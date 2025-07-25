@@ -18,6 +18,7 @@ def test_engine():
         "city": "New York",
         "owner_minority": True,
         "rural_area": False,
+        "tags": ["technology", "startup"],
     }
-    results = analyze_eligibility(user)
+    results = analyze_eligibility(user, explain=True)
     assert any(r["eligible"] for r in results)
