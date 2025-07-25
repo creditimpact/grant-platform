@@ -1,8 +1,12 @@
-"""Utility functions for simple OCR-based field extraction."""
+"""Utility helpers for document parsing and lookup."""
+
 from typing import Dict, Any
+from pathlib import Path
 import re
 
 from nlp_utils import normalize_text_field, infer_field_from_text
+
+DOCUMENTS_DIR = Path(__file__).parent / "test_documents"
 
 
 def extract_fields(file_bytes: bytes) -> Dict[str, Any]:
@@ -36,3 +40,24 @@ def extract_fields(file_bytes: bytes) -> Dict[str, Any]:
     fields.update(infer_field_from_text(text))
 
     return fields
+
+
+def guess_attachment(field_name: str) -> str | None:
+    """Return path to a test document matching ``field_name`` if found."""
+    name = field_name.lower()
+    patterns = {
+        "tax": "fake_tz.pdf",
+        "paystub": "paystub_example.jpg",
+        "id": "id_card.jpg",
+        "registration": "registration.pdf",
+    }
+    for key, filename in patterns.items():
+        if key in name:
+            path = DOCUMENTS_DIR / filename
+            if path.exists():
+                return str(path)
+    # fallback: first file containing the field name
+    for path in DOCUMENTS_DIR.iterdir():
+        if name in path.stem:
+            return str(path)
+    return None

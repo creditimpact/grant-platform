@@ -67,9 +67,9 @@ def normalize_text_field(field_name: str, raw_value: str) -> Tuple[str, Any]:
     if isinstance(raw_value, str):
         lowered = raw_value.strip().lower()
         # boolean type heuristics
-        if lowered in {"yes", "true", "1", "y"}:
+        if lowered in {"yes", "true", "1", "y"} or ("yes" in lowered and "no" not in lowered):
             value = True
-        elif lowered in {"no", "false", "0", "n"}:
+        elif lowered in {"no", "false", "0", "n"} or ("no" in lowered and "yes" not in lowered):
             value = False
         else:
             num_match = NUMBER_RE.match(lowered)
