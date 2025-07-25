@@ -5,7 +5,8 @@ import sys
 import asyncio
 
 sys.path.insert(0, str(Path(__file__).parent))
-from main import check, form_fill
+from main import check, form_fill, chat
+from nlp_utils import normalize_text_field, infer_field_from_text
 BASE_DIR = Path(__file__).parent
 ENGINE_DIR = BASE_DIR.parent / "eligibility-engine"
 
@@ -58,3 +59,17 @@ def test_form_fill():
     data = asyncio.run(form_fill({"grant": "sba_microloan_form", "data": payload}))
     assert "filled_form" in data
     assert "fields" in data["filled_form"]
+
+
+def test_nlp_utils():
+    k, v = normalize_text_field("headcount", "$80k")
+    assert k == "employees" and v == 80000
+    result = infer_field_from_text("I am a woman founder with 3 employees founded 2020")
+    assert result.get("owner_gender") == "female"
+    assert result.get("employees") == 3
+    assert "business_age_years" in result
+
+
+def test_chat_info():
+    resp = asyncio.run(chat({"mode": "info"}))
+    assert "response" in resp

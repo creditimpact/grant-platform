@@ -2,9 +2,16 @@
   "name": "Tech Startup Payroll Credit",
   "year": 2025,
   "description": "IRS payroll tax credit for young technology startups",
-  "required_fields": ["startup_year", "payroll_total", "industry"],
+  "required_fields": [
+    "startup_year",
+    "payroll_total",
+    "industry"
+  ],
   "eligibility_rules": {
-    "industry": ["technology", "software"],
+    "industry": [
+      "technology",
+      "software"
+    ],
     "startup_year_min": 2020
   },
   "estimated_award": {
@@ -12,10 +19,17 @@
     "percent": 10,
     "based_on": "payroll_total"
   },
-  "tags": ["federal", "tech", "startup"],
+  "tags": [
+    "federal",
+    "tech",
+    "startup"
+  ],
   "ui_questions": [
     "What year did your company start operations?",
     "What is your total payroll spend this year?",
     "What industry best describes your business?"
-  ]
+  ],
+  "complexity_level": "medium",
+  "human_summary": "IRS payroll tax credit for young technology startups",
+  "risk_notes": ""
 }

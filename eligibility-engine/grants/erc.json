@@ -2,7 +2,10 @@
   "name": "Employee Retention Credit",
   "year": 2021,
   "description": "Refundable payroll tax credit for COVID-19 impacted businesses",
-  "required_fields": ["revenue_drop", "government_shutdown"],
+  "required_fields": [
+    "revenue_drop",
+    "government_shutdown"
+  ],
   "eligibility_rules": {
     "revenue_drop_min": 20,
     "government_shutdown": true
@@ -12,10 +15,17 @@
     "percent": 70,
     "based_on": "qualified_wages"
   },
-  "tags": ["federal", "payroll", "covid"],
+  "tags": [
+    "federal",
+    "payroll",
+    "covid"
+  ],
   "ui_questions": [
     "Did your revenue drop compared to 2019?",
     "Were you ordered to fully or partially shutdown?",
     "What were your qualified wages?"
-  ]
+  ],
+  "complexity_level": "medium",
+  "human_summary": "Refundable payroll tax credit for COVID-19 impacted businesses",
+  "risk_notes": ""
 }

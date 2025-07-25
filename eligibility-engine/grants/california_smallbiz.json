@@ -2,9 +2,14 @@
   "name": "California Small Business Grant",
   "year": 2025,
   "description": "State grant for California-based small businesses",
-  "required_fields": ["state", "employees"],
+  "required_fields": [
+    "state",
+    "employees"
+  ],
   "eligibility_rules": {
-    "state": ["CA"],
+    "state": [
+      "CA"
+    ],
     "employees_min": 1,
     "employees_max": 100
   },
@@ -12,9 +17,15 @@
     "type": "base",
     "base": 10000
   },
-  "tags": ["state", "california"],
+  "tags": [
+    "state",
+    "california"
+  ],
   "ui_questions": [
     "Which state is your business located in?",
     "How many employees do you have?"
-  ]
+  ],
+  "complexity_level": "medium",
+  "human_summary": "State grant for California-based small businesses",
+  "risk_notes": ""
 }
