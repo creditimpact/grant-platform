@@ -1,2 +1,7 @@
 // Configuration mapping of grant rules for eligibility checks
-{}
+{
+  "erc": {
+    "description": "Employee Retention Credit (IRS Form 941-X). Requires COVID operation and revenue drop.",
+    "required_fields": ["revenue_drop", "num_employees", "operated_during_covid"]
+  }
+}
