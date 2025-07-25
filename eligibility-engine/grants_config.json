@@ -38,5 +38,56 @@
       "When was your business established?",
       "Did you receive a PPP loan?"
     ]
+  },
+  "r_and_d": {
+    "name": "R&D Tax Credit",
+    "description": "Federal tax credit for qualified research and development expenses under IRC Section 41.",
+    "required_fields": [
+      "qre_summary",
+      "business_components",
+      "revenue",
+      "payroll",
+      "founded_year",
+      "industry",
+      "has_prior_rd",
+      "uses_cloud_computing"
+    ],
+    "required_documents": {
+      "payroll": ["W-2 reports", "payroll records"],
+      "expenses": ["vendor invoices", "QRE spreadsheet"],
+      "technical": ["design specs", "test logs", "simulation results"],
+      "narrative": ["project summaries", "experiment logs"]
+    },
+    "eligibility_rules": {
+      "base_4_part_test": {
+        "has_product_or_process_dev": true,
+        "is_tech_based": true,
+        "has_technical_uncertainty": true,
+        "uses_experimentation": true
+      },
+      "startup_credit": {
+        "founded_after": 2018,
+        "revenue_below_million": true
+      }
+    },
+    "irs_forms": ["6765", "8974", "941"],
+    "warnings": [
+      "Detailed documentation is required starting 2025 (Section G of Form 6765).",
+      "Self-use software projects often disqualified."
+    ],
+    "references": [
+      "Form 6765 Instructions",
+      "IRS R&D Credit Overview",
+      "IRC Section 41"
+    ],
+    "ui_questions": [
+      "Have you developed or improved a product, software, or process?",
+      "Was the work based on engineering, math, computer science, or similar fields?",
+      "Did the project involve trial-and-error or experimentation?",
+      "Were there uncertainties in how to build or make something work?",
+      "Did you pay employees or contractors for technical work?",
+      "Was your company founded after 2018?",
+      "Do you use cloud services for technical development?"
+    ]
   }
 }
