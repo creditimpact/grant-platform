@@ -11,8 +11,13 @@ sys.path.insert(0, str(ENGINE_DIR))
 from engine import analyze_eligibility  # type: ignore
 from document_utils import extract_fields
 from form_filler import fill_form
-from reasoning_generator import generate_reasoning_steps
-from session_memory import append_memory
+from reasoning_generator import (
+    generate_reasoning_steps,
+    generate_llm_summary,
+    generate_clarifying_questions,
+)
+from session_memory import append_memory, get_missing_fields
+from nlp_utils import llm_semantic_inference
 from grants_loader import load_grants
 
 app = FastAPI(title="AI Agent Service")
@@ -46,6 +51,9 @@ async def check(
         content = await file.read()
         payload.update(extract_fields(content))
 
+    if isinstance(payload.get("notes"), str):
+        payload = llm_semantic_inference(payload["notes"], payload)
+
     results = analyze_eligibility(payload, explain=True)
 
     if explain:
@@ -53,6 +61,15 @@ async def check(
         for r in results:
             gdef = next((g for g in grants if g["name"] == r.get("name")), {})
             r["reasoning_steps"] = generate_reasoning_steps(gdef, payload, r)
+    else:
+        for r in results:
+            r["reasoning_steps"] = []
+
+    llm_summary = generate_llm_summary(results, payload)
+    clarifying = generate_clarifying_questions(results)
+    for r in results:
+        r["llm_summary"] = llm_summary
+        r["clarifying_questions"] = clarifying
 
     if session_id:
         append_memory(session_id, {"payload": payload, "results": results})
@@ -61,15 +78,19 @@ async def check(
 
 
 @app.post("/form-fill")
-async def form_fill(body: dict):
+async def form_fill(body: dict, file: UploadFile | None = None):
     """Fill a grant form template with provided user data."""
     grant_key = body.get("grant")
     data = body.get("data", {})
     session_id = body.get("session_id")
-    filled = fill_form(grant_key, data)
+    file_bytes = await file.read() if file else None
+    filled = fill_form(grant_key, data, file_bytes)
 
     if session_id:
-        append_memory(session_id, {"form": grant_key, "data": data})
+        append_memory(
+            session_id,
+            {"form": grant_key, "data": data, "used_file": bool(file_bytes)},
+        )
 
     return {"filled_form": filled}
 
@@ -93,6 +114,9 @@ async def chat(message: dict):
     elif mode == "missing_docs" and grant:
         docs = [d for cat in grant.get("required_documents", {}).values() for d in cat]
         response = "Required documents: " + ", ".join(docs)
+    elif mode == "missing_info" and session_id:
+        qs = get_missing_fields(session_id)
+        response = "Missing info: " + ", ".join(qs) if qs else "All required data provided."
     else:
         response = "I'm not sure how to help with that."
 

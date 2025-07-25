@@ -27,3 +27,29 @@ def generate_reasoning_steps(grant: Dict[str, Any], user_data: Dict[str, Any], r
     elif not steps:
         steps.append("One or more eligibility criteria not met")
     return steps
+
+
+def generate_llm_summary(results: List[Dict[str, Any]], user_data: Dict[str, Any]) -> str:
+    """Return a human readable summary of the overall eligibility."""
+    if not results:
+        return "No grants were evaluated."
+
+    passed = [r for r in results if r.get("eligible")]
+    if passed:
+        top = passed[0]
+        return (
+            f"You appear eligible for {top['name']} with an estimated award of ${top.get('estimated_amount',0)}."
+        )
+
+    top = max(results, key=lambda r: r.get("score", 0))
+    return (
+        f"No full eligibility found. Highest score is {top.get('score',0)}% for {top['name']}."
+    )
+
+
+def generate_clarifying_questions(results: List[Dict[str, Any]]) -> List[str]:
+    """Create follow-up questions based on missing fields."""
+    missing: set[str] = set()
+    for res in results:
+        missing.update(res.get("debug", {}).get("missing_fields", []))
+    return [f"Please provide your {field}" for field in sorted(missing)]
