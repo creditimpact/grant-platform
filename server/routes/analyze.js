@@ -1,15 +1,15 @@
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
-const fetch = require('node-fetch');
 const FormData = require('form-data');
+const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
 // @route   POST /api/analyze
 // @desc    Upload a file and forward it to the AI analyzer
-router.post('/', upload.single('file'), async (req, res) => {
+router.post('/', auth, upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
@@ -17,18 +17,24 @@ router.post('/', upload.single('file'), async (req, res) => {
   const form = new FormData();
   form.append('file', fs.createReadStream(req.file.path), req.file.originalname);
 
+  const analyzerUrl = process.env.ANALYZER_URL || 'http://localhost:8000/analyze';
+
   try {
-    const response = await fetch('http://localhost:8000/analyze', {
+    const response = await fetch(analyzerUrl, {
       method: 'POST',
       body: form,
       headers: form.getHeaders(),
     });
 
+    if (!response.ok) {
+      throw new Error(`Analyzer responded with ${response.status}`);
+    }
+
     const data = await response.json();
-    res.status(response.status).json(data);
+    res.json(data);
   } catch (err) {
-    console.error('Error calling AI analyzer:', err);
-    res.status(500).json({ message: 'Failed to analyze file' });
+    console.error('Error calling AI analyzer:', err.message);
+    res.status(502).json({ message: 'Analyzer service unavailable' });
   } finally {
     fs.unlink(req.file.path, () => {});
   }
