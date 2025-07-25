@@ -1,11 +1,13 @@
 {
   "name": "Tech Startup Credit Application",
   "fields": {
-    "business_id": "",
-    "owner_name": "",
-    "startup_year": "",
-    "payroll_total": "",
-    "state": ""
+    "business_id": {"type": "text", "required": true},
+    "owner_name": {"type": "text", "required": true},
+    "startup_year": {"type": "number", "required": true},
+    "payroll_total": {"type": "number", "required": true},
+    "state": {"type": "text", "required": true},
+    "pitch_deck": {"type": "file_upload", "required": false, "expected": "pdf"},
+    "mission": {"type": "text", "required": false, "prompt": "What is your mission?"}
   },
   "optional_fields": {
     "employees": 0

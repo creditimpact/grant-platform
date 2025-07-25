@@ -1,9 +1,13 @@
 {
   "name": "SBA Microloan Application",
   "fields": {
-    "business_id": "",
-    "owner_name": "",
-    "owner_gender": "",
-    "annual_income": ""
+    "business_id": {"type": "text", "required": true},
+    "owner_name": {"type": "text", "required": true},
+    "owner_gender": {"type": "dropdown", "required": false, "options": ["male", "female", "other"]},
+    "annual_income": {"type": "number", "required": true},
+    "business_description": {"type": "text", "required": true, "prompt": "Describe your business"},
+    "veteran": {"type": "checkbox", "required": false},
+    "branch_of_service": {"type": "text", "required": false, "depends_on": "veteran"},
+    "tax_document": {"type": "file_upload", "required": true, "expected": "pdf"}
   }
 }

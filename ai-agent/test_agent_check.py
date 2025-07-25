@@ -64,6 +64,23 @@ def test_form_fill():
     assert form["fields"].get("is_new_tech") is True
 
 
+def test_form_fill_sba_full():
+    payload = load_payload()
+    payload.update({"business_id": "123", "owner_name": "Jane"})
+    data = asyncio.run(form_fill({"grant": "sba_microloan_form", "data": payload}))
+    form = data["filled_form"]
+    assert str(form["fields"]["business_id"]) == "123"
+    assert "tax_document" in form.get("files", {})
+
+
+def test_form_fill_partial_inference():
+    payload = {"zip": "94110", "owner_gender": "probably yes", "startup_year": "2021"}
+    data = asyncio.run(form_fill({"grant": "tech_startup_credit_form", "data": payload}))
+    form = data["filled_form"]
+    assert form["fields"].get("state") == "CA"
+    assert form["fields"].get("mission") != ""
+
+
 def test_nlp_utils():
     k, v = normalize_text_field("headcount", "$80k")
     assert k == "employees" and v == 80000
