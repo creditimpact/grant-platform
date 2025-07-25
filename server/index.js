@@ -22,6 +22,7 @@ app.use('/api/auth', require('./routes/auth'));
 console.log('✅ Auth routes registered');
 app.use('/api/users', require('./routes/users'));
 app.use('/api/files', require('./routes/files'));
+app.use('/api/analyze', require('./routes/analyze'));
 
 // === Connect to DB and start server ===
 const PORT = process.env.PORT || 5000;
