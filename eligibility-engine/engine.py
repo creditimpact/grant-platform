@@ -13,6 +13,32 @@ from pathlib import Path
 from datetime import datetime
 
 
+def estimate_rd_credit(data: Dict[str, Any]) -> float:
+    """Estimate the potential R&D credit based on QRE totals."""
+    qre = data.get("qre_total", 0)
+    if data.get("has_prior_rd"):
+        return 0.14 * max(qre - data.get("qre_avg_prev_3", 0), 0)
+    else:
+        return 0.06 * qre
+
+
+def check_r_and_d_eligibility(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Determine if the business qualifies for the R&D tax credit."""
+    conditions = [
+        data.get("has_product_or_process_dev") is True,
+        data.get("is_tech_based") is True,
+        data.get("has_technical_uncertainty") is True,
+        data.get("uses_experimentation") is True,
+    ]
+    if all(conditions):
+        return {
+            "eligible": True,
+            "credit_type": "R&D",
+            "estimated_amount": estimate_rd_credit(data),
+        }
+    return {"eligible": False}
+
+
 def analyze_eligibility(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Analyze input data and return a list of eligible grants.
 
@@ -93,6 +119,22 @@ def analyze_eligibility(data: Dict[str, Any]) -> List[Dict[str, Any]]:
                 }
                 eligible.append(result)
                 print(f"✅ ERC eligible via {qualification_path}")
+
+    # --- R&D Tax Credit eligibility check ------------------------------------
+    if "r_and_d" in grants_config:
+        print("Checking R&D eligibility...")
+        rd_rule = grants_config["r_and_d"]
+
+        required = rd_rule.get("required_fields", [])
+        missing = [field for field in required if field not in data]
+        if missing:
+            print(f"Required fields missing for R&D: {missing}")
+        else:
+            rd_result = check_r_and_d_eligibility(data)
+            if rd_result.get("eligible"):
+                rd_result["grant"] = "r_and_d"
+                eligible.append(rd_result)
+                print("✅ R&D credit eligible")
 
     return eligible
 
