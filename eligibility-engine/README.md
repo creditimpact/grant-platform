@@ -16,6 +16,10 @@ Run a sample eligibility check using the CLI helper:
 python run_check.py test_payload.json
 ```
 
+### Scoring & Explanations
+
+Each grant is evaluated against its rules. Passing all rules yields a score of 100%. Missing data returns a score of 0 with `eligible` set to `null`. Partial matches receive a proportional score so results can be ranked by best fit.
+
 ### API Service
 
 Start the FastAPI service to expose the engine over HTTP:
@@ -44,7 +48,33 @@ The API includes automatic OpenAPI docs at `/docs` when running.
 
 ## Sample Payload
 
-See `test_payload.json` for a sample business profile. Running the engine with this payload returns a list of grants with eligibility status and estimated award values.
+See `test_payload.json` for a sample business profile. Running the engine with this payload returns a scored list of grants:
+
+```json
+[
+  {
+    "name": "Minority Female Founder Grant",
+    "eligible": true,
+    "score": 100,
+    "estimated_amount": 20000,
+    "reasoning": ["✅ owner_gender = female, expected female", "✅ owner_minority = True, expected True"],
+    "debug": {
+      "checked_rules": {"owner_gender": {"value": "female", "expected": "female"}},
+      "missing_fields": []
+    }
+  },
+  {
+    "name": "Tech Startup Payroll Credit",
+    "eligible": null,
+    "score": 0,
+    "estimated_amount": 0,
+    "reasoning": ["Missing required fields: ['startup_year', 'payroll_total']"],
+    "debug": {"checked_rules": {}, "missing_fields": ["startup_year", "payroll_total"]}
+  }
+]
+```
+
+Each grant is assigned a percentage score based on how many rules passed. Missing data results in `eligible: null` and a score of 0. The `reasoning` and `debug` fields explain exactly why a grant did or did not qualify.
 
 ## Testing
 

@@ -1,0 +1,18 @@
+{
+  "has_product_or_process_dev": true,
+  "is_tech_based": true,
+  "qre_total": 30000,
+  "revenue_drop": 10,
+  "government_shutdown": false,
+  "qualified_wages": 10000,
+  "business_age_years": 2,
+  "owner_credit_score": 680,
+  "state": "CA",
+  "employees": 5,
+  "owner_gender": "female",
+  "industry": "technology",
+  "city": "Boston",
+  "owner_minority": true,
+  "rural_area": true,
+  "tags": ["technology"]
+}
