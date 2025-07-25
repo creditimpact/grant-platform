@@ -11,5 +11,7 @@ def load_grants() -> List[Dict[str, Any]]:
     grants: List[Dict[str, Any]] = []
     for path in GRANTS_DIR.glob("*.json"):
         with path.open("r", encoding="utf-8") as f:
-            grants.append(json.load(f))
+            grant = json.load(f)
+            grant["key"] = path.stem
+            grants.append(grant)
     return grants

@@ -1,0 +1,23 @@
+{
+  "name": "Green Energy State Incentive",
+  "year": 2025,
+  "description": "Rebate for businesses investing in renewable energy upgrades",
+  "required_fields": ["state", "energy_expenses"],
+  "eligibility_rules": {
+    "state": ["CA", "NY", "TX"],
+    "energy_expenses_min": 10000
+  },
+  "estimated_award": {
+    "type": "tiered",
+    "based_on": "energy_expenses",
+    "tiers": [
+      {"upto": 50000, "percent": 20},
+      {"percent": 10}
+    ]
+  },
+  "tags": ["state", "green", "energy"],
+  "ui_questions": [
+    "Which state is the project located in?",
+    "How much have you spent on energy improvements?"
+  ]
+}

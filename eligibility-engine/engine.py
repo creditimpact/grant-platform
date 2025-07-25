@@ -1,60 +1,68 @@
 from pathlib import Path
 import json
 from typing import List, Dict, Any
+import logging
 
 from grants_loader import load_grants
 from rules_utils import check_rules, estimate_award
 
+logging.basicConfig(level=logging.INFO)
 
-def analyze_eligibility(user_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+
+def analyze_eligibility(
+    user_data: Dict[str, Any], explain: bool = False
+) -> List[Dict[str, Any]]:
     """Validate user data against all grant definitions."""
     grants = load_grants()
+    user_tags = set(user_data.get("tags", []))
+
     results: List[Dict[str, Any]] = []
     for grant in grants:
+        grant_tags = set(grant.get("tags", []))
+        tag_score = len(user_tags & grant_tags) if user_tags else 0
         missing = [f for f in grant.get("required_fields", []) if f not in user_data]
         if missing:
-            results.append({
-                "name": grant.get("name"),
-                "eligible": False,
-                "reason": f"Missing: {missing}"
-            })
+            logging.debug("%s missing fields: %s", grant.get("name"), missing)
+            results.append(
+                {
+                    "name": grant.get("name"),
+                    "eligible": False,
+                    "reason": f"Missing: {missing}",
+                    "tag_score": tag_score,
+                    "reasoning_steps": [],
+                    "llm_summary": "",
+                }
+            )
             continue
 
         passed, reason = check_rules(user_data, grant.get("eligibility_rules", {}))
-        if passed:
-            amount = estimate_award(user_data, grant.get("estimated_award", {}))
-            results.append({
-                "name": grant.get("name"),
-                "eligible": True,
-                "estimated_amount": amount,
-                "reason": reason,
-            })
-        else:
-            results.append({
-                "name": grant.get("name"),
-                "eligible": False,
-                "reason": reason,
-            })
+        amount = (
+            estimate_award(user_data, grant.get("estimated_award", {})) if passed else 0
+        )
+        result = {
+            "name": grant.get("name"),
+            "eligible": passed,
+            "estimated_amount": amount,
+            "tag_score": tag_score,
+            "reasoning_steps": [],
+            "llm_summary": "",
+        }
+        if explain:
+            result["reason"] = reason
+        results.append(result)
+
+    if user_tags:
+        results.sort(key=lambda r: r.get("tag_score", 0), reverse=True)
+
     return results
 
 
 if __name__ == "__main__":
-    example = {
-        "has_product_or_process_dev": True,
-        "is_tech_based": True,
-        "qre_total": 120000,
-        "revenue_drop": 30,
-        "government_shutdown": True,
-        "qualified_wages": 80000,
-        "business_age_years": 3,
-        "owner_credit_score": 700,
-        "state": "CA",
-        "employees": 10,
-        "owner_gender": "female",
-        "industry": "technology",
-        "city": "New York",
-        "owner_minority": True,
-        "rural_area": False,
-    }
-    for result in analyze_eligibility(example):
+    sample_file = Path(__file__).parent / "test_payload.json"
+    if sample_file.exists():
+        with sample_file.open("r", encoding="utf-8") as f:
+            payload = json.load(f)
+    else:
+        payload = {}
+    for result in analyze_eligibility(payload, explain=True):
         print(result)

@@ -1,0 +1,18 @@
+{
+  "has_product_or_process_dev": true,
+  "is_tech_based": true,
+  "qre_total": 60000,
+  "revenue_drop": 25,
+  "government_shutdown": true,
+  "qualified_wages": 50000,
+  "business_age_years": 2,
+  "owner_credit_score": 680,
+  "state": "CA",
+  "employees": 5,
+  "owner_gender": "female",
+  "industry": "technology",
+  "city": "New York",
+  "owner_minority": true,
+  "rural_area": false,
+  "tags": ["technology", "startup"]
+}
