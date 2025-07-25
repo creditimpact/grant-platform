@@ -1,0 +1,9 @@
+{
+  "name": "Tech Startup Credit Application",
+  "fields": {
+    "business_id": "",
+    "owner_name": "",
+    "startup_year": "",
+    "payroll_total": ""
+  }
+}
