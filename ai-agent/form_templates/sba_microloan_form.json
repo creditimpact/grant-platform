@@ -1,13 +1,21 @@
 {
   "name": "SBA Microloan Application",
   "fields": {
-    "business_id": {"type": "text", "required": true},
-    "owner_name": {"type": "text", "required": true},
-    "owner_gender": {"type": "dropdown", "required": false, "options": ["male", "female", "other"]},
-    "annual_income": {"type": "number", "required": true},
-    "business_description": {"type": "text", "required": true, "prompt": "Describe your business"},
-    "veteran": {"type": "checkbox", "required": false},
-    "branch_of_service": {"type": "text", "required": false, "depends_on": "veteran"},
-    "tax_document": {"type": "file_upload", "required": true, "expected": "pdf"}
-  }
+    "business_id": {"type": "text", "required": true, "ai_fillable": true},
+    "owner_name": {"type": "text", "required": true, "ai_fillable": true},
+    "owner_gender": {"type": "dropdown", "required": false, "options": ["male", "female", "other"], "ai_fillable": true},
+    "annual_income": {"type": "number", "required": true, "ai_fillable": true},
+    "business_description": {"type": "textarea", "required": true, "prompt": "Describe your business", "example": "We manufacture eco-friendly products.", "ai_fillable": true},
+    "veteran": {"type": "checkbox", "required": false, "ai_fillable": true},
+    "branch_of_service": {"type": "text", "required": false, "depends_on": "veteran", "ai_fillable": true, "show_if": "veteran"},
+    "tax_document": {"type": "file_upload", "required": true, "expected_file": "tax_return.pdf", "ai_fillable": true}
+  },
+  "sections": [
+    {
+      "name": "Additional",
+      "fields": {
+        "references": {"type": "textarea", "required": false, "ai_fillable": true, "example": "References available upon request."}
+      }
+    }
+  ]
 }

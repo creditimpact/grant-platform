@@ -8,6 +8,8 @@ def generate_reasoning_steps(grant: Dict[str, Any], user_data: Dict[str, Any], r
     missing = debug.get("missing_fields", [])
     for field in missing:
         steps.append(f"Missing required field: {field}")
+    if missing:
+        steps.append("Some information is still needed to fully verify eligibility.")
 
     checked = debug.get("checked_rules", {})
     for rule, info in checked.items():
@@ -53,3 +55,14 @@ def generate_clarifying_questions(results: List[Dict[str, Any]]) -> List[str]:
     for res in results:
         missing.update(res.get("debug", {}).get("missing_fields", []))
     return [f"Please provide your {field}" for field in sorted(missing)]
+
+
+def generate_audit_log(results: List[Dict[str, Any]]) -> List[str]:
+    """Return a detailed reasoning log for auditing."""
+    log: List[str] = []
+    for r in results:
+        name = r.get("name", "")
+        log.append(f"Result for {name}:")
+        for step in r.get("reasoning_steps", []):
+            log.append(f" - {step}")
+    return log

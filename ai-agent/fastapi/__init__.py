@@ -39,6 +39,9 @@ class FastAPI:
 
         return decorator
 
+    def get(self, path: str):
+        return self.post(path)
+
 
 class Response:
     def __init__(self, json_data: Any):

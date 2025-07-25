@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Any
 from datetime import datetime
 from document_utils import extract_fields, guess_attachment
-from nlp_utils import normalize_text_field
+from nlp_utils import normalize_text_field, infer_state_from_zip
 
 FORM_DIR = Path(__file__).parent / "form_templates"
 
@@ -15,8 +15,10 @@ ZIP_STATE = {
 }
 
 
-def _generate_text(data: Dict[str, Any]) -> str:
+def _generate_text(data: Dict[str, Any], example: str | None = None) -> str:
     """Create a simple free text description based on available fields."""
+    if example:
+        return example
     parts = ["Our"]
     if "industry" in data:
         parts.append(f"{data['industry']}")
@@ -51,6 +53,10 @@ def _fill_template(template: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, 
             if z.startswith(prefix):
                 data["state"] = state
                 break
+        if "state" not in data:
+            guessed = infer_state_from_zip(z)
+            if guessed:
+                data["state"] = guessed
 
     # simple conditional logic
     for key, rule in conditional.items():
@@ -71,15 +77,36 @@ def _fill_template(template: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, 
             ftype = spec.get("type", "text")
             depends = spec.get("depends_on")
             prompt = spec.get("prompt")
+            show_if = spec.get("show_if")
+            required_if = spec.get("required_if")
+            example = spec.get("example")
+            expected_file = spec.get("expected_file")
         else:
             default = spec
             required = True
             ftype = "text"
             depends = None
             prompt = None
+            show_if = None
+            required_if = None
+            example = None
+            expected_file = None
 
         if depends and not data.get(depends):
             continue
+
+        if show_if:
+            try:
+                if not eval(show_if, {"__builtins__": {}}, data):
+                    continue
+            except Exception:
+                pass
+
+        if required_if:
+            try:
+                required = bool(eval(required_if, {"__builtins__": {}}, data))
+            except Exception:
+                pass
 
         value = data.get(k)
         if isinstance(value, str):
@@ -87,10 +114,14 @@ def _fill_template(template: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, 
         if value is None:
             value = optional.get(k, default if not required else "")
 
-        if ftype == "text" and not value:
-            value = _generate_text(data) if prompt is not None else ""
+        if ftype in {"text", "textarea", "dropdown"} and not value:
+            value = _generate_text(data, example if prompt is not None else None)
+        elif ftype == "checkbox":
+            value = bool(value)
+        elif ftype == "date" and not value:
+            value = datetime.utcnow().strftime("%Y-%m-%d")
         elif ftype == "file_upload" and not value:
-            guess = guess_attachment(k)
+            guess = guess_attachment(expected_file or k)
             if guess:
                 attachments[k] = guess
                 value = guess.split("/")[-1]
