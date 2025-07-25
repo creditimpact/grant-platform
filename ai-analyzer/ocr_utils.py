@@ -1,4 +1,4 @@
 def extract_text(file_bytes):
-    """Stub function to extract text from uploaded file bytes."""
-    # TODO: Implement OCR processing
-    return ""
+    """Return placeholder text for demo purposes."""
+    # In a real implementation this would perform OCR on ``file_bytes``.
+    return "sample extracted text"

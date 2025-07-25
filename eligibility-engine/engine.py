@@ -139,3 +139,10 @@ if __name__ == "__main__":
         "startup_date": "2020-06-01",
     }
     print("Example 3:", analyze_eligibility(example3))
+
+    # Example 4: Missing required fields (should return empty list)
+    example4 = {
+        "business_type": "llc",
+        "covid_orders": [],
+    }
+    print("Example 4:", analyze_eligibility(example4))
