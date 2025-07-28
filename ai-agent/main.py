@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Request, Body, UploadFile, File, Form
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import Any
 from pathlib import Path
 import json
 import sys
-import os
 
 # ensure local imports work regardless of working directory
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -31,12 +31,9 @@ from grants_loader import load_grants
 class FormFillRequest(BaseModel):
     """Schema for the /form-fill endpoint."""
 
-    form_name: str = Field(..., alias="grant")
-    user_payload: dict = Field(default_factory=dict, alias="data")
+    form_name: str
+    user_payload: dict[str, Any]
     session_id: str | None = None
-
-    class Config:
-        allow_population_by_field_name = True
 
 
 app = FastAPI(title="AI Agent Service")
@@ -102,7 +99,8 @@ async def check(
 @app.post("/form-fill")
 async def form_fill(
     request_model: FormFillRequest = Body(
-        ..., example={"form_name": "tech_startup_credit_form", "user_payload": {"zip": "94110"}}
+        ..., embed=False,
+        example={"form_name": "tech_startup_credit_form", "user_payload": {"zip": "94110"}}
     )
 ):
     """Fill a grant form template with provided user data."""
