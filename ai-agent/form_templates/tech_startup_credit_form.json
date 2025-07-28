@@ -1,13 +1,13 @@
 {
   "name": "Tech Startup Credit Application",
   "fields": {
-    "business_id": {"type": "text", "required": true, "ai_fillable": true},
-    "owner_name": {"type": "text", "required": true, "ai_fillable": true},
+    "business_id": {"type": "text", "required": true, "prompt": "Enter your company registration number", "ai_fillable": true},
+    "owner_name": {"type": "text", "required": true, "prompt": "Primary founder's full name", "ai_fillable": true},
     "startup_year": {"type": "number", "required": true, "ai_fillable": true},
     "payroll_total": {"type": "number", "required": true, "ai_fillable": true},
-    "state": {"type": "text", "required": true, "ai_fillable": true},
+    "state": {"type": "text", "required": true, "prompt": "State where the business operates", "ai_fillable": true},
     "pitch_deck": {"type": "file_upload", "required": false, "expected_file": "pitch_deck.pdf", "ai_fillable": true},
-    "mission": {"type": "textarea", "required": false, "prompt": "What is your mission?", "example": "Our company helps modernize agriculture.", "ai_fillable": true}
+    "mission_statement": {"type": "textarea", "required": false, "prompt": "Summarize the mission of the company", "example": "Our company helps modernize agriculture.", "ai_fillable": true}
   },
   "optional_fields": {
     "employees": 0
@@ -22,7 +22,7 @@
     {
       "name": "Owner Info",
       "fields": {
-        "owner_bio": {"type": "textarea", "required": false, "ai_fillable": true, "example": "Jane Doe founded the company in 2020."}
+        "owner_background": {"type": "textarea", "required": false, "prompt": "Brief owner background", "ai_fillable": true, "example": "Jane Doe founded the company in 2020."}
       }
     }
   ]
