@@ -1,6 +1,8 @@
 """Generate human readable reasoning steps for grant results."""
 from typing import Dict, Any, List
 
+from nlp_utils import llm_complete
+
 
 def generate_reasoning_steps(grant: Dict[str, Any], user_data: Dict[str, Any], result: Dict[str, Any]) -> List[str]:
     steps: List[str] = []
@@ -66,3 +68,18 @@ def generate_audit_log(results: List[Dict[str, Any]]) -> List[str]:
         for step in r.get("reasoning_steps", []):
             log.append(f" - {step}")
     return log
+
+
+def generate_reasoning_explanation(
+    grant: Dict[str, Any], user_data: Dict[str, Any], result: Dict[str, Any]
+) -> str:
+    """Create a plain language explanation of the eligibility reasoning."""
+    if not result.get("reasoning_steps"):
+        result["reasoning_steps"] = generate_reasoning_steps(grant, user_data, result)
+    steps = result.get("reasoning_steps", [])
+    text = " ".join(steps)
+    if not text:
+        text = "Eligibility could not be determined."
+    prompt = "Explain to a user why they are or are not eligible based on: " + text
+    explanation = llm_complete(prompt)
+    return explanation or text

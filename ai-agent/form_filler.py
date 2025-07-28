@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Any
 from datetime import datetime
 from document_utils import extract_fields, guess_attachment
-from nlp_utils import normalize_text_field, infer_state_from_zip
+from nlp_utils import normalize_text_field, infer_state_from_zip, llm_complete
 
 FORM_DIR = Path(__file__).parent / "form_templates"
 
@@ -114,7 +114,13 @@ def _fill_template(template: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, 
         if value is None:
             value = optional.get(k, default if not required else "")
 
-        if ftype in {"text", "textarea", "dropdown"} and not value:
+        if ftype in {"text", "textarea"} and not value:
+            if prompt:
+                context = json.dumps(data)
+                value = llm_complete(f"{prompt}\nApplicant data: {context}")
+            if not value:
+                value = _generate_text(data, example)
+        elif ftype == "dropdown" and not value:
             value = _generate_text(data, example if prompt is not None else None)
         elif ftype == "checkbox":
             value = bool(value)
