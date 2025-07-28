@@ -28,6 +28,10 @@ def Form(default=None):
     return default
 
 
+def Body(default=None, *, example=None):
+    return default
+
+
 class FastAPI:
     def __init__(self, title: str | None = None):
         self.routes: Dict[str, Callable] = {}

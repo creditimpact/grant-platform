@@ -1,4 +1,5 @@
-from fastapi import FastAPI, UploadFile, File, Form, Request
+from fastapi import FastAPI, Request, Body, UploadFile, File, Form
+from pydantic import BaseModel, Field
 from pathlib import Path
 import json
 import sys
@@ -25,6 +26,18 @@ from reasoning_generator import (
 from session_memory import append_memory, get_missing_fields, save_draft_form, get_conversation
 from nlp_utils import llm_semantic_inference, llm_complete
 from grants_loader import load_grants
+
+
+class FormFillRequest(BaseModel):
+    """Schema for the /form-fill endpoint."""
+
+    form_name: str = Field(..., alias="grant")
+    user_payload: dict = Field(default_factory=dict, alias="data")
+    session_id: str | None = None
+
+    class Config:
+        allow_population_by_field_name = True
+
 
 app = FastAPI(title="AI Agent Service")
 
@@ -87,19 +100,22 @@ async def check(
 
 
 @app.post("/form-fill")
-async def form_fill(body: dict, file: UploadFile | None = None):
+async def form_fill(
+    request_model: FormFillRequest = Body(
+        ..., example={"form_name": "tech_startup_credit_form", "user_payload": {"zip": "94110"}}
+    )
+):
     """Fill a grant form template with provided user data."""
-    grant_key = body.get("grant")
-    data = body.get("data", {})
-    session_id = body.get("session_id")
-    file_bytes = await file.read() if file else None
-    filled = fill_form(grant_key, data, file_bytes)
+    if isinstance(request_model, dict):
+        request_model = FormFillRequest(**request_model)
+
+    grant_key = request_model.form_name
+    data = request_model.user_payload
+    session_id = request_model.session_id
+    filled = fill_form(grant_key, data)
 
     if session_id:
-        append_memory(
-            session_id,
-            {"form": grant_key, "data": data, "used_file": bool(file_bytes)},
-        )
+        append_memory(session_id, {"form": grant_key, "data": data})
 
     return {"filled_form": filled}
 

@@ -15,8 +15,9 @@ uvicorn main:app --reload
 - `POST /check` – submit user data, notes or an uploaded document. Free-form
   text is semantically parsed and merged with the eligibility engine. Results
   include `llm_summary`, `clarifying_questions` and richer `reasoning_steps`.
-- `POST /form-fill` – provide a grant key and user data to receive a filled form
-  from `form_templates/`. Conditional and computed fields will be evaluated.
+- `POST /form-fill` – submit `form_name` and `user_payload` as JSON to receive a
+  filled form from `form_templates/`. Conditional and computed fields will be
+  evaluated.
 - `POST /chat` – simple conversational endpoint that stores context in
   `session_id` records.
 
