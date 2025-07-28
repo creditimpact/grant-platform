@@ -2,9 +2,14 @@ from fastapi import FastAPI, UploadFile, File, Form, Request
 from pathlib import Path
 import json
 import sys
+import os
+
+# ensure local imports work regardless of working directory
+CURRENT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(CURRENT_DIR))
 
 # allow importing the eligibility engine
-BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = CURRENT_DIR.parent
 ENGINE_DIR = BASE_DIR / "eligibility-engine"
 sys.path.insert(0, str(ENGINE_DIR))
 
