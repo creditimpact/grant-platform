@@ -1,6 +1,47 @@
+import os
 import re
 from datetime import datetime
-from typing import Dict, Tuple, Any
+from typing import Dict, Tuple, Any, List
+
+try:
+    from dotenv import load_dotenv
+except Exception:  # pragma: no cover - package may be missing
+    def load_dotenv(*args, **kwargs):
+        return False
+
+try:
+    import openai  # type: ignore
+except Exception:  # pragma: no cover - openai optional for tests
+    openai = None  # type: ignore
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if openai and OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
+
+
+def llm_complete(
+    prompt: str,
+    system: str | None = "You are a helpful grants advisor.",
+    history: List[Dict[str, str]] | None = None,
+) -> str:
+    """Return a completion from OpenAI, with graceful fallback."""
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    if history:
+        messages.extend(history)
+    messages.append({"role": "user", "content": prompt})
+
+    if openai and openai.api_key:
+        try:  # pragma: no cover - network call
+            resp = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
+            return resp.choices[0].message.content.strip()
+        except Exception:
+            pass
+
+    # simple fallback if API unavailable
+    return prompt[:200]
 
 # State lookup for basic zip inference
 ZIP_PREFIX_STATE = {

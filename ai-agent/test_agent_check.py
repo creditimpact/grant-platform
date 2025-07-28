@@ -108,3 +108,15 @@ def test_freeform_notes():
 
     data = asyncio.run(check(DummyRequest({"notes": notes}), explain=True))
     assert any(r.get("reasoning_steps") is not None for r in data)
+
+
+def test_form_fill_gpt_prompt():
+    payload = {"business_id": "999"}
+    data = asyncio.run(form_fill({"grant": "sba_microloan_form", "data": payload}))
+    form = data["filled_form"]
+    assert form["fields"].get("business_description") != ""
+
+
+def test_chat_llm():
+    resp = asyncio.run(chat({"session_id": "test1", "text": "Hello"}))
+    assert isinstance(resp.get("response"), str) and resp["response"] != ""

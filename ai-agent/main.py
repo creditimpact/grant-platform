@@ -15,9 +15,10 @@ from reasoning_generator import (
     generate_reasoning_steps,
     generate_llm_summary,
     generate_clarifying_questions,
+    generate_reasoning_explanation,
 )
 from session_memory import append_memory, get_missing_fields, save_draft_form, get_conversation
-from nlp_utils import llm_semantic_inference
+from nlp_utils import llm_semantic_inference, llm_complete
 from grants_loader import load_grants
 
 app = FastAPI(title="AI Agent Service")
@@ -67,9 +68,12 @@ async def check(
 
     llm_summary = generate_llm_summary(results, payload)
     clarifying = generate_clarifying_questions(results)
+    grants = load_grants()
     for r in results:
         r["llm_summary"] = llm_summary
         r["clarifying_questions"] = clarifying
+        gdef = next((g for g in grants if g["name"] == r.get("name")), {})
+        r["explanation"] = generate_reasoning_explanation(gdef, payload, r)
 
     if session_id:
         append_memory(session_id, {"payload": payload, "results": results})
@@ -114,14 +118,37 @@ async def preview_form(body: dict, file: UploadFile | None = None):
 
 @app.post("/chat")
 async def chat(message: dict):
-    """Basic pre-LLM chat endpoint with several modes."""
-    mode = message.get("mode", "info")
+    """Conversational endpoint backed by the LLM."""
+    mode = message.get("mode")
+    text = message.get("text") or message.get("prompt")
     grant_key = message.get("grant")
     session_id = message.get("session_id")
 
     grants = load_grants()
     grant = next((g for g in grants if g.get("key") == grant_key), None)
 
+    if text:
+        history_msgs = []
+        if session_id:
+            for entry in get_conversation(session_id):
+                chat = entry.get("chat")
+                if chat and chat.get("text"):
+                    history_msgs.append({"role": "user", "content": chat.get("text")})
+                if entry.get("response"):
+                    history_msgs.append({"role": "assistant", "content": entry["response"]})
+        response = llm_complete(text, history=history_msgs)
+        follow_up = []
+        if session_id:
+            missing = get_missing_fields(session_id)
+            follow_up = [f"Please provide your {f}" for f in missing]
+            append_memory(session_id, {"chat": {"text": text}, "response": response})
+        result = {"response": response}
+        if follow_up:
+            result["follow_up"] = follow_up
+        return result
+
+    # fallback to canned responses when no free text supplied
+    mode = mode or "info"
     if mode == "info":
         response = "I can help match you to grants and fill forms."
     elif mode == "explain_grant" and grant:
