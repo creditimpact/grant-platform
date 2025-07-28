@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 sys.path.insert(0, str(Path(__file__).parent))
 from main import check, form_fill, chat
+from form_filler import fill_form as direct_fill_form
 from nlp_utils import normalize_text_field, infer_field_from_text
 BASE_DIR = Path(__file__).parent
 ENGINE_DIR = BASE_DIR.parent / "eligibility-engine"
@@ -80,7 +81,21 @@ def test_form_fill_partial_inference():
     data = asyncio.run(form_fill({"form_name": "tech_startup_credit_form", "user_payload": payload}))
     form = data["filled_form"]
     assert form["fields"].get("state") == "CA"
-    assert form["fields"].get("mission") != ""
+    assert form["fields"].get("mission_statement") != ""
+
+
+def test_form_fill_full_scenario():
+    payload = {"annual_revenue": 200000, "zip": "10001"}
+    doc = BASE_DIR / "test_documents" / "fake_tz.pdf"
+    with doc.open("rb") as f:
+        filled = direct_fill_form("sba_microloan_form", payload, f.read())
+    data = {"filled_form": filled}
+    form = data["filled_form"]
+    assert form["fields"].get("state") == "NY"
+    assert form["fields"].get("annual_income") == 200000
+    assert "tax_document" in form.get("files", {})
+    desc = form["fields"].get("business_description", "")
+    assert desc and len(desc.split()) > 5
 
 
 def test_nlp_utils():

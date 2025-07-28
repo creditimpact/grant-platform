@@ -143,6 +143,8 @@ def normalize_text_field(field_name: str, raw_value: str) -> Tuple[str, Any]:
             value = True
         elif lowered in {"no", "false", "0", "n"} or ("no" in lowered and "yes" not in lowered):
             value = False
+        elif lowered in {"maybe", "unknown", "not sure", "unsure"}:
+            value = False
         else:
             num_match = NUMBER_RE.match(lowered)
             if num_match:
@@ -202,6 +204,15 @@ def llm_semantic_inference(text: str, known: Dict[str, Any]) -> Dict[str, Any]:
     for k, v in inferred.items():
         if k not in known:
             known[k] = v
+
+    # additional smart inference
+    if "annual_income" not in known and known.get("annual_revenue"):
+        known["annual_income"] = known["annual_revenue"]
+
+    if "state" not in known and known.get("zip"):
+        state = infer_state_from_zip(known.get("zip"))
+        if state:
+            known["state"] = state
 
     # naive fallback defaults
     for field in ["state", "industry", "employees"]:
