@@ -35,3 +35,19 @@ and provide human readable summaries:
 curl -X POST http://localhost:5001/check -H "Content-Type: application/json" \
     -d '{"notes": "We started around 2021 and are women-led in biotech"}'
 ```
+
+To fill a grant application form, send JSON directly to `/form-fill`:
+
+```bash
+curl -X POST http://localhost:5001/form-fill \
+    -H "Content-Type: application/json" \
+    -d '{
+        "form_name": "sba_microloan_form",
+        "user_payload": {
+            "business_name": "Tech Boosters",
+            "annual_revenue": 250000,
+            "zipcode": "10001",
+            "minority_owned": true
+        }
+    }'
+```

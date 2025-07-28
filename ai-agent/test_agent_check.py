@@ -3,6 +3,8 @@ from pathlib import Path
 
 import sys
 import asyncio
+import pytest
+from pydantic import ValidationError
 
 sys.path.insert(0, str(Path(__file__).parent))
 from main import check, form_fill, chat
@@ -58,7 +60,7 @@ def test_form_fill():
     payload = load_payload()
     payload["startup_year"] = "2022"
     payload["industry"] = "technology"
-    data = asyncio.run(form_fill({"grant": "tech_startup_credit_form", "data": payload}))
+    data = asyncio.run(form_fill({"form_name": "tech_startup_credit_form", "user_payload": payload}))
     form = data["filled_form"]
     assert form["fields"]["state"] != ""
     assert form["fields"].get("is_new_tech") is True
@@ -67,7 +69,7 @@ def test_form_fill():
 def test_form_fill_sba_full():
     payload = load_payload()
     payload.update({"business_id": "123", "owner_name": "Jane"})
-    data = asyncio.run(form_fill({"grant": "sba_microloan_form", "data": payload}))
+    data = asyncio.run(form_fill({"form_name": "sba_microloan_form", "user_payload": payload}))
     form = data["filled_form"]
     assert str(form["fields"]["business_id"]) == "123"
     assert "tax_document" in form.get("files", {})
@@ -75,7 +77,7 @@ def test_form_fill_sba_full():
 
 def test_form_fill_partial_inference():
     payload = {"zip": "94110", "owner_gender": "probably yes", "startup_year": "2021"}
-    data = asyncio.run(form_fill({"grant": "tech_startup_credit_form", "data": payload}))
+    data = asyncio.run(form_fill({"form_name": "tech_startup_credit_form", "user_payload": payload}))
     form = data["filled_form"]
     assert form["fields"].get("state") == "CA"
     assert form["fields"].get("mission") != ""
@@ -112,7 +114,7 @@ def test_freeform_notes():
 
 def test_form_fill_gpt_prompt():
     payload = {"business_id": "999"}
-    data = asyncio.run(form_fill({"grant": "sba_microloan_form", "data": payload}))
+    data = asyncio.run(form_fill({"form_name": "sba_microloan_form", "user_payload": payload}))
     form = data["filled_form"]
     assert form["fields"].get("business_description") != ""
 
@@ -120,3 +122,24 @@ def test_form_fill_gpt_prompt():
 def test_chat_llm():
     resp = asyncio.run(chat({"session_id": "test1", "text": "Hello"}))
     assert isinstance(resp.get("response"), str) and resp["response"] != ""
+
+
+def test_form_fill_json_example():
+    """Ensure the /form-fill endpoint accepts standard JSON input."""
+    payload = {
+        "form_name": "sba_microloan_form",
+        "user_payload": {
+            "business_name": "Tech Boosters",
+            "annual_revenue": 250000,
+            "zipcode": "10001",
+            "minority_owned": True,
+        },
+    }
+    data = asyncio.run(form_fill(payload))
+    assert data.get("filled_form")
+
+
+def test_form_fill_invalid_payload():
+    """Invalid payloads should raise validation errors."""
+    with pytest.raises(ValidationError):
+        asyncio.run(form_fill({"user_payload": {"foo": "bar"}}))
