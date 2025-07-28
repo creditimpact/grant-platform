@@ -51,3 +51,17 @@ curl -X POST http://localhost:5001/form-fill \
         }
     }'
 ```
+
+## Frontend
+
+The **frontend/** directory contains a Next.js application used for end-user registration, login and document uploads.
+
+To start the frontend locally:
+
+```bash
+cd frontend
+npm install # install dependencies (requires internet access)
+npm run dev
+```
+
+Environment variables should be placed in a `.env.local` file. See `.env.local.example` for the API base URL.
