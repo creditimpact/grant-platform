@@ -39,6 +39,18 @@ class FormFillRequest(BaseModel):
 app = FastAPI(title="AI Agent Service")
 
 
+@app.get("/")
+def root() -> dict[str, str]:
+    """Health check route."""
+    return {"status": "ok"}
+
+
+@app.get("/status")
+def status() -> dict[str, str]:
+    """Alias health check."""
+    return {"status": "ok"}
+
+
 @app.post("/check")
 async def check(
     request: Request,

@@ -7,6 +7,15 @@ This repository contains three microservices used to test a grant eligibility wo
 - **eligibility-engine/** – Pure Python rules engine for grant logic
 - **ai-agent/** – LLM-ready service with conversational endpoints and smart form filling
 
+```
+project-root/
+  server/               Express REST API
+  ai-agent/             FastAPI form filler and reasoning service
+  ai-analyzer/          OCR/NLP stub service
+  eligibility-engine/   Core rules engine
+  frontend/             Next.js application
+```
+
 ## Running locally
 
 1. Install Node dependencies and start the API server
