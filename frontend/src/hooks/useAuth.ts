@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import api from '@/lib/api';
-import { useRouter } from 'next/navigation';
 
 interface AuthState {
   user: any;
@@ -16,16 +15,26 @@ export const useAuth = create<AuthState>((set) => ({
   loading: false,
   async login(email, password) {
     set({ loading: true });
-    await api.post('/login', { email, password });
+    const res = await api.post('/login', { email, password });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', res.data.token);
+    }
+    await useAuth.getState().check();
     set({ loading: false });
   },
   async register(data) {
     set({ loading: true });
-    await api.post('/register', data);
+    const res = await api.post('/register', data);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', res.data.token);
+    }
+    await useAuth.getState().check();
     set({ loading: false });
   },
   async logout() {
-    await api.post('/logout');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
     set({ user: null });
   },
   async check() {
