@@ -17,6 +17,15 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
+// === Root & Health Routes ===
+app.get('/', (req, res) => {
+  res.send('🚀 Grant Platform API is running!');
+});
+
+app.get('/status', (req, res) => {
+  res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' });
+});
+
 // === API Routes ===
 app.use('/api/auth', require('./routes/auth'));
 console.log('✅ Auth routes registered');
