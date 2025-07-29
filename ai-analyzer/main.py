@@ -4,6 +4,18 @@ from nlp_parser import parse_fields
 
 app = FastAPI()
 
+
+@app.get("/")
+def root() -> dict[str, str]:
+    """Health check route."""
+    return {"status": "ok"}
+
+
+@app.get("/status")
+def status() -> dict[str, str]:
+    """Alias health check."""
+    return {"status": "ok"}
+
 @app.post('/analyze')
 async def analyze(file: UploadFile = File(...)):
     if file.content_type not in {"application/pdf", "image/png", "image/jpeg"}:

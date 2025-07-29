@@ -4,6 +4,18 @@ from grants_loader import load_grants
 
 app = FastAPI(title="Grant Eligibility Engine")
 
+
+@app.get("/")
+def root() -> dict[str, str]:
+    """Health check route."""
+    return {"status": "ok"}
+
+
+@app.get("/status")
+def status() -> dict[str, str]:
+    """Alias health check."""
+    return {"status": "ok"}
+
 GRANTS = load_grants()
 
 
