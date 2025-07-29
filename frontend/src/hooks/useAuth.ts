@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import axios from 'axios'; // ✅ תיקון: הייבוא שהיה חסר
 import api from '@/lib/api';
 
 interface AuthState {
@@ -39,7 +40,12 @@ export const useAuth = create<AuthState>((set) => ({
   },
   async check() {
     try {
-      const res = await api.get('/me');
+      const res = await axios.get('http://localhost:5000/api/auth/me', {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
       set({ user: res.data });
     } catch {
       set({ user: null });
