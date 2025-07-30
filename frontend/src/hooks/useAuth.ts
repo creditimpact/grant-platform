@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import axios from 'axios'; // ✅ תיקון: הייבוא שהיה חסר
-import api from '@/lib/api';
+import api from '@/lib/api'; // ← משתמש רק בזה, לא axios ישיר
 
 interface AuthState {
   user: any;
@@ -14,38 +13,54 @@ interface AuthState {
 export const useAuth = create<AuthState>((set) => ({
   user: null,
   loading: false,
+
   async login(email, password) {
     set({ loading: true });
     const res = await api.post('/login', { email, password });
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', res.data.token);
+
+    const token = res.data.token;
+    if (typeof window !== 'undefined' && token) {
+      localStorage.setItem('token', token);
     }
+
     await useAuth.getState().check();
     set({ loading: false });
   },
+
   async register(data) {
     set({ loading: true });
     const res = await api.post('/register', data);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', res.data.token);
+
+    const token = res.data.token;
+    if (typeof window !== 'undefined' && token) {
+      localStorage.setItem('token', token);
     }
+
     await useAuth.getState().check();
     set({ loading: false });
   },
+
   async logout() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
     }
     set({ user: null });
   },
+
   async check() {
     try {
-      const res = await axios.get('http://localhost:5000/api/auth/me', {
-        withCredentials: true,
+      const token = localStorage.getItem('token');
+      if (!token) {
+        set({ user: null });
+        return;
+      }
+
+      const res = await api.get('/auth/me', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+
       set({ user: res.data });
     } catch {
       set({ user: null });
