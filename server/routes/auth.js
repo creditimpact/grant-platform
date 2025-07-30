@@ -86,10 +86,18 @@ router.post('/login', async (req, res) => {
 // @desc    Get current authenticated user
 router.get('/me', auth, async (req, res) => {
   console.log('\uD83D\uDD0D GET /me hit');
-  console.log('Auth Header:', req.headers.authorization);
+  const rawHeader = req.headers.authorization || '';
+  const token = rawHeader.startsWith('Bearer ')
+    ? rawHeader.split(' ')[1]
+    : rawHeader;
+  console.log('Token received (partial):', token ? token.substring(0, 10) + '...' : 'none');
 
   try {
     console.log('Decoded JWT:', req.user);
+    if (!req.user || !req.user.id) {
+      console.warn('req.user missing user id');
+      return res.status(401).json({ message: 'Token is not valid' });
+    }
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });

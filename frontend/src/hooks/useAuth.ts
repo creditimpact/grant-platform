@@ -16,7 +16,7 @@ export const useAuth = create<AuthState>((set) => ({
 
   async login(email, password) {
     set({ loading: true });
-    const res = await api.post('/login', { email, password });
+    const res = await api.post('/auth/login', { email, password });
 
     const token = res.data.token;
     if (typeof window !== 'undefined' && token) {
@@ -29,7 +29,7 @@ export const useAuth = create<AuthState>((set) => ({
 
   async register(data) {
     set({ loading: true });
-    const res = await api.post('/register', data);
+    const res = await api.post('/auth/register', data);
 
     const token = res.data.token;
     if (typeof window !== 'undefined' && token) {
@@ -55,7 +55,7 @@ export const useAuth = create<AuthState>((set) => ({
         return;
       }
 
-      const res = await api.get('/me', {
+      const res = await api.get('/auth/me', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
