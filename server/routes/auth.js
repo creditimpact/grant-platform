@@ -85,14 +85,18 @@ router.post('/login', async (req, res) => {
 // @route   GET /api/auth/me
 // @desc    Get current authenticated user
 router.get('/me', auth, async (req, res) => {
+  console.log('\uD83D\uDD0D GET /me hit');
+  console.log('Auth Header:', req.headers.authorization);
+
   try {
+    console.log('Decoded JWT:', req.user);
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
     res.json(user);
   } catch (err) {
-    console.error(err);
+    console.error('Error in /me route:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
