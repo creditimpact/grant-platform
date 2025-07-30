@@ -99,6 +99,7 @@ router.get('/me', auth, async (req, res) => {
       return res.status(401).json({ message: 'Token is not valid' });
     }
     const user = await User.findById(req.user.id).select('-password');
+    console.log('User lookup result:', user);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
