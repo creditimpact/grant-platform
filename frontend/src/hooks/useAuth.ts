@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from '@/lib/api'; // ← משתמש רק בזה, לא axios ישיר
+import api from '@/lib/api'; // ← Axios instance עם baseURL מוגדר
 
 interface AuthState {
   user: any;
@@ -55,14 +55,15 @@ export const useAuth = create<AuthState>((set) => ({
         return;
       }
 
-      const res = await api.get('/auth/me', {
+      const res = await api.get('/me', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       set({ user: res.data });
-    } catch {
+    } catch (err) {
+      console.warn('Auth check failed:', err);
       set({ user: null });
     }
   },
