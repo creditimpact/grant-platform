@@ -1,4 +1,5 @@
 const express = require('express');
+console.log('Eligibility route loaded');
 const router = express.Router();
 
 // GET /api/eligibility-report
