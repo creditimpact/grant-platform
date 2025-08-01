@@ -16,7 +16,8 @@ router.post('/upload', auth, upload.single('file'), (req, res) => {
 
   const docKey = req.body.key;
   if (docKey) {
-    const c = getCase(req.user.id);
+    const c = getCase(req.user.id, false);
+    if (!c) return res.status(400).json({ message: 'No active case' });
     const doc = c.documents.find((d) => d.key === docKey);
     if (doc) {
       doc.uploaded = true;
@@ -36,7 +37,8 @@ router.post('/', auth, upload.single('file'), (req, res) => {
   req.body.key = req.body.key || '';
   const docKey = req.body.key;
   if (req.file && docKey) {
-    const c = getCase(req.user.id);
+    const c = getCase(req.user.id, false);
+    if (!c) return res.status(400).json({ message: 'No active case' });
     const doc = c.documents.find((d) => d.key === docKey);
     if (doc) {
       doc.uploaded = true;

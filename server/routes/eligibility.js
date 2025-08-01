@@ -6,7 +6,8 @@ const { getCase } = require('../utils/caseStore');
 
 // GET /api/eligibility-report
 router.post('/', auth, async (req, res) => {
-  const c = getCase(req.user.id);
+  const c = getCase(req.user.id, false);
+  if (!c) return res.status(400).json({ message: 'No active case' });
   const engineUrl = process.env.ENGINE_URL || 'http://localhost:4001/check';
   try {
     const response = await fetch(engineUrl, {
@@ -30,7 +31,8 @@ router.post('/', auth, async (req, res) => {
 });
 
 router.get('/', auth, (req, res) => {
-  const c = getCase(req.user.id);
+  const c = getCase(req.user.id, false);
+  if (!c) return res.status(400).json({ message: 'No active case' });
   res.json(c.eligibility || { eligible: false });
 });
 
