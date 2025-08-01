@@ -3,8 +3,8 @@
 This repository contains three microservices used to test a grant eligibility workflow.
 
 - **server/** – Express API for authentication, file uploads and analysis forwarding
-- **ai-analyzer/** – FastAPI service that performs stub OCR/NLP processing
-- **eligibility-engine/** – Pure Python rules engine for grant logic
+- **ai-analyzer/** – FastAPI service that extracts text using Tesseract OCR and simple NLP with confidence scores
+- **eligibility-engine/** – Python rules engine returning missing fields and suggested next steps
 - **ai-agent/** – LLM-ready service with conversational endpoints and smart form filling
 
 ```
@@ -25,7 +25,7 @@ project-root/
    ```
    Environment variables should be placed in a `.env` file. See `.env.example` for required keys.
 
-2. Start the AI analyzer
+2. Start the AI analyzer (requires Tesseract installed)
    ```bash
    cd ai-analyzer
    python -m uvicorn main:app --port 8000
@@ -38,7 +38,8 @@ project-root/
    ```
 
 The `ai-agent` service can parse free-form notes and uploaded documents, infer missing fields
-and provide human readable summaries:
+and provide human readable summaries. Eligibility results now include a `next_steps` field
+along with any missing information:
 
 ```bash
 curl -X POST http://localhost:5001/check -H "Content-Type: application/json" \
@@ -74,6 +75,7 @@ npm run dev
 ```
 
 Environment variables should be placed in a `.env.local` file. See `.env.local.example` for the API base URL.
+The backend now respects `AGENT_URL` to enable AI-driven eligibility summaries.
 
 ## Docker Compose
 

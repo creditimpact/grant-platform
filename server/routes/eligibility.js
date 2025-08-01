@@ -8,9 +8,10 @@ const { getCase } = require('../utils/caseStore');
 router.post('/', auth, async (req, res) => {
   const c = getCase(req.user.id, false);
   if (!c) return res.status(400).json({ message: 'No active case' });
-  const engineUrl = process.env.ENGINE_URL || 'http://localhost:4001/check';
+  const agentUrl = process.env.AGENT_URL;
+  const endpoint = agentUrl ? `${agentUrl.replace(/\/$/, '')}/check` : (process.env.ENGINE_URL || 'http://localhost:4001/check');
   try {
-    const response = await fetch(engineUrl, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(c.answers || {}),

@@ -23,12 +23,13 @@ async def analyze(file: UploadFile = File(...)):
 
     content = await file.read()
     text = extract_text(content)
-    data = parse_fields(text)
+    fields, confidence = parse_fields(text)
 
     response = {
-        "revenue": data.get("revenue", "N/A"),
-        "employees": data.get("employees", "N/A"),
-        "year_founded": data.get("year_founded", "N/A"),
+        "revenue": fields.get("revenue", "N/A"),
+        "employees": fields.get("employees", "N/A"),
+        "year_founded": fields.get("year_founded", "N/A"),
+        "confidence": confidence,
     }
     return response
 
