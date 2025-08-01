@@ -31,6 +31,8 @@ def analyze_eligibility(
                     "estimated_amount": 0,
                     "reasoning": [f"Missing required fields: {missing}"],
                     "debug": {"checked_rules": {}, "missing_fields": missing},
+                    "missing_fields": missing,
+                    "next_steps": f"Provide: {', '.join(missing)}",
                     "tag_score": tag_score,
                     "reasoning_steps": [],
                     "llm_summary": "",
@@ -51,9 +53,11 @@ def analyze_eligibility(
             "estimated_amount": amount,
             "reasoning": rule_result["reasoning"],
             "debug": rule_result["debug"],
+            "missing_fields": rule_result["debug"].get("missing_fields", []),
             "tag_score": tag_score,
             "reasoning_steps": [],
             "llm_summary": "",
+            "next_steps": "" if rule_result["eligible"] else "Review eligibility criteria",
         }
         results.append(result)
 
