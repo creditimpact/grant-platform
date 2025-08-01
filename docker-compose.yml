@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    restart: always
+    ports:
+      - '27017:27017'
+
+  server:
+    build: ./server
+    ports:
+      - '5000:5000'
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/grants
+      - JWT_SECRET=devsecret
+      - ANALYZER_URL=http://ai-analyzer:8000/analyze
+      - AGENT_URL=http://ai-agent:5001/form-fill
+    depends_on:
+      - mongo
+      - ai-analyzer
+      - ai-agent
+
+  ai-analyzer:
+    build: ./ai-analyzer
+    ports:
+      - '8000:8000'
+
+  eligibility-engine:
+    build: ./eligibility-engine
+    ports:
+      - '4001:4001'
+
+  ai-agent:
+    build:
+      context: .
+      dockerfile: ai-agent/Dockerfile
+    ports:
+      - '5001:5001'
+    depends_on:
+      - eligibility-engine
+
+  frontend:
+    build: ./frontend
+    ports:
+      - '3000:3000'
+    environment:
+      - NEXT_PUBLIC_API_BASE=http://server:5000/api
+    depends_on:
+      - server

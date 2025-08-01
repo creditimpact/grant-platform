@@ -4,3 +4,4 @@ uploads
 # Frontend build outputs
 /frontend/.next
 /frontend/node_modules
+__pycache__/
