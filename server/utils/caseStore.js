@@ -17,8 +17,9 @@ function computeDocuments(answers = {}) {
   return docs;
 }
 
-function getCase(userId) {
+function getCase(userId, createIfMissing = true) {
   if (!cases[userId]) {
+    if (!createIfMissing) return null;
     cases[userId] = {
       status: 'Open',
       answers: {},
@@ -29,4 +30,8 @@ function getCase(userId) {
   return cases[userId];
 }
 
-module.exports = { cases, getCase, computeDocuments };
+function createCase(userId) {
+  return getCase(userId, true);
+}
+
+module.exports = { cases, getCase, createCase, computeDocuments };

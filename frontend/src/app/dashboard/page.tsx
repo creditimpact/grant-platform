@@ -1,7 +1,7 @@
 'use client';
 /**
  * Main dashboard showing case progress and results.
- * Redirects to steps based on localStorage state.
+ * Determines the current step from API status.
  */
 import Protected from '@/components/Protected';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,9 +27,22 @@ export default function Dashboard() {
     <Protected><p>Loading...</p></Protected>
   );
 
-  const stage = typeof window !== 'undefined' ? localStorage.getItem('caseStage') : null;
+  const computeStage = () => {
+    if (caseData.status === 'not_started') return 'open';
+    if (caseData.eligibility) return 'results';
+    if (Array.isArray(caseData.documents) && caseData.documents.length > 0) {
+      return 'documents';
+    }
+    return 'questionnaire';
+  };
 
-  if (!stage || stage === 'open') {
+  const stage = computeStage();
+
+  if (stage === 'open' && typeof window !== 'undefined') {
+    localStorage.removeItem('caseStage');
+  }
+
+  if (stage === 'open') {
     return (
       <Protected>
         <div className="text-center py-10 space-y-4">
