@@ -5,18 +5,33 @@ console.log('Case route loaded');
 
 const router = express.Router();
 
-const { getCase } = require('../utils/caseStore');
+const auth = require('../middleware/authMiddleware');
+const { getCase, computeDocuments } = require('../utils/caseStore');
 
-// Simple status endpoint used by the dashboard
-router.get('/status', (req, res) => {
-  // Use a static user id for now since auth is optional in this demo
-  const c = getCase('demo-user');
+// Status endpoint used by the dashboard
+router.get('/status', auth, (req, res) => {
+  const c = getCase(req.user.id);
 
   res.json({
     status: c.status,
     documents: c.documents,
     eligibility: c.eligibility,
+    answers: c.answers,
   });
+});
+
+// Save questionnaire answers
+router.post('/questionnaire', auth, (req, res) => {
+  const c = getCase(req.user.id);
+  c.answers = req.body || {};
+  c.documents = computeDocuments(c.answers);
+  res.json({ status: 'saved' });
+});
+
+// Fetch questionnaire answers
+router.get('/questionnaire', auth, (req, res) => {
+  const c = getCase(req.user.id);
+  res.json(c.answers || {});
 });
 
 module.exports = router;

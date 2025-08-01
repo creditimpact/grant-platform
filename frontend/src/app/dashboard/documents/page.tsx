@@ -77,6 +77,9 @@ export default function Documents() {
                 </button>
               </>
             )}
+            {doc.uploaded && doc.url && (
+              <a href={doc.url} className="text-blue-600" target="_blank" rel="noopener noreferrer">View</a>
+            )}
           </div>
         ))}
         <div className="h-2 bg-gray-200 rounded">
