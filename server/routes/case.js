@@ -25,10 +25,10 @@ router.get('/status', auth, (req, res) => {
 });
 
 // Save questionnaire answers
-router.post('/questionnaire', auth, (req, res) => {
+router.post('/questionnaire', auth, async (req, res) => {
   const c = createCase(req.user.id);
   c.answers = req.body || {};
-  c.documents = computeDocuments(c.answers);
+  c.documents = await computeDocuments(c.answers);
   res.json({ status: 'saved' });
 });
 
