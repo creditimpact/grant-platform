@@ -74,3 +74,13 @@ npm run dev
 ```
 
 Environment variables should be placed in a `.env.local` file. See `.env.local.example` for the API base URL.
+
+## Docker Compose
+
+The repository includes a `docker-compose.yml` that spins up all services in one command. This will launch MongoDB, the API server, auxiliary Python services, and the Next.js frontend.
+
+```bash
+docker-compose up --build
+```
+
+The frontend will be available at [http://localhost:3000](http://localhost:3000) and the API at [http://localhost:5000/api](http://localhost:5000/api).
