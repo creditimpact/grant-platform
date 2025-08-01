@@ -49,18 +49,27 @@ export default function Dashboard() {
   }
 
   if (caseData.eligibility) {
+    const results = Array.isArray(caseData.eligibility.results)
+      ? caseData.eligibility.results
+      : [];
     return (
       <Protected>
         <div className="space-y-4">
           <h1 className="text-2xl font-bold">Eligibility Results</h1>
-          <p>Eligible: {caseData.eligibility.eligible ? 'Yes' : 'No'}</p>
           <p>{caseData.eligibility.summary}</p>
-          <h3 className="font-semibold">Forms</h3>
-          <ul className="list-disc ml-6">
-            {caseData.eligibility.forms.map((f: string) => (
-              <li key={f}>{f}</li>
+          <div className="grid gap-4 md:grid-cols-2">
+            {results.map((r: any) => (
+              <div key={r.name} className="border p-4 rounded shadow">
+                <h3 className="font-semibold text-lg mb-1">{r.name}</h3>
+                <p>Eligible: {r.eligible ? 'Yes' : 'No'}</p>
+                <p>Score: {r.score}%</p>
+                <p>Estimated Amount: ${r.estimated_amount}</p>
+              </div>
             ))}
-          </ul>
+          </div>
+          {!results.length && (
+            <p>No grants matched your information.</p>
+          )}
         </div>
       </Protected>
     );
