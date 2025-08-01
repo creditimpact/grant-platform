@@ -14,7 +14,8 @@ services:
       - MONGO_URI=mongodb://mongo:27017/grants
       - JWT_SECRET=devsecret
       - ANALYZER_URL=http://ai-analyzer:8000/analyze
-      - AGENT_URL=http://ai-agent:5001/form-fill
+      - AGENT_URL=http://ai-agent:5001
+      - ENGINE_URL=http://eligibility-engine:4001/check
     depends_on:
       - mongo
       - ai-analyzer

@@ -75,7 +75,7 @@ npm run dev
 ```
 
 Environment variables should be placed in a `.env.local` file. See `.env.local.example` for the API base URL.
-The backend now respects `AGENT_URL` to enable AI-driven eligibility summaries.
+The backend uses `AGENT_URL` which should point to the root of the AI agent service (e.g. `http://localhost:5001`).
 
 ## Docker Compose
 

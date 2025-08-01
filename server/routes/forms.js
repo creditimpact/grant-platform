@@ -5,7 +5,8 @@ const router = express.Router();
 
 // POST /api/forms/auto-fill
 router.post('/auto-fill', auth, async (req, res) => {
-  const agentUrl = process.env.AGENT_URL || 'http://localhost:5001/form-fill';
+  const agentBase = process.env.AGENT_URL || 'http://localhost:5001';
+  const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
   try {
     const response = await fetch(agentUrl, {
       method: 'POST',
