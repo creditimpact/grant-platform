@@ -45,7 +45,9 @@ export default function Dashboard() {
     <Protected><p>Loading...</p></Protected>
   );
 
-  const allUploaded = caseData.documents.every((d: any) => d.uploaded);
+  const allUploaded = Array.isArray(caseData.documents)
+    ? caseData.documents.every((d: any) => d.uploaded)
+    : false;
 
   return (
     <Protected>
@@ -55,19 +57,33 @@ export default function Dashboard() {
 
         <div>
           <h2 className="font-semibold">Required Documents</h2>
-          {caseData.documents.map((doc: any) => (
-            <div key={doc.key} className="my-2 flex items-center space-x-2">
-              <span>{doc.name}</span>
-              {doc.uploaded ? (
-                <span className="text-green-600">✓</span>
-              ) : (
-                <>
-                  <input type="file" onChange={e => setUploads({ ...uploads, [doc.key]: e.target.files?.[0] || null })} />
-                  <button onClick={() => handleUpload(doc.key)} className="px-2 py-1 bg-blue-600 text-white rounded">Upload</button>
-                </>
-              )}
-            </div>
-          ))}
+          {Array.isArray(caseData.documents) ? (
+            caseData.documents.map((doc: any) => (
+              <div key={doc.key} className="my-2 flex items-center space-x-2">
+                <span>{doc.name}</span>
+                {doc.uploaded ? (
+                  <span className="text-green-600">✓</span>
+                ) : (
+                  <>
+                    <input
+                      type="file"
+                      onChange={e =>
+                        setUploads({ ...uploads, [doc.key]: e.target.files?.[0] || null })
+                      }
+                    />
+                    <button
+                      onClick={() => handleUpload(doc.key)}
+                      className="px-2 py-1 bg-blue-600 text-white rounded"
+                    >
+                      Upload
+                    </button>
+                  </>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-600">No document data available.</p>
+          )}
         </div>
 
         {allUploaded && !caseData.eligibility && (
