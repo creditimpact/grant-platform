@@ -14,12 +14,20 @@ export default function Questionnaire() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({
     businessName: '',
+    phone: '',
+    email: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
     businessType: '',
+    ein: '',
+    ssn: '',
     incorporationDate: '',
-    yearsActive: '',
+    dateEstablished: '',
     annualRevenue: '',
+    netProfit: '',
     employees: '',
-    region: '',
     cpaPrepared: false,
     minorityOwned: false,
     womanOwned: false,
@@ -40,7 +48,7 @@ export default function Questionnaire() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const next = () => setStep((s) => Math.min(s + 1, 2));
+  const next = () => setStep((s) => Math.min(s + 1, 3));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
 
   const finish = async () => {
@@ -63,6 +71,45 @@ export default function Questionnaire() {
                 setAnswers({ ...answers, businessName: e.target.value })
               }
             />
+            <FormInput
+              label="Business Phone"
+              value={answers.phone}
+              onChange={(e) =>
+                setAnswers({ ...answers, phone: e.target.value })
+              }
+            />
+            <FormInput
+              label="Business Email"
+              type="email"
+              value={answers.email}
+              onChange={(e) => setAnswers({ ...answers, email: e.target.value })}
+            />
+            <FormInput
+              label="Address"
+              value={answers.address}
+              onChange={(e) =>
+                setAnswers({ ...answers, address: e.target.value })
+              }
+            />
+            <FormInput
+              label="City"
+              value={answers.city}
+              onChange={(e) => setAnswers({ ...answers, city: e.target.value })}
+            />
+            <FormInput
+              label="State"
+              value={answers.state}
+              onChange={(e) => setAnswers({ ...answers, state: e.target.value })}
+            />
+            <FormInput
+              label="Zip Code"
+              value={answers.zip}
+              onChange={(e) => setAnswers({ ...answers, zip: e.target.value })}
+            />
+          </>
+        )}
+        {step === 1 && (
+          <>
             <label className="block mb-2 font-medium">Business Type</label>
             <select
               className="w-full border rounded p-2 mb-4"
@@ -88,16 +135,29 @@ export default function Questionnaire() {
               />
             )}
             <FormInput
-              label="Years Active"
-              type="number"
-              value={answers.yearsActive}
+              label="Date Established"
+              type="date"
+              value={answers.dateEstablished}
               onChange={(e) =>
-                setAnswers({ ...answers, yearsActive: e.target.value })
+                setAnswers({ ...answers, dateEstablished: e.target.value })
               }
             />
+            {answers.businessType === 'Sole' ? (
+              <FormInput
+                label="Owner SSN"
+                value={answers.ssn}
+                onChange={(e) => setAnswers({ ...answers, ssn: e.target.value })}
+              />
+            ) : (
+              <FormInput
+                label="Business EIN"
+                value={answers.ein}
+                onChange={(e) => setAnswers({ ...answers, ein: e.target.value })}
+              />
+            )}
           </>
         )}
-        {step === 1 && (
+        {step === 2 && (
           <>
             <FormInput
               label="Annual Revenue"
@@ -108,6 +168,14 @@ export default function Questionnaire() {
               }
             />
             <FormInput
+              label="Net Profit"
+              type="number"
+              value={answers.netProfit}
+              onChange={(e) =>
+                setAnswers({ ...answers, netProfit: e.target.value })
+              }
+            />
+            <FormInput
               label="Number of Employees"
               type="number"
               value={answers.employees}
@@ -115,21 +183,9 @@ export default function Questionnaire() {
                 setAnswers({ ...answers, employees: e.target.value })
               }
             />
-            <label className="block mb-2 font-medium">Region</label>
-            <select
-              className="w-full border rounded p-2"
-              value={answers.region}
-              onChange={(e) => setAnswers({ ...answers, region: e.target.value })}
-            >
-              <option value="">Select</option>
-              <option value="north">North</option>
-              <option value="south">South</option>
-              <option value="east">East</option>
-              <option value="west">West</option>
-            </select>
           </>
         )}
-        {step === 2 && (
+        {step === 3 && (
           <div className="space-y-2">
             <label className="inline-flex items-center space-x-2">
               <input
@@ -182,7 +238,7 @@ export default function Questionnaire() {
               Back
             </button>
           )}
-          {step < 2 && (
+          {step < 3 && (
             <button
               onClick={next}
               className="px-4 py-2 bg-blue-600 text-white rounded ml-auto"
@@ -190,7 +246,7 @@ export default function Questionnaire() {
               Next
             </button>
           )}
-          {step === 2 && (
+          {step === 3 && (
             <button
               onClick={finish}
               className="px-4 py-2 bg-green-600 text-white rounded ml-auto"
