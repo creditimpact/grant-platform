@@ -15,6 +15,7 @@ export default function Documents() {
   const [uploads, setUploads] = useState<Record<string, File | null>>({});
   const [loading, setLoading] = useState(false);
   const [replaceKey, setReplaceKey] = useState<string | null>(null);
+  const [savedMessage, setSavedMessage] = useState('');
 
   const fetchStatus = async () => {
     const res = await api.get('/case/status');
@@ -45,6 +46,8 @@ export default function Documents() {
       });
       setUploads((u) => ({ ...u, [key]: null }));
       setReplaceKey(null);
+      setSavedMessage('Saved!');
+      setTimeout(() => setSavedMessage(''), 2000);
       fetchStatus();
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Upload failed');
@@ -60,6 +63,7 @@ export default function Documents() {
   const allUploaded = docs.length > 0 && uploadedCount === docs.length;
 
   const submitAnalysis = async () => {
+    if (!confirm('Are you sure you want to submit?')) return;
     setLoading(true);
     if (typeof window !== 'undefined') {
       localStorage.setItem('caseStage', 'analysis');
@@ -98,6 +102,9 @@ export default function Documents() {
           steps={["Questionnaire", "Documents", "Analysis", "Results"]}
           current={loading ? 2 : 1}
         />
+        {savedMessage && (
+          <div className="text-green-600 text-sm">{savedMessage}</div>
+        )}
         <h1 className="text-2xl font-bold">Upload Documents</h1>
         <p className="text-sm text-gray-600">Accepted formats: PDF, JPG, JPEG, PNG.</p>
         {docs.map((doc: any) => (
