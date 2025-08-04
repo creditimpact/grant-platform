@@ -1,10 +1,31 @@
 const express = require('express');
 const multer = require('multer');
+const path = require('path');
 
 const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+
+// Restrict uploads to known document/image types including PNG
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Unsupported file type'), false);
+  }
+};
+
+// Keep original extension so the file can be served correctly
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage, fileFilter });
 const { getCase } = require('../utils/caseStore');
 
 // @route   POST /api/files
@@ -22,12 +43,15 @@ router.post('/upload', auth, upload.single('file'), (req, res) => {
     if (doc) {
       doc.uploaded = true;
       doc.url = `/uploads/${req.file.filename}`;
+      doc.mimetype = req.file.mimetype;
+      doc.originalname = req.file.originalname;
     }
   }
 
   res.json({
     filename: req.file.filename,
     originalname: req.file.originalname,
+    mimetype: req.file.mimetype,
     url: `/uploads/${req.file.filename}`,
   });
 });
@@ -43,12 +67,19 @@ router.post('/', auth, upload.single('file'), (req, res) => {
     if (doc) {
       doc.uploaded = true;
       doc.url = `/uploads/${req.file.filename}`;
+      doc.mimetype = req.file.mimetype;
+      doc.originalname = req.file.originalname;
     }
   }
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
-  res.json({ filename: req.file.filename, originalname: req.file.originalname, url: `/uploads/${req.file.filename}` });
+  res.json({
+    filename: req.file.filename,
+    originalname: req.file.originalname,
+    mimetype: req.file.mimetype,
+    url: `/uploads/${req.file.filename}`,
+  });
 });
 
 module.exports = router;

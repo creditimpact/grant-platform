@@ -5,7 +5,18 @@ const FormData = require('form-data');
 const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+
+// Mirror allowed file types to support PNG images
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Unsupported file type'), false);
+  }
+};
+
+const upload = multer({ dest: 'uploads/', fileFilter });
 
 // @route   POST /api/analyze
 // @desc    Upload a file and forward it to the AI analyzer
