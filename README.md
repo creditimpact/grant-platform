@@ -113,6 +113,8 @@ The backend uses `AGENT_URL` which should point to the root of the AI agent serv
 4. When all documents are uploaded, click **Submit for Analysis** to see eligibility results.
 
 ![Dashboard Flow](frontend/public/dashboard-placeholder.svg)
+![Login Screen](frontend/public/login-placeholder.svg)
+![Document Upload](frontend/public/upload-placeholder.svg)
 
 ## Docker Compose
 
