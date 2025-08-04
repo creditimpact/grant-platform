@@ -8,6 +8,26 @@ const { getCase } = require('../utils/caseStore');
 router.post('/', auth, async (req, res) => {
   const c = getCase(req.user.id, false);
   if (!c) return res.status(400).json({ message: 'No active case' });
+  const answers = c.answers || {};
+  const required = ['businessName','phone','email','address','city','state','zip','locationZone','businessType','dateEstablished','annualRevenue','netProfit','employees','ownershipPercent','previousGrants'];
+  if (answers.businessType === 'Corporation' || answers.businessType === 'LLC') {
+    required.push('incorporationDate','ein');
+  } else if (answers.businessType === 'Sole') {
+    required.push('ssn');
+  } else {
+    required.push('ein');
+  }
+  const missingAnswers = required.filter((f) => !answers[f]);
+  const missingDocs = Array.isArray(c.documents)
+    ? c.documents.filter((d) => !d.uploaded).map((d) => d.name)
+    : [];
+  if (missingAnswers.length || missingDocs.length) {
+    return res.status(400).json({
+      message: 'Case incomplete',
+      missingAnswers,
+      missingDocs,
+    });
+  }
   const agentBase = process.env.AGENT_URL || 'http://localhost:5001';
   const endpoint = agentBase
     ? `${agentBase.replace(/\/$/, '')}/check`
@@ -16,7 +36,7 @@ router.post('/', auth, async (req, res) => {
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(c.answers || {}),
+      body: JSON.stringify(answers),
     });
     if (!response.ok) {
       const text = await response.text();

@@ -18,6 +18,17 @@ project-root/
 
 The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files.
 
+## Grant Application Flow
+
+The application now enforces a strict questionnaire and document process:
+
+1. **Questionnaire validation** – Users cannot advance to the next step until all required fields are completed. Inline error messages explain what is missing.
+2. **Dynamic document list** – Required documents are generated from questionnaire answers. For example, corporations must provide incorporation certificates and minority-owned businesses are prompted for proof of status. Each document includes a short reason.
+3. **Cross-checking uploads** – When a document is uploaded the API compares its filename against key answers (business name, EIN, ownership flags). Mismatches cause the upload to be rejected with a clear error.
+4. **Backend enforcement** – The analysis endpoint refuses to run unless all required answers are present and every required document is successfully uploaded.
+
+The dashboard shows any missing documents so applicants know what is still required before submission.
+
 ## Running locally
 
 1. Install Node dependencies and start the API server

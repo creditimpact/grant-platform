@@ -40,12 +40,42 @@ router.post('/upload', auth, upload.single('file'), (req, res) => {
     const c = getCase(req.user.id, false);
     if (!c) return res.status(400).json({ message: 'No active case' });
     const doc = c.documents.find((d) => d.key === docKey);
-    if (doc) {
-      doc.uploaded = true;
-      doc.url = `/uploads/${req.file.filename}`;
-      doc.mimetype = req.file.mimetype;
-      doc.originalname = req.file.originalname;
+    if (!doc) return res.status(400).json({ message: 'Unknown document key' });
+
+    const answers = c.answers || {};
+    let mismatch = '';
+    const name = (answers.businessName || '').toLowerCase().replace(/\s+/g, '');
+    if ((docKey === 'incorporation_cert' || docKey === 'business_license') && name) {
+      if (!req.file.originalname.toLowerCase().includes(name)) {
+        mismatch = 'Business name mismatch';
+      }
     }
+    if (docKey === 'ein_proof' && answers.ein) {
+      const digits = answers.ein.replace(/\D/g, '').slice(-4);
+      if (digits && !req.file.originalname.includes(digits)) {
+        mismatch = 'EIN mismatch';
+      }
+    }
+    if (docKey === 'minority_cert' && !answers.minorityOwned) {
+      mismatch = 'Minority ownership not indicated in questionnaire';
+    }
+    if (docKey === 'woman_cert' && !answers.womanOwned) {
+      mismatch = 'Women ownership not indicated in questionnaire';
+    }
+    if (docKey === 'veteran_proof' && !answers.veteranOwned) {
+      mismatch = 'Veteran ownership not indicated in questionnaire';
+    }
+    if (docKey === 'insurance_cert' && !answers.hasInsurance) {
+      mismatch = 'Insurance not indicated in questionnaire';
+    }
+    if (mismatch) {
+      return res.status(400).json({ message: mismatch });
+    }
+
+    doc.uploaded = true;
+    doc.url = `/uploads/${req.file.filename}`;
+    doc.mimetype = req.file.mimetype;
+    doc.originalname = req.file.originalname;
   }
 
   res.json({
