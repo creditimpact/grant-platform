@@ -37,10 +37,14 @@ export default function Documents() {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('key', key);
-    await api.post('/files/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    fetchStatus();
+    try {
+      await api.post('/files/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      fetchStatus();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Upload failed');
+    }
   };
 
   if (!caseData) return (
@@ -53,11 +57,16 @@ export default function Documents() {
 
   const submitAnalysis = async () => {
     setLoading(true);
-    await api.post('/eligibility-report');
-    await fetchStatus();
-    localStorage.setItem('caseStage', 'results');
-    setLoading(false);
-    router.push('/dashboard');
+    try {
+      await api.post('/eligibility-report');
+      await fetchStatus();
+      localStorage.setItem('caseStage', 'results');
+      router.push('/dashboard');
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Submission failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,7 +76,12 @@ export default function Documents() {
         <p className="text-sm text-gray-600">Accepted formats: PDF, JPG, JPEG, PNG.</p>
         {docs.map((doc: any) => (
           <div key={doc.key} className="flex items-center space-x-3">
-            <span className="w-48">{doc.name}</span>
+            <span className="w-48">
+              {doc.name}
+              {doc.reason && (
+                <span className="block text-xs text-gray-500">{doc.reason}</span>
+              )}
+            </span>
             {doc.uploaded ? (
               <>
                 <span className="text-green-600">✓ Uploaded</span>

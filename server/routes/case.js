@@ -26,10 +26,23 @@ router.get('/status', auth, (req, res) => {
 
 // Save questionnaire answers
 router.post('/questionnaire', auth, async (req, res) => {
+  const answers = req.body || {};
+  const required = ['businessName','phone','email','address','city','state','zip','locationZone','businessType','dateEstablished','annualRevenue','netProfit','employees','ownershipPercent','previousGrants'];
+  if (answers.businessType === 'Corporation' || answers.businessType === 'LLC') {
+    required.push('incorporationDate','ein');
+  } else if (answers.businessType === 'Sole') {
+    required.push('ssn');
+  } else {
+    required.push('ein');
+  }
+  const missing = required.filter((f) => !answers[f]);
+  if (missing.length) {
+    return res.status(400).json({ message: 'Missing required fields', missing });
+  }
   const c = createCase(req.user.id);
-  c.answers = req.body || {};
+  c.answers = answers;
   c.documents = await computeDocuments(c.answers);
-  res.json({ status: 'saved' });
+  res.json({ status: 'saved', documents: c.documents });
 });
 
 // Fetch questionnaire answers

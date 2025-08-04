@@ -92,6 +92,18 @@ export default function Dashboard() {
     <Protected>
       <div className="py-10 space-y-4 text-center">
         <p>Case in progress. Please complete remaining steps.</p>
+        {stage === 'documents' && Array.isArray(caseData.documents) && (
+          <div className="text-left inline-block">
+            <p className="font-semibold">Missing Documents:</p>
+            <ul className="list-disc list-inside">
+              {caseData.documents
+                .filter((d: any) => !d.uploaded)
+                .map((d: any) => (
+                  <li key={d.key}>{d.name}</li>
+                ))}
+            </ul>
+          </div>
+        )}
         {stage === 'questionnaire' && (
           <button
             onClick={() => router.push('/dashboard/questionnaire')}
