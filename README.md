@@ -105,6 +105,15 @@ npm run dev
 Environment variables should be placed in a `.env.local` file. See `.env.local.example` for the API base URL.
 The backend uses `AGENT_URL` which should point to the root of the AI agent service (e.g. `http://localhost:5001`).
 
+### Testing file uploads
+
+1. Visit [http://localhost:3000](http://localhost:3000) and register or log in.
+2. From the dashboard choose **OPEN CASE** and complete the questionnaire wizard.
+3. On the **Documents** step upload sample files (PDF, JPG, JPEG or PNG). Use the **Replace** button to update a document.
+4. When all documents are uploaded, click **Submit for Analysis** to see eligibility results.
+
+![Dashboard Flow](frontend/public/dashboard-placeholder.svg)
+
 ## Docker Compose
 
 The repository includes a `docker-compose.yml` that spins up all services in one command. This will launch MongoDB, the API server, auxiliary Python services, and the Next.js frontend.
