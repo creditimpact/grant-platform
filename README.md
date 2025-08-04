@@ -16,6 +16,8 @@ project-root/
   frontend/             Next.js application
 ```
 
+The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files.
+
 ## Running locally
 
 1. Install Node dependencies and start the API server

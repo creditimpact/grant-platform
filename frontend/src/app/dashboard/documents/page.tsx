@@ -26,6 +26,14 @@ export default function Documents() {
   const handleUpload = async (key: string) => {
     const file = uploads[key];
     if (!file) return;
+
+    // Ensure file type is supported before attempting upload
+    const allowed = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowed.includes(file.type)) {
+      alert('Unsupported file type');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('key', key);
@@ -56,19 +64,47 @@ export default function Documents() {
     <Protected>
       <div className="py-6 max-w-xl mx-auto space-y-4">
         <h1 className="text-2xl font-bold">Upload Documents</h1>
+        <p className="text-sm text-gray-600">Accepted formats: PDF, JPG, JPEG, PNG.</p>
         {docs.map((doc: any) => (
           <div key={doc.key} className="flex items-center space-x-3">
             <span className="w-48">{doc.name}</span>
             {doc.uploaded ? (
-              <span className="text-green-600">✓ Uploaded</span>
+              <>
+                <span className="text-green-600">✓ Uploaded</span>
+                {doc.mimetype?.startsWith('image/') && doc.url ? (
+                  <img
+                    src={doc.url}
+                    alt={doc.name}
+                    className="w-16 h-16 object-cover"
+                  />
+                ) : (
+                  <span className="text-sm text-gray-600">{doc.originalname}</span>
+                )}
+                {doc.url && (
+                  <a
+                    href={doc.url}
+                    className="text-blue-600"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View
+                  </a>
+                )}
+              </>
             ) : (
               <>
                 <input
                   type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
                   onChange={(e) =>
                     setUploads({ ...uploads, [doc.key]: e.target.files?.[0] || null })
                   }
                 />
+                {uploads[doc.key] && (
+                  <span className="text-sm text-gray-600">
+                    {uploads[doc.key]?.name}
+                  </span>
+                )}
                 <button
                   onClick={() => handleUpload(doc.key)}
                   className="px-2 py-1 bg-blue-600 text-white rounded"
@@ -76,9 +112,6 @@ export default function Documents() {
                   Upload
                 </button>
               </>
-            )}
-            {doc.uploaded && doc.url && (
-              <a href={doc.url} className="text-blue-600" target="_blank" rel="noopener noreferrer">View</a>
             )}
           </div>
         ))}
