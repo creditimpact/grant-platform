@@ -7,12 +7,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Protected from '@/components/Protected';
 import api from '@/lib/api';
+import Stepper from '@/components/Stepper';
 
 export default function Documents() {
   const router = useRouter();
   const [caseData, setCaseData] = useState<any>(null);
   const [uploads, setUploads] = useState<Record<string, File | null>>({});
   const [loading, setLoading] = useState(false);
+  const [replaceKey, setReplaceKey] = useState<string | null>(null);
 
   const fetchStatus = async () => {
     const res = await api.get('/case/status');
@@ -41,6 +43,8 @@ export default function Documents() {
       await api.post('/files/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      setUploads((u) => ({ ...u, [key]: null }));
+      setReplaceKey(null);
       fetchStatus();
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Upload failed');
@@ -57,13 +61,31 @@ export default function Documents() {
 
   const submitAnalysis = async () => {
     setLoading(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('caseStage', 'analysis');
+    }
     try {
       await api.post('/eligibility-report');
-      await fetchStatus();
-      localStorage.setItem('caseStage', 'results');
-      router.push('/dashboard');
+      const status = await api.get('/case/status');
+      setCaseData(status.data);
+      const docs = Array.isArray(status.data.documents) ? status.data.documents : [];
+      const missing = docs.filter((d: any) => !d.uploaded).length;
+      if (missing > 0) {
+        alert('Additional documents are required.');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('caseStage', 'documents');
+        }
+      } else {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('caseStage', 'results');
+        }
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Submission failed');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('caseStage', 'documents');
+      }
     } finally {
       setLoading(false);
     }
@@ -72,6 +94,10 @@ export default function Documents() {
   return (
     <Protected>
       <div className="py-6 max-w-xl mx-auto space-y-4">
+        <Stepper
+          steps={["Questionnaire", "Documents", "Analysis", "Results"]}
+          current={loading ? 2 : 1}
+        />
         <h1 className="text-2xl font-bold">Upload Documents</h1>
         <p className="text-sm text-gray-600">Accepted formats: PDF, JPG, JPEG, PNG.</p>
         {docs.map((doc: any) => (
@@ -104,6 +130,37 @@ export default function Documents() {
                     View
                   </a>
                 )}
+                <button
+                  onClick={() => setReplaceKey(doc.key)}
+                  className="px-2 py-1 bg-gray-200 rounded"
+                >
+                  Replace
+                </button>
+                {replaceKey === doc.key && (
+                  <>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) =>
+                        setUploads({
+                          ...uploads,
+                          [doc.key]: e.target.files?.[0] || null,
+                        })
+                      }
+                    />
+                    {uploads[doc.key] && (
+                      <span className="text-sm text-gray-600">
+                        {uploads[doc.key]?.name}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => handleUpload(doc.key)}
+                      className="px-2 py-1 bg-blue-600 text-white rounded"
+                    >
+                      Upload
+                    </button>
+                  </>
+                )}
               </>
             ) : (
               <>
@@ -111,7 +168,10 @@ export default function Documents() {
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
                   onChange={(e) =>
-                    setUploads({ ...uploads, [doc.key]: e.target.files?.[0] || null })
+                    setUploads({
+                      ...uploads,
+                      [doc.key]: e.target.files?.[0] || null,
+                    })
                   }
                 />
                 {uploads[doc.key] && (

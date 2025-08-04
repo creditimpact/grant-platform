@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Protected from '@/components/Protected';
 import FormInput from '@/components/FormInput';
 import api from '@/lib/api';
+import Stepper from '@/components/Stepper';
 
 export default function Questionnaire() {
   const router = useRouter();
@@ -102,6 +103,10 @@ export default function Questionnaire() {
   return (
     <Protected>
       <div className="max-w-xl mx-auto py-6 space-y-4">
+        <Stepper
+          steps={["Business", "Ownership", "Financials", "Compliance"]}
+          current={step}
+        />
         <h1 className="text-2xl font-bold">Grant Questionnaire</h1>
         {step === 0 && (
           <>

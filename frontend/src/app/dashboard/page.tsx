@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import Stepper from '@/components/Stepper';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -37,6 +38,10 @@ export default function Dashboard() {
   };
 
   const stage = computeStage();
+  const localStage =
+    typeof window !== 'undefined' ? localStorage.getItem('caseStage') : null;
+  const displayStage =
+    localStage === 'analysis' && stage !== 'results' ? 'analysis' : stage;
 
   if (stage === 'open' && typeof window !== 'undefined') {
     localStorage.removeItem('caseStage');
@@ -68,6 +73,10 @@ export default function Dashboard() {
     return (
       <Protected>
         <div className="space-y-4">
+          <Stepper
+            steps={["Questionnaire", "Documents", "Analysis", "Results"]}
+            current={3}
+          />
           <h1 className="text-2xl font-bold">Eligibility Results</h1>
           <p>{caseData.eligibility.summary}</p>
           <div className="grid gap-4 md:grid-cols-2">
@@ -80,9 +89,7 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
-          {!results.length && (
-            <p>No grants matched your information.</p>
-          )}
+          {!results.length && <p>No grants matched your information.</p>}
         </div>
       </Protected>
     );
@@ -91,6 +98,10 @@ export default function Dashboard() {
   return (
     <Protected>
       <div className="py-10 space-y-4 text-center">
+        <Stepper
+          steps={["Questionnaire", "Documents", "Analysis", "Results"]}
+          current={["questionnaire", "documents", "analysis", "results"].indexOf(displayStage)}
+        />
         <p>Case in progress. Please complete remaining steps.</p>
         {stage === 'documents' && Array.isArray(caseData.documents) && (
           <div className="text-left inline-block">
