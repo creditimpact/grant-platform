@@ -62,6 +62,13 @@ export default function Documents() {
   const uploadedCount = docs.filter((d: any) => d.uploaded).length;
   const allUploaded = docs.length > 0 && uploadedCount === docs.length;
 
+  const goBack = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('caseStage', 'questionnaire');
+    }
+    router.push('/dashboard/questionnaire');
+  };
+
   const submitAnalysis = async () => {
     if (!confirm('Are you sure you want to submit?')) return;
     setLoading(true);
@@ -202,14 +209,19 @@ export default function Documents() {
             style={{ width: `${(uploadedCount / docs.length) * 100}%` }}
           />
         </div>
-        {allUploaded && (
-          <button
-            onClick={submitAnalysis}
-            className="px-4 py-2 bg-purple-600 text-white rounded"
-          >
-            {loading ? 'Submitting...' : 'Submit for Analysis'}
+        <div className="flex justify-between pt-4">
+          <button onClick={goBack} className="px-4 py-2 border rounded">
+            Back
           </button>
-        )}
+          {allUploaded && (
+            <button
+              onClick={submitAnalysis}
+              className="px-4 py-2 bg-purple-600 text-white rounded ml-auto"
+            >
+              {loading ? 'Submitting...' : 'Submit for Analysis'}
+            </button>
+          )}
+        </div>
       </div>
     </Protected>
   );
