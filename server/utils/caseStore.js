@@ -15,117 +15,86 @@ function loadGrantConfig() {
 async function computeDocuments(answers = {}) {
   const docs = [
     {
-      key: 'id_document',
-      name: 'ID Document',
-      reason: 'Verify applicant identity',
+      key: 'business_tax_returns',
+      name: 'Business Tax Returns',
+      required: true,
       uploaded: false,
       url: '',
     },
     {
-      key: 'tax_returns',
-      name: 'Business Tax Returns',
-      reason: 'Confirm revenue and profit',
+      key: 'financial_statements',
+      name: 'Financial Statements (P&L, Balance Sheet)',
+      required: true,
       uploaded: false,
       url: '',
     },
     {
       key: 'bank_statements',
       name: 'Bank Statements',
-      reason: 'Validate cash flow',
+      required: true,
+      uploaded: false,
+      url: '',
+    },
+    {
+      key: 'business_registration',
+      name: 'Business Registration/License',
+      required: true,
+      uploaded: false,
+      url: '',
+    },
+    {
+      key: 'lease_or_deed',
+      name: 'Lease Agreement/Deed',
+      required: false,
+      uploaded: false,
+      url: '',
+    },
+    {
+      key: 'business_plan',
+      name: 'Business Plan',
+      required: false,
+      uploaded: false,
+      url: '',
+    },
+    {
+      key: 'owner_resume',
+      name: "Owner's Resume",
+      required: false,
+      uploaded: false,
+      url: '',
+    },
+    {
+      key: 'insurance_certificate',
+      name: 'Business Insurance Certificate',
+      required: true,
       uploaded: false,
       url: '',
     },
   ];
 
-  if (answers.businessType === 'Corporation' || answers.businessType === 'LLC') {
+  // Dynamic requirements based on answers
+  if (answers.entityType === 'Corporation' || answers.entityType === 'LLC') {
     docs.push({
-      key: 'incorporation_cert',
+      key: 'articles_incorporation',
       name: 'Articles of Incorporation',
-      reason: 'Required for corporations and LLCs',
+      required: true,
       uploaded: false,
       url: '',
     });
     docs.push({
-      key: 'ein_proof',
-      name: 'EIN Confirmation',
-      reason: 'Verify business EIN',
+      key: 'ein_document',
+      name: 'EIN / Tax ID Confirmation',
+      required: true,
       uploaded: false,
       url: '',
     });
   }
 
-  if (answers.businessType === 'Sole') {
-    docs.push({
-      key: 'business_license',
-      name: 'Business License',
-      reason: 'Required for sole proprietors',
-      uploaded: false,
-      url: '',
-    });
-    docs.push({
-      key: 'ssn_verification',
-      name: 'Owner SSN',
-      reason: 'Verify owner SSN',
-      uploaded: false,
-      url: '',
-    });
-  }
-
-  if ((answers.employees && Number(answers.employees) > 0) || answers.hasPayroll) {
+  if (answers.employees && Number(answers.employees) > 0) {
     docs.push({
       key: 'payroll_records',
       name: 'Payroll Records',
-      reason: 'Confirm payroll details',
-      uploaded: false,
-      url: '',
-    });
-  }
-
-  if (answers.cpaPrepared) {
-    docs.push({
-      key: 'cpa_letter',
-      name: 'CPA Letter',
-      reason: 'Proof of CPA prepared financials',
-      uploaded: false,
-      url: '',
-    });
-  }
-
-  if (answers.minorityOwned) {
-    docs.push({
-      key: 'minority_cert',
-      name: 'Minority Ownership Certificate',
-      reason: 'Required for minority-owned businesses',
-      uploaded: false,
-      url: '',
-    });
-  }
-
-  if (answers.womanOwned) {
-    docs.push({
-      key: 'woman_cert',
-      name: 'Woman Ownership Certificate',
-      reason: 'Required for woman-owned businesses',
-      uploaded: false,
-      url: '',
-    });
-  }
-
-  if (answers.veteranOwned) {
-    docs.push({
-      key: 'veteran_proof',
-      name: 'Veteran Service Proof',
-      reason: 'Required for veteran-owned businesses',
-      uploaded: false,
-      url: '',
-    });
-  }
-
-  if (answers.hasInsurance) {
-    docs.push({
-      key: 'insurance_cert',
-      name: 'Insurance Certificate',
-      reason: 'Show active business insurance',
+      required: false,
       uploaded: false,
       url: '',
     });
@@ -135,7 +104,7 @@ async function computeDocuments(answers = {}) {
     docs.push({
       key: 'previous_grant_docs',
       name: 'Previous Grant Documents',
-      reason: 'Review past grant awards',
+      required: false,
       uploaded: false,
       url: '',
     });

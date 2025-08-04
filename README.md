@@ -29,6 +29,21 @@ The application now enforces a strict questionnaire and document process:
 
 The dashboard shows any missing documents so applicants know what is still required before submission.
 
+### Questionnaire Endpoint
+
+Answers for all sections are submitted to `POST /api/case/questionnaire`. The payload must contain:
+
+- business information – legal name, contact details, NAICS code, and operating status
+- an array of owners with name, date of birth, address, SSN/ITIN and ownership percentage (must total 100)
+- financial data such as annual revenue, net profit and employee counts
+- grant request details (amount, purpose and any prior assistance)
+
+If any required field is missing the API responds with `400` and a list of missing keys. On success the endpoint returns the computed list of required documents.
+
+### Document Requirements
+
+`computeDocuments` in `server/utils/caseStore.js` builds the list of attachments. Base documents include tax returns, financial statements, bank statements, business registration, lease or deed, business plan, owner's resume and proof of insurance. Additional documents are added dynamically – corporations must provide articles of incorporation and EIN confirmation, while businesses with employees are prompted for payroll records.
+
 ## Running locally
 
 1. Install Node dependencies and start the API server

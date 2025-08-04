@@ -25,20 +25,44 @@ router.get('/status', auth, (req, res) => {
 });
 
 // Save questionnaire answers
+// Expects a payload containing all sections of the grant application
 router.post('/questionnaire', auth, async (req, res) => {
   const answers = req.body || {};
-  const required = ['businessName','phone','email','address','city','state','zip','locationZone','businessType','dateEstablished','annualRevenue','netProfit','employees','ownershipPercent','previousGrants'];
-  if (answers.businessType === 'Corporation' || answers.businessType === 'LLC') {
-    required.push('incorporationDate','ein');
-  } else if (answers.businessType === 'Sole') {
-    required.push('ssn');
-  } else {
-    required.push('ein');
-  }
+
+  // Minimal required fields for the new questionnaire
+  const required = [
+    'legalBusinessName',
+    'businessPhone',
+    'businessEmail',
+    'entityType',
+    'ein',
+    'dateEstablished',
+    'businessDescription',
+    'naicsCode',
+  ];
+
   const missing = required.filter((f) => !answers[f]);
+
+  // Validate owners array
+  if (!Array.isArray(answers.owners) || answers.owners.length === 0) {
+    missing.push('owners');
+  } else {
+    let ownershipTotal = 0;
+    answers.owners.forEach((o, i) => {
+      ['fullName', 'dateOfBirth', 'homeAddress', 'ownershipPercent', 'ssnItin'].forEach((field) => {
+        if (!o[field]) missing.push(`owners[${i}].${field}`);
+      });
+      ownershipTotal += Number(o.ownershipPercent || 0);
+    });
+    if (ownershipTotal !== 100) {
+      missing.push('owners.totalOwnership');
+    }
+  }
+
   if (missing.length) {
     return res.status(400).json({ message: 'Missing required fields', missing });
   }
+
   const c = createCase(req.user.id);
   c.answers = answers;
   c.documents = await computeDocuments(c.answers);
