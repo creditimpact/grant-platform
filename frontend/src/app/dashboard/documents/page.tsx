@@ -60,7 +60,6 @@ export default function Documents() {
 
   const docs = Array.isArray(caseData.documents) ? caseData.documents : [];
   const uploadedCount = docs.filter((d: any) => d.uploaded).length;
-  const allUploaded = docs.length > 0 && uploadedCount === docs.length;
 
   const goBack = () => {
     if (typeof window !== 'undefined') {
@@ -77,21 +76,10 @@ export default function Documents() {
     }
     try {
       await api.post('/eligibility-report');
-      const status = await api.get('/case/status');
-      setCaseData(status.data);
-      const docs = Array.isArray(status.data.documents) ? status.data.documents : [];
-      const missing = docs.filter((d: any) => !d.uploaded).length;
-      if (missing > 0) {
-        alert('Additional documents are required.');
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('caseStage', 'documents');
-        }
-      } else {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('caseStage', 'results');
-        }
-        router.push('/dashboard');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('caseStage', 'results');
       }
+      router.push('/dashboard');
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Submission failed');
       if (typeof window !== 'undefined') {
@@ -206,21 +194,19 @@ export default function Documents() {
         <div className="h-2 bg-gray-200 rounded">
           <div
             className="h-full bg-green-500 rounded"
-            style={{ width: `${(uploadedCount / docs.length) * 100}%` }}
+            style={{ width: `${docs.length ? (uploadedCount / docs.length) * 100 : 0}%` }}
           />
         </div>
         <div className="flex justify-between pt-4">
           <button onClick={goBack} className="px-4 py-2 border rounded">
             Back
           </button>
-          {allUploaded && (
-            <button
-              onClick={submitAnalysis}
-              className="px-4 py-2 bg-purple-600 text-white rounded ml-auto"
-            >
-              {loading ? 'Submitting...' : 'Submit for Analysis'}
-            </button>
-          )}
+          <button
+            onClick={submitAnalysis}
+            className="px-4 py-2 bg-purple-600 text-white rounded ml-auto"
+          >
+            {loading ? 'Submitting...' : 'Submit for Analysis'}
+          </button>
         </div>
       </div>
     </Protected>

@@ -26,7 +26,6 @@ export default function Register() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
           hint="We'll send a confirmation link"
         />
         <FormInput
@@ -34,7 +33,6 @@ export default function Register() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
           tooltip="Minimum 8 characters"
         />
         <button
