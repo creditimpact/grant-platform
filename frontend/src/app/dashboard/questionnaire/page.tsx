@@ -88,6 +88,18 @@ export default function Questionnaire() {
   };
   const prev = () => setStep((s) => Math.max(s - 1, 0));
 
+  const goBack = () => {
+    if (step === 0) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('questionnaire', JSON.stringify(answers));
+        localStorage.removeItem('caseStage');
+      }
+      router.push('/dashboard');
+    } else {
+      prev();
+    }
+  };
+
   const finish = async () => {
     if (!validate()) return;
     localStorage.setItem('questionnaire', JSON.stringify(answers));
@@ -388,14 +400,9 @@ export default function Questionnaire() {
             </div>
           )}
         <div className="flex justify-between pt-4">
-          {step > 0 && (
-            <button
-              onClick={prev}
-              className="px-4 py-2 border rounded"
-            >
-              Back
-            </button>
-          )}
+          <button onClick={goBack} className="px-4 py-2 border rounded">
+            Back
+          </button>
           {step < 3 && (
             <button
               onClick={next}
