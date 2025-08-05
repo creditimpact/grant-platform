@@ -31,7 +31,7 @@ router.post('/', auth, async (req, res) => {
   const agentBase = process.env.AGENT_URL || 'http://localhost:5001';
   const endpoint = agentBase
     ? `${agentBase.replace(/\/$/, '')}/check`
-    : (process.env.ENGINE_URL || 'http://localhost:4001/check'); // TODO: use process.env.ELIGIBILITY_ENGINE_URL
+    : `${(process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001').replace(/\/$/, '')}/check`;
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
