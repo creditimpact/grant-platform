@@ -37,8 +37,6 @@ router.post('/questionnaire', auth, async (req, res) => {
     'entityType',
     'ein',
     'dateEstablished',
-    'businessDescription',
-    'naicsCode',
   ];
 
   const missing = required.filter((f) => !answers[f]);
