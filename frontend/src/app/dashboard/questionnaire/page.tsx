@@ -56,8 +56,6 @@ export default function Questionnaire() {
     hasInsurance: false,
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
   useEffect(() => {
     const load = async () => {
       try {
@@ -73,35 +71,8 @@ export default function Questionnaire() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    const stepRequirements: Record<number, string[]> = {
-      0: ['businessName', 'phone', 'email', 'address', 'city', 'state', 'zip', 'locationZone'],
-      1: ['businessType', 'dateEstablished'],
-      2: ['annualRevenue', 'netProfit', 'employees', 'ownershipPercent', 'previousGrants'],
-      3: [],
-    };
-    const required = stepRequirements[step] || [];
-    if (step === 1) {
-      if (answers.businessType === 'Corporation' || answers.businessType === 'LLC') {
-        required.push('incorporationDate', 'ein');
-      } else if (answers.businessType === 'Sole') {
-        required.push('ssn');
-      } else {
-        required.push('ein');
-      }
-    }
-    required.forEach((field) => {
-      if (!answers[field as keyof typeof answers]) {
-        newErrors[field] = 'Required';
-      }
-    });
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const next = () => {
-    if (validate()) setStep((s) => Math.min(s + 1, 3));
+    setStep((s) => Math.min(s + 1, 3));
   };
   const prev = () => setStep((s) => Math.max(s - 1, 0));
 
@@ -118,7 +89,6 @@ export default function Questionnaire() {
   };
 
   const finish = async () => {
-    if (!validate()) return;
     localStorage.setItem('questionnaire', JSON.stringify(answers));
     try {
       await api.post('/case/questionnaire', answers);
@@ -143,65 +113,51 @@ export default function Questionnaire() {
             <FormInput
               label="Business Name"
               value={answers.businessName}
-              error={errors.businessName}
               onChange={(e) => {
                 setAnswers({ ...answers, businessName: e.target.value });
-                if (errors.businessName) setErrors({ ...errors, businessName: '' });
               }}
             />
             <FormInput
               label="Business Phone"
               value={answers.phone}
-              error={errors.phone}
               onChange={(e) => {
                 setAnswers({ ...answers, phone: e.target.value });
-                if (errors.phone) setErrors({ ...errors, phone: '' });
               }}
             />
             <FormInput
               label="Business Email"
               type="email"
               value={answers.email}
-              error={errors.email}
               onChange={(e) => {
                 setAnswers({ ...answers, email: e.target.value });
-                if (errors.email) setErrors({ ...errors, email: '' });
               }}
             />
             <FormInput
               label="Address"
               value={answers.address}
-              error={errors.address}
               onChange={(e) => {
                 setAnswers({ ...answers, address: e.target.value });
-                if (errors.address) setErrors({ ...errors, address: '' });
               }}
             />
             <FormInput
               label="City"
               value={answers.city}
-              error={errors.city}
               onChange={(e) => {
                 setAnswers({ ...answers, city: e.target.value });
-                if (errors.city) setErrors({ ...errors, city: '' });
               }}
             />
             <FormInput
               label="State"
               value={answers.state}
-              error={errors.state}
               onChange={(e) => {
                 setAnswers({ ...answers, state: e.target.value });
-                if (errors.state) setErrors({ ...errors, state: '' });
               }}
             />
             <FormInput
               label="Zip Code"
               value={answers.zip}
-              error={errors.zip}
               onChange={(e) => {
                 setAnswers({ ...answers, zip: e.target.value });
-                if (errors.zip) setErrors({ ...errors, zip: '' });
               }}
             />
             <label className="block mb-2 font-medium">Location Zone</label>
@@ -210,7 +166,6 @@ export default function Questionnaire() {
               value={answers.locationZone}
               onChange={(e) => {
                 setAnswers({ ...answers, locationZone: e.target.value });
-                if (errors.locationZone) setErrors({ ...errors, locationZone: '' });
               }}
             >
               <option value="">Select</option>
@@ -218,9 +173,6 @@ export default function Questionnaire() {
               <option value="rural">Rural</option>
               <option value="hubzone">HUBZone</option>
             </select>
-            {errors.locationZone && (
-              <p className="text-red-600 text-sm mb-2">{errors.locationZone}</p>
-            )}
           </>
         )}
         {step === 1 && (
@@ -231,7 +183,6 @@ export default function Questionnaire() {
               value={answers.businessType}
               onChange={(e) => {
                 setAnswers({ ...answers, businessType: e.target.value });
-                if (errors.businessType) setErrors({ ...errors, businessType: '' });
               }}
             >
               <option value="">Select</option>
@@ -240,19 +191,13 @@ export default function Questionnaire() {
               <option value="LLC">LLC</option>
               <option value="Corporation">Corporation</option>
             </select>
-            {errors.businessType && (
-              <p className="text-red-600 text-sm mb-2">{errors.businessType}</p>
-            )}
               {(answers.businessType === 'Corporation' || answers.businessType === 'LLC') && (
                 <FormInput
                   label="Incorporation Date"
                   type="date"
                   value={answers.incorporationDate}
-                  error={errors.incorporationDate}
                   onChange={(e) => {
                     setAnswers({ ...answers, incorporationDate: e.target.value });
-                    if (errors.incorporationDate)
-                      setErrors({ ...errors, incorporationDate: '' });
                   }}
                 />
               )}
@@ -260,31 +205,24 @@ export default function Questionnaire() {
                 label="Date Established"
                 type="date"
                 value={answers.dateEstablished}
-                error={errors.dateEstablished}
                 onChange={(e) => {
                   setAnswers({ ...answers, dateEstablished: e.target.value });
-                  if (errors.dateEstablished)
-                    setErrors({ ...errors, dateEstablished: '' });
                 }}
               />
               {answers.businessType === 'Sole' ? (
                 <FormInput
                   label="Owner SSN"
                   value={answers.ssn}
-                  error={errors.ssn}
                   onChange={(e) => {
                     setAnswers({ ...answers, ssn: e.target.value });
-                    if (errors.ssn) setErrors({ ...errors, ssn: '' });
                   }}
                 />
               ) : (
                 <FormInput
                   label="Business EIN"
                   value={answers.ein}
-                  error={errors.ein}
                   onChange={(e) => {
                     setAnswers({ ...answers, ein: e.target.value });
-                    if (errors.ein) setErrors({ ...errors, ein: '' });
                   }}
                 />
               )}
@@ -296,42 +234,32 @@ export default function Questionnaire() {
               label="Annual Revenue"
               type="number"
               value={answers.annualRevenue}
-              error={errors.annualRevenue}
               onChange={(e) => {
                 setAnswers({ ...answers, annualRevenue: e.target.value });
-                if (errors.annualRevenue)
-                  setErrors({ ...errors, annualRevenue: '' });
               }}
             />
             <FormInput
               label="Net Profit"
               type="number"
               value={answers.netProfit}
-              error={errors.netProfit}
               onChange={(e) => {
                 setAnswers({ ...answers, netProfit: e.target.value });
-                if (errors.netProfit) setErrors({ ...errors, netProfit: '' });
               }}
             />
             <FormInput
               label="Number of Employees"
               type="number"
               value={answers.employees}
-              error={errors.employees}
               onChange={(e) => {
                 setAnswers({ ...answers, employees: e.target.value });
-                if (errors.employees) setErrors({ ...errors, employees: '' });
               }}
             />
             <FormInput
               label="Ownership Percentage"
               type="number"
               value={answers.ownershipPercent}
-              error={errors.ownershipPercent}
               onChange={(e) => {
                 setAnswers({ ...answers, ownershipPercent: e.target.value });
-                if (errors.ownershipPercent)
-                  setErrors({ ...errors, ownershipPercent: '' });
               }}
             />
             <label className="block mb-2 font-medium">Previous Grants</label>
@@ -340,17 +268,12 @@ export default function Questionnaire() {
               value={answers.previousGrants}
               onChange={(e) => {
                 setAnswers({ ...answers, previousGrants: e.target.value });
-                if (errors.previousGrants)
-                  setErrors({ ...errors, previousGrants: '' });
               }}
             >
               <option value="">Select</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
-            {errors.previousGrants && (
-              <p className="text-red-600 text-sm mb-2">{errors.previousGrants}</p>
-            )}
           </>
         )}
         {step === 3 && (
