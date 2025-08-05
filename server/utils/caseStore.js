@@ -113,7 +113,7 @@ async function computeDocuments(answers = {}) {
   // Append grant-specific document requirements
   try {
     const config = loadGrantConfig();
-    const engineUrl = process.env.ENGINE_URL || 'http://localhost:4001/check';
+    const engineUrl = process.env.ENGINE_URL || 'http://localhost:4001/check'; // TODO: use process.env.ELIGIBILITY_ENGINE_URL
     const response = await fetch(engineUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
