@@ -10,6 +10,22 @@ import FormInput from '@/components/FormInput';
 import api from '@/lib/api';
 import Stepper from '@/components/Stepper';
 
+const logApiError = (endpoint: string, payload: unknown, err: any) => {
+  if (process.env.NODE_ENV !== 'production') {
+    const status = err?.response?.status;
+    const data = err?.response?.data ?? err?.message;
+    console.error(`API Error on ${endpoint}`, {
+      endpoint,
+      status,
+      response: data,
+      sentPayload: payload,
+    });
+    if (data?.missing) {
+      console.error('Missing fields:', data.missing);
+    }
+  }
+};
+
 export default function Questionnaire() {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -47,7 +63,8 @@ export default function Questionnaire() {
       try {
         const res = await api.get('/case/questionnaire');
         setAnswers((prev) => ({ ...prev, ...res.data }));
-      } catch {
+      } catch (err: any) {
+        logApiError('/case/questionnaire', undefined, err);
         const saved = localStorage.getItem('questionnaire');
         if (saved) setAnswers(JSON.parse(saved));
       }
@@ -108,6 +125,7 @@ export default function Questionnaire() {
       localStorage.setItem('caseStage', 'documents');
       router.push('/dashboard/documents');
     } catch (err: any) {
+      logApiError('/case/questionnaire', answers, err);
       alert(err?.response?.data?.message || 'Unable to save');
     }
   };
