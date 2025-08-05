@@ -29,37 +29,8 @@ router.get('/status', auth, (req, res) => {
 router.post('/questionnaire', auth, async (req, res) => {
   const answers = req.body || {};
 
-  // Minimal required fields for the new questionnaire
-  const required = [
-    'legalBusinessName',
-    'businessPhone',
-    'businessEmail',
-    'entityType',
-    'ein',
-    'dateEstablished',
-  ];
-
-  const missing = required.filter((f) => !answers[f]);
-
-  // Validate owners array
-  if (!Array.isArray(answers.owners) || answers.owners.length === 0) {
-    missing.push('owners');
-  } else {
-    let ownershipTotal = 0;
-    answers.owners.forEach((o, i) => {
-      ['fullName', 'dateOfBirth', 'homeAddress', 'ownershipPercent', 'ssnItin'].forEach((field) => {
-        if (!o[field]) missing.push(`owners[${i}].${field}`);
-      });
-      ownershipTotal += Number(o.ownershipPercent || 0);
-    });
-    if (ownershipTotal !== 100) {
-      missing.push('owners.totalOwnership');
-    }
-  }
-
-  if (missing.length) {
-    return res.status(400).json({ message: 'Missing required fields', missing });
-  }
+  // Accept all payloads for now; no required fields
+  // TODO: Reinstate required field checks later when form finalized
 
   const c = createCase(req.user.id);
   c.answers = answers;
