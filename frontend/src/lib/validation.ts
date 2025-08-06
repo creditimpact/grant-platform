@@ -1,12 +1,24 @@
-export const numericFields = ['annualRevenue', 'netProfit', 'employees', 'ownershipPercent'];
+export const numericFields = ['annualRevenue', 'netProfit', 'numberOfEmployees', 'ownershipPercentage'];
 export const booleanFields = ['previousGrants', 'cpaPrepared', 'minorityOwned', 'womanOwned', 'veteranOwned', 'hasPayroll', 'hasInsurance'];
 
 export function normalizeQuestionnaire(input: any = {}) {
   const data: any = { ...input };
 
-  if (data.businessType && !data.entityType) {
-    data.entityType = data.businessType;
-    delete data.businessType;
+  if (data.entityType && !data.businessType) {
+    data.businessType = data.entityType;
+    delete data.entityType;
+  }
+  if (data.employees && !data.numberOfEmployees) {
+    data.numberOfEmployees = data.employees;
+    delete data.employees;
+  }
+  if (data.ownershipPercent && !data.ownershipPercentage) {
+    data.ownershipPercentage = data.ownershipPercent;
+    delete data.ownershipPercent;
+  }
+  if (data.dateEstablished && !data.incorporationDate) {
+    data.incorporationDate = data.dateEstablished;
+    delete data.dateEstablished;
   }
 
   numericFields.forEach((f) => {
@@ -38,22 +50,21 @@ export function normalizeQuestionnaire(input: any = {}) {
     'state',
     'zip',
     'locationZone',
-    'entityType',
-    'dateEstablished',
+    'businessType',
+    'incorporationDate',
     'annualRevenue',
     'netProfit',
-    'employees',
-    'ownershipPercent',
+    'numberOfEmployees',
+    'ownershipPercentage',
     'previousGrants',
   ];
 
   const missing = required.filter((f) => data[f] === undefined || data[f] === '' || data[f] === null || Number.isNaN(data[f]));
 
-  if (data.entityType === 'Sole') {
+  if (data.businessType === 'Sole') {
     if (!data.ssn) missing.push('ssn');
   } else {
     if (!data.ein) missing.push('ein');
-    if (!data.incorporationDate) missing.push('incorporationDate');
   }
 
   const invalid: string[] = [];

@@ -16,6 +16,7 @@ test('normalizeQuestionnaire handles frontend field names and ISO dates', () => 
     previousGrants: 'yes',
   });
   assert.equal(data.businessType, 'LLC');
+  assert.equal(data.incorporationDate, '2020-02-01');
   assert.strictEqual(data.numberOfEmployees, 2);
   assert.strictEqual(data.ownershipPercentage, 50);
   assert.strictEqual(data.previousGrants, true);
@@ -29,9 +30,9 @@ test('normalizeQuestionnaire converts MM/DD/YYYY dates to ISO', () => {
     phone: '555',
     email: 'a@b.com',
     businessType: 'LLC',
-    dateEstablished: '01/02/2020',
+    incorporationDate: '01/02/2020',
   });
-  assert.equal(data.dateEstablished, '2020-01-02');
+  assert.equal(data.incorporationDate, '2020-01-02');
 });
 
 test('normalizeQuestionnaire reports missing required fields', () => {
@@ -40,7 +41,7 @@ test('normalizeQuestionnaire reports missing required fields', () => {
   assert(missing.includes('phone'));
   assert(missing.includes('email'));
   assert(missing.includes('businessType'));
-  assert(missing.includes('dateEstablished'));
+  assert(missing.includes('incorporationDate'));
 });
 
 test('normalizeQuestionnaire flags invalid fields', () => {
@@ -49,13 +50,13 @@ test('normalizeQuestionnaire flags invalid fields', () => {
     phone: '555',
     email: 'not-an-email',
     businessType: 'Unknown',
-    dateEstablished: '2020-13-01',
+    incorporationDate: '2020-13-01',
     annualRevenue: 'oops',
     ownershipPercentage: '150',
   });
   assert(invalid.includes('email'));
   assert(invalid.includes('businessType'));
-  assert(invalid.includes('dateEstablished'));
+  assert(invalid.includes('incorporationDate'));
   assert(invalid.includes('annualRevenue'));
   assert(invalid.includes('ownershipPercentage'));
 });

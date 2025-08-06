@@ -7,13 +7,14 @@ const fieldMap = {
   entityType: 'businessType',
   employees: 'numberOfEmployees',
   ownershipPercent: 'ownershipPercentage',
+  dateEstablished: 'incorporationDate',
 };
 
 const reverseFieldMap = Object.fromEntries(
   Object.entries(fieldMap).map(([k, v]) => [v, k]),
 );
 
-const dateFields = ['dateEstablished', 'incorporationDate'];
+const dateFields = ['incorporationDate'];
 
 function normalizeQuestionnaire(input = {}) {
   const data = { ...input };
@@ -66,7 +67,7 @@ function normalizeQuestionnaire(input = {}) {
     }
   });
 
-  const required = ['businessName', 'phone', 'email', 'businessType', 'dateEstablished'];
+  const required = ['businessName', 'phone', 'email', 'businessType', 'incorporationDate'];
   const missing = required.filter(
     (f) => data[f] === undefined || data[f] === '' || data[f] === null || Number.isNaN(data[f])
   );
