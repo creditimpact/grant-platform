@@ -38,6 +38,19 @@ ELIGIBILITY_ENGINE_URL=http://eligibility-engine:4001
 FORM_FILLER_URL=http://ai-agent:5001
 ```
 
+### Case Management API
+
+The frontend interacts with a simpler set of endpoints that manage a user's in‑progress case:
+
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| `/api/case/status` | GET | Current case status, required documents and any eligibility results |
+| `/api/case/questionnaire` | GET/POST | Retrieve or store questionnaire answers |
+| `/api/files/upload` | POST | Upload a single document (fields: `file` and `key`) |
+| `/api/eligibility-report` | GET/POST | Fetch or trigger eligibility analysis |
+
+All routes are protected and expect a `Bearer` JWT token. Service URLs for the AI Agent, Eligibility Engine and Form Filler are configured with the environment variables shown above.
+
 ## Running locally
 
 1. Install Node dependencies and start the API server

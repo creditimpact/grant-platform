@@ -146,7 +146,7 @@ function getCase(userId, createIfMissing = true) {
   if (!cases[userId]) {
     if (!createIfMissing) return null;
     cases[userId] = {
-      status: 'Open',
+      status: 'open',
       answers: {},
       documents: [],
       eligibility: null,

@@ -5,6 +5,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
 const connectDB = require('./utils/db');
+const path = require('path');
 
 // Load environment variables from .env
 dotenv.config();
@@ -19,6 +20,8 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(morgan('dev'));
+// serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // === Root & Health Routes ===
 app.get('/', (req, res) => {
@@ -35,6 +38,8 @@ console.log('✅ Auth routes registered');
 app.use('/api/users', require('./routes/users'));
 // Unified grant submission pipeline
 app.use('/api', require('./routes/pipeline'));
+// Case management & document routes
+app.use('/api', require('./routes/case'));
 
 // === Connect to DB and start server ===
 const PORT = process.env.PORT || 5000;
