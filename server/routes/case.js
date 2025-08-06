@@ -23,9 +23,12 @@ router.post('/case/questionnaire', auth, async (req, res) => {
     const { data, missing, invalid } = normalizeQuestionnaire(req.body);
     if (missing.length || invalid.length) {
       console.log('  ✖ validation failed', { missing, invalid });
-      const message = missing.length
-        ? `Missing required fields: ${missing.join(', ')}`
-        : 'Invalid questionnaire data';
+      let message = '';
+      if (missing.length) message += `Missing required fields: ${missing.join(', ')}`;
+      if (invalid.length) {
+        if (message) message += '; ';
+        message += `Invalid fields: ${invalid.join(', ')}`;
+      }
       return res.status(400).json({ message, missing, invalid });
     }
     console.log('  ✓ validation passed', { normalized: data });
@@ -122,9 +125,12 @@ router.post('/eligibility-report', auth, async (req, res) => {
     const { data, missing, invalid } = normalizeQuestionnaire(req.body);
     if (missing.length || invalid.length) {
       console.log('  ✖ validation failed', { missing, invalid });
-      const message = missing.length
-        ? `Missing required fields: ${missing.join(', ')}`
-        : 'Invalid eligibility payload';
+      let message = '';
+      if (missing.length) message += `Missing required fields: ${missing.join(', ')}`;
+      if (invalid.length) {
+        if (message) message += '; ';
+        message += `Invalid fields: ${invalid.join(', ')}`;
+      }
       return res.status(400).json({ message, missing, invalid });
     }
     console.log('  ✓ validation passed', { normalized: data });
