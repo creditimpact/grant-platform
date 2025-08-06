@@ -61,12 +61,19 @@ export default function Questionnaire() {
       try {
         const res = await api.get('/case/questionnaire');
         const data = res.data || {};
+        const mapped = {
+          ...data,
+          entityType: data.entityType || data.businessType || '',
+          employees: data.employees || data.numberOfEmployees || '',
+          ownershipPercent:
+            data.ownershipPercent || data.ownershipPercentage || '',
+        };
         setAnswers((prev) => ({
           ...prev,
-          ...data,
+          ...mapped,
           previousGrants:
-            typeof data.previousGrants === 'boolean'
-              ? data.previousGrants
+            typeof mapped.previousGrants === 'boolean'
+              ? mapped.previousGrants
                 ? 'yes'
                 : 'no'
               : prev.previousGrants,

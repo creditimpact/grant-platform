@@ -2,8 +2,29 @@ const numericFields = ['annualRevenue', 'netProfit', 'numberOfEmployees', 'owner
 const booleanFields = ['previousGrants'];
 const allowedBusinessTypes = ['Sole', 'Partnership', 'LLC', 'Corporation'];
 
+// Frontend -> backend field mappings
+const fieldMap = {
+  entityType: 'businessType',
+  employees: 'numberOfEmployees',
+  ownershipPercent: 'ownershipPercentage',
+};
+
+const reverseFieldMap = Object.fromEntries(
+  Object.entries(fieldMap).map(([k, v]) => [v, k]),
+);
+
+const dateFields = ['dateEstablished', 'incorporationDate'];
+
 function normalizeQuestionnaire(input = {}) {
   const data = { ...input };
+
+  // normalize field names
+  Object.entries(fieldMap).forEach(([src, dest]) => {
+    if (data[src] !== undefined && data[dest] === undefined) {
+      data[dest] = data[src];
+    }
+    delete data[src];
+  });
 
   // convert numeric fields
   numericFields.forEach((f) => {
@@ -27,19 +48,23 @@ function normalizeQuestionnaire(input = {}) {
     }
   });
 
-  // normalize dateEstablished to ISO 8601
-  let dateConverted = false;
-  if (data.dateEstablished) {
-    const m = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.exec(data.dateEstablished);
-    if (m) {
-      const iso = `${m[3]}-${m[2]}-${m[1]}`;
-      const d = new Date(iso);
-      if (!isNaN(d.getTime())) {
-        data.dateEstablished = iso;
-        dateConverted = true;
+  // normalize dates to ISO 8601
+  dateFields.forEach((f) => {
+    if (data[f]) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(data[f])) {
+        // already ISO, leave as is
+      } else {
+        const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(data[f]);
+        if (m) {
+          const iso = `${m[3]}-${m[1]}-${m[2]}`;
+          const d = new Date(iso);
+          if (!isNaN(d.getTime())) {
+            data[f] = iso;
+          }
+        }
       }
     }
-  }
+  });
 
   const required = ['businessName', 'phone', 'email', 'businessType', 'dateEstablished'];
   const missing = required.filter(
@@ -51,14 +76,15 @@ function normalizeQuestionnaire(input = {}) {
   // email format
   if (data.email && !/^\S+@\S+\.\S+$/.test(data.email)) invalid.push('email');
 
-  // dateEstablished validation
-  if (data.dateEstablished) {
-    const d = new Date(data.dateEstablished);
-    const isoRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateConverted || isNaN(d.getTime()) || !isoRegex.test(data.dateEstablished)) {
-      invalid.push('dateEstablished');
+  // date validations
+  dateFields.forEach((f) => {
+    if (data[f]) {
+      const d = new Date(data[f]);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(data[f]) || isNaN(d.getTime())) {
+        invalid.push(f);
+      }
     }
-  }
+  });
 
   // numeric validation and ranges
   numericFields.forEach((f) => {
@@ -81,4 +107,14 @@ function normalizeQuestionnaire(input = {}) {
   return { data, missing, invalid };
 }
 
-module.exports = { normalizeQuestionnaire };
+function denormalizeQuestionnaire(input = {}) {
+  const data = { ...input };
+  Object.entries(reverseFieldMap).forEach(([src, dest]) => {
+    if (data[src] !== undefined && data[dest] === undefined) {
+      data[dest] = data[src];
+    }
+  });
+  return data;
+}
+
+module.exports = { normalizeQuestionnaire, denormalizeQuestionnaire };
