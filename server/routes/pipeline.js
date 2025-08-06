@@ -40,22 +40,33 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
 
   const caseId = createCase(req.user.id);
   try {
-    // ---- AI Agent step ----
-    const form = new FormData();
-    form.append('payload', JSON.stringify(req.body));
-    req.files.forEach((file) => form.append('files', file.buffer, file.originalname));
-    const aiBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
-    const aiUrl = `${aiBase.replace(/\/$/, '')}/analyze`;
-    console.log(`→ POST ${aiUrl}`);
-    const aiResp = await fetch(aiUrl, { method: 'POST', body: form, headers: form.getHeaders() });
-    if (!aiResp.ok) {
-      const text = await aiResp.text();
-      console.error('AI agent error', aiResp.status, text);
-      updateCase(caseId, { status: 'error', error: text });
-      return res.status(502).json({ message: `AI agent error ${aiResp.status}`, details: text });
+    // ---- AI Analyzer step ----
+    const analyzerBase = process.env.AI_ANALYZER_URL || 'http://localhost:8000';
+    const analyzerUrl = `${analyzerBase.replace(/\/$/, '')}/analyze`;
+    let extracted = {};
+    for (const file of req.files) {
+      const form = new FormData();
+      form.append('file', file.buffer, file.originalname);
+      console.log(`→ POST ${analyzerUrl}`, { file: file.originalname });
+      const resp = await fetch(analyzerUrl, {
+        method: 'POST',
+        body: form,
+        headers: form.getHeaders(),
+      });
+      if (!resp.ok) {
+        const text = await resp.text();
+        console.error('AI analyzer error', resp.status, text);
+        updateCase(caseId, { status: 'error', error: text });
+        return res
+          .status(502)
+          .json({ message: `AI analyzer error ${resp.status}`, details: text });
+      }
+      const fields = await resp.json();
+      console.log('← AI analyzer response', fields);
+      extracted = { ...extracted, ...fields };
     }
-    const normalized = await aiResp.json();
-    console.log('← AI agent response', normalized);
+    const normalized = { ...req.body, ...extracted };
+    console.log('Normalized data', normalized);
     updateCase(caseId, { status: 'analyzed', normalized });
 
     // ---- Eligibility Engine ----
@@ -77,23 +88,29 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
     console.log('← Eligibility engine response', eligibility);
     updateCase(caseId, { status: 'checked', eligibility });
 
-    // ---- Form Filler ----
-    const fillerBase = process.env.FORM_FILLER_URL || 'http://localhost:5002';
-    const fillerUrl = `${fillerBase.replace(/\/$/, '')}/fill-forms`;
-    console.log(`→ POST ${fillerUrl}`);
-    const fillerResp = await fetch(fillerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: normalized, forms: eligibility.requiredForms || [] }),
-    });
-    if (!fillerResp.ok) {
-      const text = await fillerResp.text();
-      console.error('Form filler error', fillerResp.status, text);
-      updateCase(caseId, { status: 'error', error: text });
-      return res.status(502).json({ message: `Form filler error ${fillerResp.status}`, details: text });
+    // ---- AI Agent form filling ----
+    const agentBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
+    const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
+    const filled = {};
+    for (const formName of eligibility.requiredForms || []) {
+      console.log(`→ POST ${agentUrl}`, { form: formName });
+      const agentResp = await fetch(agentUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ form_name: formName, user_payload: normalized }),
+      });
+      if (!agentResp.ok) {
+        const text = await agentResp.text();
+        console.error('AI agent form-fill error', agentResp.status, text);
+        updateCase(caseId, { status: 'error', error: text });
+        return res
+          .status(502)
+          .json({ message: `AI agent form-fill error ${agentResp.status}`, details: text });
+      }
+      const agentData = await agentResp.json();
+      console.log('← AI agent response', agentData);
+      filled[formName] = agentData.filled_form || agentData;
     }
-    const filled = await fillerResp.json();
-    console.log('← Form filler response', filled);
     updateCase(caseId, { status: 'forms_filled', documents: filled });
 
     // ---- Placeholder: digital signature & submission hooks ----

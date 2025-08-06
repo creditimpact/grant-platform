@@ -22,9 +22,9 @@ The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files.
 
 The backend exposes a unified flow that processes grant applications end‑to‑end:
 
-1. **POST `/api/submit-case`** – Frontend sends raw user data and uploaded documents. The server forwards everything to the AI Agent (`AI_AGENT_URL/analyze`) for extraction and normalization.
-2. **AI Agent → Eligibility Engine** – Normalized data is submitted to the Eligibility Engine (`ELIGIBILITY_ENGINE_URL/check`) for rule-based eligibility checks.
-3. **Eligibility → Form Filler** – The results and required form names are passed to the Form Filler (`FORM_FILLER_URL/fill-forms`) which returns filled PDFs ready for signature.
+1. **POST `/api/submit-case`** – Frontend sends raw user data and uploaded documents. The server forwards data to the AI Analyzer (`AI_ANALYZER_URL/analyze`) to extract and normalize fields.
+2. **AI Analyzer → Eligibility Engine** – Normalized data is submitted to the Eligibility Engine (`ELIGIBILITY_ENGINE_URL/check`) for rule-based eligibility checks.
+3. **Eligibility → AI Agent** – Eligibility results and normalized data are passed to the AI Agent (`AI_AGENT_URL/form-fill`) which generates filled PDFs and summaries.
 4. **Digital signature & submission** – Hooks exist after form filling for optional signing and external submission.
 5. **GET `/api/status/:caseId`** – Fetch case status, eligibility results and generated documents for the applicant dashboard.
 
@@ -33,9 +33,9 @@ All service calls exchange JSON payloads, are logged, and bubble up descriptive 
 Environment variables configuring service locations:
 
 ```
-AI_AGENT_URL=http://ai-agent:5001
+AI_ANALYZER_URL=http://ai-analyzer:8000
 ELIGIBILITY_ENGINE_URL=http://eligibility-engine:4001
-FORM_FILLER_URL=http://ai-agent:5001
+AI_AGENT_URL=http://ai-agent:5001
 ```
 
 ### Case Management API
@@ -108,10 +108,10 @@ curl -X POST http://localhost:5001/check -H "Content-Type: application/json" \
     -d '{"notes": "We started around 2021 and are women-led in biotech"}'
 ```
 
-To fill a grant application form, send JSON directly to `/fill-forms`:
+To fill a grant application form, send JSON directly to `/form-fill`:
 
 ```bash
-curl -X POST http://localhost:5001/fill-forms \
+curl -X POST http://localhost:5001/form-fill \
     -H "Content-Type: application/json" \
     -d '{
         "form_name": "sba_microloan_form",
@@ -137,7 +137,7 @@ npm run dev
 ```
 
 Environment variables should be placed in a `.env.local` file. See `.env.local.example` for the API base URL.
-The backend uses `AI_AGENT_URL`, `ELIGIBILITY_ENGINE_URL` and `FORM_FILLER_URL` to locate the downstream services.
+The backend uses `AI_ANALYZER_URL`, `ELIGIBILITY_ENGINE_URL` and `AI_AGENT_URL` to locate the downstream services.
 
 ### Testing file uploads
 
