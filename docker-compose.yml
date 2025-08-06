@@ -13,12 +13,13 @@ services:
     environment:
       - MONGO_URI=mongodb://mongo:27017/grants
       - JWT_SECRET=devsecret
-      - AI_AGENT_URL=http://ai-agent:5001
+      - AI_ANALYZER_URL=http://ai-analyzer:8000
       - ELIGIBILITY_ENGINE_URL=http://eligibility-engine:4001
-      - FORM_FILLER_URL=http://ai-agent:5001
-      depends_on:
-        - mongo
-        - ai-agent
+      - AI_AGENT_URL=http://ai-agent:5001
+    depends_on:
+      - mongo
+      - ai-agent
+      - ai-analyzer
 
   eligibility-engine:
     build: ./eligibility-engine
@@ -33,6 +34,11 @@ services:
       - '5001:5001'
     depends_on:
       - eligibility-engine
+
+  ai-analyzer:
+    build: ./ai-analyzer
+    ports:
+      - '8000:8000'
 
   frontend:
     build: ./frontend
