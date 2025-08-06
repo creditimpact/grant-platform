@@ -73,7 +73,7 @@ async function computeDocuments(answers = {}) {
   ];
 
   // Dynamic requirements based on answers
-  if (answers.entityType === 'Corporation' || answers.entityType === 'LLC') {
+  if (answers.businessType === 'Corporation' || answers.businessType === 'LLC') {
     docs.push({
       key: 'articles_incorporation',
       name: 'Articles of Incorporation',
@@ -90,7 +90,7 @@ async function computeDocuments(answers = {}) {
     });
   }
 
-  if (answers.employees && Number(answers.employees) > 0) {
+  if (answers.numberOfEmployees && Number(answers.numberOfEmployees) > 0) {
     docs.push({
       key: 'payroll_records',
       name: 'Payroll Records',

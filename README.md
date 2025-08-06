@@ -53,20 +53,26 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
 
 ### Questionnaire Payload
 
-`POST /api/case/questionnaire` accepts JSON with the following fields. All numeric values must be numbers and boolean flags must be true/false.
+`POST /api/case/questionnaire` accepts JSON with the following fields. Numeric strings will be converted to numbers, boolean-like strings are parsed, and dates must be in `dd/MM/YYYY` format.
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| businessName, phone, email, address, city, state, zip | string | required |
-| locationZone | string | required (`urban`, `rural`, `hubzone`) |
-| entityType | string | required (`Sole`, `Partnership`, `LLC`, `Corporation`) |
-| ein | string | required for `LLC`/`Corporation`/`Partnership` |
-| ssn | string | required for `Sole` |
-| incorporationDate | string (date) | required for `LLC`/`Corporation` |
-| dateEstablished | string (date) | required |
-| annualRevenue, netProfit, employees, ownershipPercent | number | required |
-| previousGrants | boolean | required |
-| cpaPrepared, minorityOwned, womanOwned, veteranOwned, hasPayroll, hasInsurance | boolean | optional |
+| Field | Type | Required? | Notes |
+| --- | --- | --- | --- |
+| businessName | string | yes | |
+| phone | string | yes | |
+| email | string (email) | yes | valid email format |
+| address | string | no | |
+| city | string | no | |
+| state | string | no | |
+| zipCode | string | no | |
+| locationZone | string | no | e.g. `urban` |
+| businessType | string | yes | allowed: `Sole`, `Partnership`, `LLC`, `Corporation` |
+| dateEstablished | string (date) | yes | format `dd/MM/YYYY` |
+| businessEIN | string | no | |
+| annualRevenue | number | no | |
+| netProfit | number | no | |
+| numberOfEmployees | number | no | |
+| ownershipPercentage | number (0-100) | no | |
+| previousGrants | boolean | no | |
 
 ## Running locally
 
@@ -112,7 +118,7 @@ curl -X POST http://localhost:5001/fill-forms \
         "user_payload": {
             "business_name": "Tech Boosters",
             "annual_revenue": 250000,
-            "zipcode": "10001",
+            "zipCode": "10001",
             "minority_owned": true
         }
     }'

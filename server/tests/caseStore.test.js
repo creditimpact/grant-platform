@@ -13,14 +13,14 @@ test('base document requirements', async () => {
 });
 
 test('corporation requires incorporation docs', async () => {
-  const docs = await computeDocuments({ entityType: 'Corporation' });
+  const docs = await computeDocuments({ businessType: 'Corporation' });
   const keys = docs.map(d => d.key);
   assert(keys.includes('articles_incorporation'));
   assert(keys.includes('ein_document'));
 });
 
 test('employees trigger payroll records', async () => {
-  const docs = await computeDocuments({ employees: 5 });
+  const docs = await computeDocuments({ numberOfEmployees: 5 });
   const keys = docs.map(d => d.key);
   assert(keys.includes('payroll_records'));
 });

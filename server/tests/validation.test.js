@@ -2,86 +2,49 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { normalizeQuestionnaire } = require('../utils/validation');
 
-test('normalizeQuestionnaire maps dateEstablished to incorporationDate and converts fields', () => {
-  const { data, missing } = normalizeQuestionnaire({
-    businessType: 'LLC',
+test('normalizeQuestionnaire converts types and normalizes date', () => {
+  const { data, missing, invalid } = normalizeQuestionnaire({
     businessName: 'Biz',
     phone: '555',
     email: 'a@b.com',
-    address: '1 st',
-    city: 'City',
-    state: 'ST',
-    zip: '12345',
-    locationZone: 'urban',
-    dateEstablished: '2020-01-01',
+    businessType: 'LLC',
+    dateEstablished: '01/02/2020',
     annualRevenue: '100',
     netProfit: '10',
-    employees: '2',
-    ownershipPercent: '50',
+    numberOfEmployees: '2',
+    ownershipPercentage: '50',
     previousGrants: 'yes',
-    ein: '12',
-    cpaPrepared: 'true',
-    minorityOwned: 'false',
-    womanOwned: 'true',
-    veteranOwned: 'false',
-    hasPayroll: 'true',
-    hasInsurance: 'false',
   });
-  assert.equal(data.entityType, 'LLC');
-  assert.strictEqual(data.previousGrants, true);
+  assert.equal(data.dateEstablished, '2020-02-01');
   assert.strictEqual(data.annualRevenue, 100);
-  assert.strictEqual(data.employees, 2);
-  assert.equal(data.incorporationDate, '2020-01-01');
-  assert(!('dateEstablished' in data));
+  assert.strictEqual(data.numberOfEmployees, 2);
+  assert.strictEqual(data.previousGrants, true);
   assert.equal(missing.length, 0);
+  assert.equal(invalid.length, 0);
 });
 
-test('normalizeQuestionnaire reports missing fields', () => {
+test('normalizeQuestionnaire reports missing required fields', () => {
   const { missing } = normalizeQuestionnaire({});
   assert(missing.includes('businessName'));
-  assert(missing.includes('entityType'));
-  assert(missing.includes('incorporationDate'));
+  assert(missing.includes('phone'));
+  assert(missing.includes('email'));
+  assert(missing.includes('businessType'));
+  assert(missing.includes('dateEstablished'));
 });
 
-test('normalizeQuestionnaire flags invalid numeric fields', () => {
+test('normalizeQuestionnaire flags invalid fields', () => {
   const { invalid } = normalizeQuestionnaire({
     businessName: 'Biz',
     phone: '555',
-    email: 'a@b.com',
-    address: '1 st',
-    city: 'City',
-    state: 'ST',
-    zip: '12345',
-    locationZone: 'urban',
-    entityType: 'LLC',
+    email: 'not-an-email',
+    businessType: 'Unknown',
     dateEstablished: '2020-01-01',
     annualRevenue: 'oops',
-    netProfit: '10',
-    employees: '2',
-    ownershipPercent: '50',
-    previousGrants: 'no',
-    ein: '12',
+    ownershipPercentage: '150',
   });
+  assert(invalid.includes('email'));
+  assert(invalid.includes('businessType'));
+  assert(invalid.includes('dateEstablished'));
   assert(invalid.includes('annualRevenue'));
-});
-
-test('normalizeQuestionnaire requires incorporationDate when dateEstablished missing', () => {
-  const { missing } = normalizeQuestionnaire({
-    businessName: 'Biz',
-    phone: '555',
-    email: 'a@b.com',
-    address: '1 st',
-    city: 'City',
-    state: 'ST',
-    zip: '12345',
-    locationZone: 'urban',
-    entityType: 'LLC',
-    annualRevenue: '100',
-    netProfit: '10',
-    employees: '2',
-    ownershipPercent: '50',
-    previousGrants: 'no',
-    ein: '12',
-  });
-  assert(missing.includes('incorporationDate'));
+  assert(invalid.includes('ownershipPercentage'));
 });

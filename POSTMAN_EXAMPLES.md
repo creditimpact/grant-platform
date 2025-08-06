@@ -51,17 +51,15 @@ Content-Type: application/json
   "address": "1 Main St",
   "city": "Metropolis",
   "state": "NY",
-  "zip": "10001",
+  "zipCode": "10001",
   "locationZone": "urban",
-  "entityType": "LLC",
-  "ein": "12-3456789",
-  "incorporationDate": "2020-01-01",
-  "dateEstablished": "2019-06-01",
+  "businessType": "LLC",
+  "dateEstablished": "01/06/2019",
+  "businessEIN": "12-3456789",
   "annualRevenue": 500000,
   "netProfit": 80000,
-  "employees": 5,
-  "ownershipPercent": 100,
-  "previousGrants": false,
-  "cpaPrepared": true
+  "numberOfEmployees": 5,
+  "ownershipPercentage": 100,
+  "previousGrants": false
 }
 ```
