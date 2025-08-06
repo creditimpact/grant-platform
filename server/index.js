@@ -33,12 +33,8 @@ app.get('/status', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 console.log('✅ Auth routes registered');
 app.use('/api/users', require('./routes/users'));
-app.use('/api/files', require('./routes/files'));
-app.use('/api/analyze', require('./routes/analyze'));
-app.use('/api/form-fill', require('./routes/formFill'));
-app.use('/api/forms', require('./routes/forms'));
-app.use('/api/eligibility-report', require('./routes/eligibility'));
-app.use('/api/case', require('./routes/case'));
+// Unified grant submission pipeline
+app.use('/api', require('./routes/pipeline'));
 
 // === Connect to DB and start server ===
 const PORT = process.env.PORT || 5000;

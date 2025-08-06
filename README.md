@@ -18,31 +18,25 @@ project-root/
 
 The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files.
 
-## Grant Application Flow
+## Grant Submission Pipeline
 
-The application now enforces a strict questionnaire and document process:
+The backend exposes a unified flow that processes grant applications end‑to‑end:
 
-1. **Questionnaire validation** – Users cannot advance to the next step until all required fields are completed. Inline error messages explain what is missing.
-2. **Dynamic document list** – Required documents are generated from questionnaire answers. For example, corporations must provide incorporation certificates and minority-owned businesses are prompted for proof of status. Each document includes a short reason.
-3. **Cross-checking uploads** – When a document is uploaded the API compares its filename against key answers (business name, EIN, ownership flags). Mismatches cause the upload to be rejected with a clear error.
-4. **Backend enforcement** – The analysis endpoint refuses to run unless all required answers are present and every required document is successfully uploaded.
+1. **POST `/api/submit-case`** – Frontend sends raw user data and uploaded documents. The server forwards everything to the AI Agent (`AI_AGENT_URL/analyze`) for extraction and normalization.
+2. **AI Agent → Eligibility Engine** – Normalized data is submitted to the Eligibility Engine (`ELIGIBILITY_ENGINE_URL/check`) for rule-based eligibility checks.
+3. **Eligibility → Form Filler** – The results and required form names are passed to the Form Filler (`FORM_FILLER_URL/fill-forms`) which returns filled PDFs ready for signature.
+4. **Digital signature & submission** – Hooks exist after form filling for optional signing and external submission.
+5. **GET `/api/status/:caseId`** – Fetch case status, eligibility results and generated documents for the applicant dashboard.
 
-The dashboard shows any missing documents so applicants know what is still required before submission.
+All service calls exchange JSON payloads, are logged, and bubble up descriptive errors if a downstream service fails.
 
-### Questionnaire Endpoint
+Environment variables configuring service locations:
 
-Answers for all sections are submitted to `POST /api/case/questionnaire`. The payload must contain:
-
-- business information – legal name, contact details, and operating status
-- an array of owners with name, date of birth, address, SSN/ITIN and ownership percentage (must total 100)
-- financial data such as annual revenue, net profit and employee counts
-- grant request details (amount, purpose and any prior assistance)
-
-If any required field is missing the API responds with `400` and a list of missing keys. On success the endpoint returns the computed list of required documents.
-
-### Document Requirements
-
-`computeDocuments` in `server/utils/caseStore.js` builds the list of attachments. Base documents include tax returns, financial statements, bank statements, business registration, lease or deed, business plan, owner's resume and proof of insurance. Additional documents are added dynamically – corporations must provide articles of incorporation and EIN confirmation, while businesses with employees are prompted for payroll records.
+```
+AI_AGENT_URL=http://ai-agent:5001
+ELIGIBILITY_ENGINE_URL=http://eligibility-engine:4001
+FORM_FILLER_URL=http://ai-agent:5001
+```
 
 ## Running locally
 
@@ -53,13 +47,17 @@ If any required field is missing the API responds with `400` and a list of missi
    ```
    Environment variables should be placed in a `.env` file. See `.env.example` for required keys.
 
-2. Start the AI analyzer (requires Tesseract installed)
+2. Start the AI agent service
    ```bash
-   cd ai-analyzer
-   python -m uvicorn main:app --port 8000
+   cd ai-agent
+   python -m uvicorn main:app --port 5001
    ```
-
-3. Run the eligibility engine tests
+3. Start the eligibility engine
+   ```bash
+   cd eligibility-engine
+   python -m uvicorn main:app --port 4001
+   ```
+4. (Optional) Run the eligibility engine tests
    ```bash
    cd eligibility-engine
    python -m pytest
@@ -74,10 +72,10 @@ curl -X POST http://localhost:5001/check -H "Content-Type: application/json" \
     -d '{"notes": "We started around 2021 and are women-led in biotech"}'
 ```
 
-To fill a grant application form, send JSON directly to `/form-fill`:
+To fill a grant application form, send JSON directly to `/fill-forms`:
 
 ```bash
-curl -X POST http://localhost:5001/form-fill \
+curl -X POST http://localhost:5001/fill-forms \
     -H "Content-Type: application/json" \
     -d '{
         "form_name": "sba_microloan_form",
@@ -103,7 +101,7 @@ npm run dev
 ```
 
 Environment variables should be placed in a `.env.local` file. See `.env.local.example` for the API base URL.
-The backend uses `AGENT_URL` which should point to the root of the AI agent service (e.g. `http://localhost:5001`).
+The backend uses `AI_AGENT_URL`, `ELIGIBILITY_ENGINE_URL` and `FORM_FILLER_URL` to locate the downstream services.
 
 ### Testing file uploads
 
