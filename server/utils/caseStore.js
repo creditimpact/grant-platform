@@ -100,7 +100,7 @@ async function computeDocuments(answers = {}) {
     });
   }
 
-  if (answers.previousGrants === 'yes') {
+  if (answers.previousGrants) {
     docs.push({
       key: 'previous_grant_docs',
       name: 'Previous Grant Documents',

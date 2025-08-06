@@ -24,3 +24,9 @@ test('employees trigger payroll records', async () => {
   const keys = docs.map(d => d.key);
   assert(keys.includes('payroll_records'));
 });
+
+test('previous grants require documentation', async () => {
+  const docs = await computeDocuments({ previousGrants: true });
+  const keys = docs.map(d => d.key);
+  assert(keys.includes('previous_grant_docs'));
+});

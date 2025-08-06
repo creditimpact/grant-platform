@@ -6,6 +6,7 @@ const path = require('path');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 const auth = require('../middleware/authMiddleware');
 const { getCase, computeDocuments } = require('../utils/caseStore');
+const { normalizeQuestionnaire } = require('../utils/validation');
 
 const router = express.Router();
 
@@ -19,8 +20,16 @@ router.get('/case/questionnaire', auth, (req, res) => {
 router.post('/case/questionnaire', auth, async (req, res) => {
   console.log('➡️  POST /case/questionnaire', { user: req.user.id, body: req.body });
   try {
+    const { data, missing, invalid } = normalizeQuestionnaire(req.body);
+    if (missing.length || invalid.length) {
+      console.log('  ✖ validation failed', { missing, invalid });
+      return res
+        .status(400)
+        .json({ message: 'Invalid questionnaire data', missing, invalid });
+    }
+    console.log('  ✓ validation passed');
     const c = getCase(req.user.id);
-    c.answers = { ...c.answers, ...req.body };
+    c.answers = { ...c.answers, ...data };
     c.documents = await computeDocuments(c.answers);
     c.status = 'questionnaire';
     res.json({ message: 'saved' });
@@ -100,10 +109,13 @@ router.get('/eligibility-report', auth, (req, res) => {
 });
 
 router.post('/eligibility-report', auth, async (req, res) => {
-  console.log('➡️  POST /eligibility-report', { user: req.user.id });
+  console.log('➡️  POST /eligibility-report', {
+    user: req.user.id,
+  });
   const c = getCase(req.user.id, false);
   if (!c) return res.status(400).json({ message: 'No case found' });
   try {
+    console.log('  using answers', c.answers);
     const form = new FormData();
     form.append('payload', JSON.stringify(c.answers || {}));
     if (Array.isArray(c.documents)) {
