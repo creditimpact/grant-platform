@@ -6,7 +6,7 @@ const path = require('path');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 const auth = require('../middleware/authMiddleware');
 const { getCase, computeDocuments } = require('../utils/caseStore');
-const { normalizeQuestionnaire } = require('../utils/validation');
+const { normalizeQuestionnaire, denormalizeQuestionnaire } = require('../utils/validation');
 
 const router = express.Router();
 
@@ -14,7 +14,8 @@ const router = express.Router();
 router.get('/case/questionnaire', auth, (req, res) => {
   console.log('➡️  GET /case/questionnaire', { user: req.user.id });
   const c = getCase(req.user.id, false);
-  res.json(c?.answers || {});
+  const data = c?.answers ? denormalizeQuestionnaire(c.answers) : {};
+  res.json(data);
 });
 
 router.post('/case/questionnaire', auth, async (req, res) => {
