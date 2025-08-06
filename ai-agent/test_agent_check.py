@@ -158,3 +158,10 @@ def test_form_fill_invalid_payload():
     """Invalid payloads should raise validation errors."""
     with pytest.raises(ValidationError):
         asyncio.run(form_fill({"user_payload": {"foo": "bar"}}))
+
+
+def test_form_fill_rejects_embedded_payload():
+    """Legacy embedded bodies should not be accepted after Pydantic v2 upgrade."""
+    payload = {"request_model": {"form_name": "sba_microloan_form", "user_payload": {}}}
+    with pytest.raises(ValidationError):
+        asyncio.run(form_fill(payload))
