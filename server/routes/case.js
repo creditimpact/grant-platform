@@ -23,11 +23,12 @@ router.post('/case/questionnaire', auth, async (req, res) => {
     const { data, missing, invalid } = normalizeQuestionnaire(req.body);
     if (missing.length || invalid.length) {
       console.log('  ✖ validation failed', { missing, invalid });
-      return res
-        .status(400)
-        .json({ message: 'Invalid questionnaire data', missing, invalid });
+      const message = missing.length
+        ? `Missing required fields: ${missing.join(', ')}`
+        : 'Invalid questionnaire data';
+      return res.status(400).json({ message, missing, invalid });
     }
-    console.log('  ✓ validation passed');
+    console.log('  ✓ validation passed', { normalized: data });
     const c = getCase(req.user.id);
     c.answers = { ...c.answers, ...data };
     c.documents = await computeDocuments(c.answers);
@@ -121,11 +122,12 @@ router.post('/eligibility-report', auth, async (req, res) => {
     const { data, missing, invalid } = normalizeQuestionnaire(req.body);
     if (missing.length || invalid.length) {
       console.log('  ✖ validation failed', { missing, invalid });
-      return res
-        .status(400)
-        .json({ message: 'Invalid eligibility payload', missing, invalid });
+      const message = missing.length
+        ? `Missing required fields: ${missing.join(', ')}`
+        : 'Invalid eligibility payload';
+      return res.status(400).json({ message, missing, invalid });
     }
-    console.log('  ✓ validation passed');
+    console.log('  ✓ validation passed', { normalized: data });
 
     c.answers = { ...c.answers, ...data };
 
