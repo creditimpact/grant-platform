@@ -51,6 +51,23 @@ The frontend interacts with a simpler set of endpoints that manage a user's inâ€
 
 All routes are protected and expect a `Bearer` JWT token. Service URLs for the AI Agent, Eligibility Engine and Form Filler are configured with the environment variables shown above.
 
+### Questionnaire Payload
+
+`POST /api/case/questionnaire` accepts JSON with the following fields. All numeric values must be numbers and boolean flags must be true/false.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| businessName, phone, email, address, city, state, zip | string | required |
+| locationZone | string | required (`urban`, `rural`, `hubzone`) |
+| entityType | string | required (`Sole`, `Partnership`, `LLC`, `Corporation`) |
+| ein | string | required for `LLC`/`Corporation`/`Partnership` |
+| ssn | string | required for `Sole` |
+| incorporationDate | string (date) | required for `LLC`/`Corporation` |
+| dateEstablished | string (date) | required |
+| annualRevenue, netProfit, employees, ownershipPercent | number | required |
+| previousGrants | boolean | required |
+| cpaPrepared, minorityOwned, womanOwned, veteranOwned, hasPayroll, hasInsurance | boolean | optional |
+
 ## Running locally
 
 1. Install Node dependencies and start the API server

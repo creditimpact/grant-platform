@@ -38,7 +38,7 @@ export default function Questionnaire() {
     state: '',
     zip: '',
     locationZone: '',
-    businessType: '',
+    entityType: '',
     ein: '',
     ssn: '',
     incorporationDate: '',
@@ -60,7 +60,17 @@ export default function Questionnaire() {
     const load = async () => {
       try {
         const res = await api.get('/case/questionnaire');
-        setAnswers((prev) => ({ ...prev, ...res.data }));
+        const data = res.data || {};
+        setAnswers((prev) => ({
+          ...prev,
+          ...data,
+          previousGrants:
+            typeof data.previousGrants === 'boolean'
+              ? data.previousGrants
+                ? 'yes'
+                : 'no'
+              : prev.previousGrants,
+        }));
       } catch (err: any) {
         logApiError('/case/questionnaire', undefined, err);
         const saved = localStorage.getItem('questionnaire');
@@ -91,12 +101,23 @@ export default function Questionnaire() {
   const finish = async () => {
     localStorage.setItem('questionnaire', JSON.stringify(answers));
     try {
-      await api.post('/case/questionnaire', answers);
+      const payload = {
+        ...answers,
+        annualRevenue: Number(answers.annualRevenue),
+        netProfit: Number(answers.netProfit),
+        employees: Number(answers.employees),
+        ownershipPercent: Number(answers.ownershipPercent),
+        previousGrants: answers.previousGrants === 'yes',
+      };
+      await api.post('/case/questionnaire', payload);
       localStorage.setItem('caseStage', 'documents');
       router.push('/dashboard/documents');
     } catch (err: any) {
       logApiError('/case/questionnaire', answers, err);
-      alert(err?.response?.data?.message || 'Unable to save');
+      const msg = err?.response?.data?.message || 'Unable to save';
+      const missing = err?.response?.data?.missing?.join(', ');
+      const invalid = err?.response?.data?.invalid?.join(', ');
+      alert([msg, missing && `Missing: ${missing}`, invalid && `Invalid: ${invalid}`].filter(Boolean).join('\n'));
     }
   };
 
@@ -180,9 +201,9 @@ export default function Questionnaire() {
             <label className="block mb-2 font-medium">Business Type</label>
             <select
               className="w-full border rounded p-2 mb-1"
-              value={answers.businessType}
+              value={answers.entityType}
               onChange={(e) => {
-                setAnswers({ ...answers, businessType: e.target.value });
+                setAnswers({ ...answers, entityType: e.target.value });
               }}
             >
               <option value="">Select</option>
@@ -191,7 +212,7 @@ export default function Questionnaire() {
               <option value="LLC">LLC</option>
               <option value="Corporation">Corporation</option>
             </select>
-              {(answers.businessType === 'Corporation' || answers.businessType === 'LLC') && (
+              {(answers.entityType === 'Corporation' || answers.entityType === 'LLC') && (
                 <FormInput
                   label="Incorporation Date"
                   type="date"
@@ -209,7 +230,7 @@ export default function Questionnaire() {
                   setAnswers({ ...answers, dateEstablished: e.target.value });
                 }}
               />
-              {answers.businessType === 'Sole' ? (
+              {answers.entityType === 'Sole' ? (
                 <FormInput
                   label="Owner SSN"
                   value={answers.ssn}

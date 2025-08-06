@@ -37,3 +37,31 @@ Content-Type: multipart/form-data
 file: <path to your file.png>
 key: id_document
 ```
+
+## Save Questionnaire
+```http
+POST http://localhost:5000/api/case/questionnaire
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+
+{
+  "businessName": "Tech Co",
+  "phone": "555-1234",
+  "email": "owner@example.com",
+  "address": "1 Main St",
+  "city": "Metropolis",
+  "state": "NY",
+  "zip": "10001",
+  "locationZone": "urban",
+  "entityType": "LLC",
+  "ein": "12-3456789",
+  "incorporationDate": "2020-01-01",
+  "dateEstablished": "2019-06-01",
+  "annualRevenue": 500000,
+  "netProfit": 80000,
+  "employees": 5,
+  "ownershipPercent": 100,
+  "previousGrants": false,
+  "cpaPrepared": true
+}
+```
