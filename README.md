@@ -66,7 +66,7 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
 | zipCode | string | no | |
 | locationZone | string | no | e.g. `urban` |
 | businessType | string | yes | allowed: `Sole`, `Partnership`, `LLC`, `Corporation` |
-| dateEstablished | string (date) | yes | format `dd/MM/YYYY` |
+| incorporationDate | string (date) | yes | format `dd/MM/YYYY` |
 | businessEIN | string | no | |
 | annualRevenue | number | no | |
 | netProfit | number | no | |

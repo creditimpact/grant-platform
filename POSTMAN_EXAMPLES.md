@@ -53,17 +53,15 @@ Content-Type: application/json
   "state": "NY",
   "zipCode": "10001",
   "locationZone": "urban",
-  "entityType": "LLC",
-  "dateEstablished": "2019-06-01",
+  "businessType": "LLC",
+  "incorporationDate": "2019-06-01",
   "businessEIN": "12-3456789",
   "annualRevenue": 500000,
   "netProfit": 80000,
-  "employees": 5,
-  "ownershipPercent": 100,
+  "numberOfEmployees": 5,
+  "ownershipPercentage": 100,
   "previousGrants": false
 }
 ```
 
-*The API also accepts legacy fields `businessType`, `numberOfEmployees` and
-`ownershipPercentage`. Dates may be sent in `YYYY-MM-DD` (preferred) or
-`MM/DD/YYYY` formats.*
+*The API also accepts legacy fields `entityType`, `employees`, `ownershipPercent` and `dateEstablished`. Dates may be sent in `YYYY-MM-DD` (preferred) or `MM/DD/YYYY` formats.*

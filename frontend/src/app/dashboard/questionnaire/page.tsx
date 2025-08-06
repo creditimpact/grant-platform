@@ -38,15 +38,14 @@ export default function Questionnaire() {
     state: '',
     zip: '',
     locationZone: '',
-    entityType: '',
+    businessType: '',
     ein: '',
     ssn: '',
     incorporationDate: '',
-    dateEstablished: '',
     annualRevenue: '',
     netProfit: '',
-    employees: '',
-    ownershipPercent: '',
+    numberOfEmployees: '',
+    ownershipPercentage: '',
     previousGrants: '',
     cpaPrepared: false,
     minorityOwned: false,
@@ -63,10 +62,11 @@ export default function Questionnaire() {
         const data = res.data || {};
         const mapped = {
           ...data,
-          entityType: data.entityType || data.businessType || '',
-          employees: data.employees || data.numberOfEmployees || '',
-          ownershipPercent:
-            data.ownershipPercent || data.ownershipPercentage || '',
+          businessType: data.businessType || data.entityType || '',
+          numberOfEmployees: data.numberOfEmployees || data.employees || '',
+          ownershipPercentage:
+            data.ownershipPercentage || data.ownershipPercent || '',
+          incorporationDate: data.incorporationDate || data.dateEstablished || '',
         };
         setAnswers((prev) => ({
           ...prev,
@@ -112,11 +112,12 @@ export default function Questionnaire() {
         ...answers,
         annualRevenue: Number(answers.annualRevenue),
         netProfit: Number(answers.netProfit),
-        employees: Number(answers.employees),
-        ownershipPercent: Number(answers.ownershipPercent),
+        numberOfEmployees: Number(answers.numberOfEmployees),
+        ownershipPercentage: Number(answers.ownershipPercentage),
         previousGrants: answers.previousGrants === 'yes',
       };
       await api.post('/case/questionnaire', payload);
+      console.log('Questionnaire submitted successfully', payload);
       localStorage.setItem('caseStage', 'documents');
       router.push('/dashboard/documents');
     } catch (err: any) {
@@ -208,9 +209,9 @@ export default function Questionnaire() {
             <label className="block mb-2 font-medium">Business Type</label>
             <select
               className="w-full border rounded p-2 mb-1"
-              value={answers.entityType}
+              value={answers.businessType}
               onChange={(e) => {
-                setAnswers({ ...answers, entityType: e.target.value });
+                setAnswers({ ...answers, businessType: e.target.value });
               }}
             >
               <option value="">Select</option>
@@ -219,25 +220,15 @@ export default function Questionnaire() {
               <option value="LLC">LLC</option>
               <option value="Corporation">Corporation</option>
             </select>
-              {(answers.entityType === 'Corporation' || answers.entityType === 'LLC') && (
-                <FormInput
-                  label="Incorporation Date"
-                  type="date"
-                  value={answers.incorporationDate}
-                  onChange={(e) => {
-                    setAnswers({ ...answers, incorporationDate: e.target.value });
-                  }}
-                />
-              )}
-              <FormInput
-                label="Date Established"
-                type="date"
-                value={answers.dateEstablished}
-                onChange={(e) => {
-                  setAnswers({ ...answers, dateEstablished: e.target.value });
-                }}
-              />
-              {answers.entityType === 'Sole' ? (
+            <FormInput
+              label="Incorporation Date"
+              type="date"
+              value={answers.incorporationDate}
+              onChange={(e) => {
+                setAnswers({ ...answers, incorporationDate: e.target.value });
+              }}
+            />
+            {answers.businessType === 'Sole' ? (
                 <FormInput
                   label="Owner SSN"
                   value={answers.ssn}
@@ -277,17 +268,17 @@ export default function Questionnaire() {
             <FormInput
               label="Number of Employees"
               type="number"
-              value={answers.employees}
+              value={answers.numberOfEmployees}
               onChange={(e) => {
-                setAnswers({ ...answers, employees: e.target.value });
+                setAnswers({ ...answers, numberOfEmployees: e.target.value });
               }}
             />
             <FormInput
               label="Ownership Percentage"
               type="number"
-              value={answers.ownershipPercent}
+              value={answers.ownershipPercentage}
               onChange={(e) => {
-                setAnswers({ ...answers, ownershipPercent: e.target.value });
+                setAnswers({ ...answers, ownershipPercentage: e.target.value });
               }}
             />
             <label className="block mb-2 font-medium">Previous Grants</label>
