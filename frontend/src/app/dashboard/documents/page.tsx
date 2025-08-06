@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Protected from '@/components/Protected';
 import api from '@/lib/api';
 import Stepper from '@/components/Stepper';
+import { normalizeQuestionnaire } from '@/lib/validation';
 
 export default function Documents() {
   const router = useRouter();
@@ -70,18 +71,49 @@ export default function Documents() {
 
   const submitAnalysis = async () => {
     if (!confirm('Are you sure you want to submit?')) return;
+
+    const saved =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('questionnaire')
+        : null;
+    const raw = saved ? JSON.parse(saved) : {};
+    const { data, missing, invalid } = normalizeQuestionnaire(raw);
+    if (missing.length || invalid.length) {
+      alert(
+        [
+          'Please complete the questionnaire before submitting.',
+          missing.length && `Missing: ${missing.join(', ')}`,
+          invalid.length && `Invalid: ${invalid.join(', ')}`,
+        ]
+          .filter(Boolean)
+          .join('\n'),
+      );
+      return;
+    }
+
     setLoading(true);
     if (typeof window !== 'undefined') {
       localStorage.setItem('caseStage', 'analysis');
     }
     try {
-      await api.post('/eligibility-report');
+      await api.post('/eligibility-report', data);
       if (typeof window !== 'undefined') {
         localStorage.setItem('caseStage', 'results');
       }
       router.push('/dashboard');
     } catch (err: any) {
-      alert(err?.response?.data?.message || 'Submission failed');
+      const msg = err?.response?.data?.message || 'Submission failed';
+      const missingServer = err?.response?.data?.missing?.join(', ');
+      const invalidServer = err?.response?.data?.invalid?.join(', ');
+      alert(
+        [
+          msg,
+          missingServer && `Missing: ${missingServer}`,
+          invalidServer && `Invalid: ${invalidServer}`,
+        ]
+          .filter(Boolean)
+          .join('\n'),
+      );
       if (typeof window !== 'undefined') {
         localStorage.setItem('caseStage', 'documents');
       }

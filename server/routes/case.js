@@ -111,26 +111,49 @@ router.get('/eligibility-report', auth, (req, res) => {
 router.post('/eligibility-report', auth, async (req, res) => {
   console.log('➡️  POST /eligibility-report', {
     user: req.user.id,
+    body: req.body,
   });
+
   const c = getCase(req.user.id, false);
   if (!c) return res.status(400).json({ message: 'No case found' });
+
   try {
-    console.log('  using answers', c.answers);
+    const { data, missing, invalid } = normalizeQuestionnaire(req.body);
+    if (missing.length || invalid.length) {
+      console.log('  ✖ validation failed', { missing, invalid });
+      return res
+        .status(400)
+        .json({ message: 'Invalid eligibility payload', missing, invalid });
+    }
+    console.log('  ✓ validation passed');
+
+    c.answers = { ...c.answers, ...data };
+
     const form = new FormData();
     form.append('payload', JSON.stringify(c.answers || {}));
+
     if (Array.isArray(c.documents)) {
       c.documents
         .filter((d) => d.uploaded && d.path)
-        .forEach((d) => form.append('files', fs.createReadStream(d.path), d.originalname || d.key));
+        .forEach((d) =>
+          form.append('files', fs.createReadStream(d.path), d.originalname || d.key),
+        );
     }
+
     const aiBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
     const aiUrl = `${aiBase.replace(/\/$/, '')}/analyze`;
     console.log(`→ POST ${aiUrl}`);
-    const aiResp = await fetch(aiUrl, { method: 'POST', body: form, headers: form.getHeaders() });
+    const aiResp = await fetch(aiUrl, {
+      method: 'POST',
+      body: form,
+      headers: form.getHeaders(),
+    });
     if (!aiResp.ok) {
       const text = await aiResp.text();
       console.error('AI agent error', aiResp.status, text);
-      return res.status(502).json({ message: `AI agent error ${aiResp.status}`, details: text });
+      return res
+        .status(502)
+        .json({ message: `AI agent error ${aiResp.status}`, details: text });
     }
     const normalized = await aiResp.json();
     console.log('← AI agent response', normalized);
@@ -146,7 +169,12 @@ router.post('/eligibility-report', auth, async (req, res) => {
     if (!eligResp.ok) {
       const text = await eligResp.text();
       console.error('Eligibility engine error', eligResp.status, text);
-      return res.status(502).json({ message: `Eligibility engine error ${eligResp.status}`, details: text });
+      return res
+        .status(502)
+        .json({
+          message: `Eligibility engine error ${eligResp.status}`,
+          details: text,
+        });
     }
     const eligibility = await eligResp.json();
     console.log('← Eligibility engine response', eligibility);
@@ -162,7 +190,9 @@ router.post('/eligibility-report', auth, async (req, res) => {
     if (!fillerResp.ok) {
       const text = await fillerResp.text();
       console.error('Form filler error', fillerResp.status, text);
-      return res.status(502).json({ message: `Form filler error ${fillerResp.status}`, details: text });
+      return res
+        .status(502)
+        .json({ message: `Form filler error ${fillerResp.status}`, details: text });
     }
     const filled = await fillerResp.json();
     console.log('← Form filler response', filled);
@@ -173,7 +203,9 @@ router.post('/eligibility-report', auth, async (req, res) => {
     res.json({ eligibility, documents: filled });
   } catch (err) {
     console.error('POST /eligibility-report failed', err);
-    res.status(500).json({ message: 'Eligibility computation failed', error: err.message });
+    res
+      .status(500)
+      .json({ message: 'Eligibility computation failed', error: err.message });
   }
 });
 

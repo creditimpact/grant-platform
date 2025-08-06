@@ -40,3 +40,26 @@ test('normalizeQuestionnaire reports missing fields', () => {
   assert(missing.includes('businessName'));
   assert(missing.includes('entityType'));
 });
+
+test('normalizeQuestionnaire flags invalid numeric fields', () => {
+  const { invalid } = normalizeQuestionnaire({
+    businessName: 'Biz',
+    phone: '555',
+    email: 'a@b.com',
+    address: '1 st',
+    city: 'City',
+    state: 'ST',
+    zip: '12345',
+    locationZone: 'urban',
+    entityType: 'LLC',
+    dateEstablished: '2020-01-01',
+    annualRevenue: 'oops',
+    netProfit: '10',
+    employees: '2',
+    ownershipPercent: '50',
+    previousGrants: 'no',
+    ein: '12',
+    incorporationDate: '2020-01-01',
+  });
+  assert(invalid.includes('annualRevenue'));
+});
