@@ -4,6 +4,11 @@ const booleanFields = ['previousGrants', 'cpaPrepared', 'minorityOwned', 'womanO
 function normalizeQuestionnaire(input = {}) {
   const data = { ...input };
 
+  if (data.dateEstablished && !data.incorporationDate) {
+    data.incorporationDate = data.dateEstablished;
+    delete data.dateEstablished;
+  }
+
   if (data.businessType && !data.entityType) {
     data.entityType = data.businessType;
     delete data.businessType;
@@ -41,7 +46,7 @@ function normalizeQuestionnaire(input = {}) {
     'zip',
     'locationZone',
     'entityType',
-    'dateEstablished',
+    'incorporationDate',
     'annualRevenue',
     'netProfit',
     'employees',
@@ -56,7 +61,6 @@ function normalizeQuestionnaire(input = {}) {
     if (!data.ssn) missing.push('ssn');
   } else {
     if (!data.ein) missing.push('ein');
-    if (!data.incorporationDate) missing.push('incorporationDate');
   }
 
   const invalid = [];
@@ -64,6 +68,7 @@ function normalizeQuestionnaire(input = {}) {
     if (data[f] !== undefined && !Number.isFinite(data[f])) invalid.push(f);
   });
 
+  console.log('normalizeQuestionnaire normalized data', data);
   return { data, missing, invalid };
 }
 
