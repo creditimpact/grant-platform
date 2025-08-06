@@ -111,7 +111,9 @@ async def check(
 @app.post("/form-fill")
 async def form_fill(
     request_model: FormFillRequest = Body(
-        ..., embed=False,
+        ...,
+        # Pydantic v2 removed the ``embed`` parameter so we rely on the default
+        # behavior which expects the JSON fields at the top level.
         example={"form_name": "tech_startup_credit_form", "user_payload": {"zip": "94110"}}
     )
 ):
