@@ -129,3 +129,28 @@ Sample response:
   "debug": {"award": {"carryforward": 30000}}
 }
 ```
+
+## Rural Development Grant Example
+
+```http
+POST http://localhost:4001/check
+Content-Type: application/json
+
+{
+  "entity_type": "municipality",
+  "service_area_population": 4000,
+  "income_level": "low",
+  "project_type": "community_facilities",
+  "project_cost": 100000
+}
+```
+
+Sample response:
+
+```json
+{
+  "name": "Rural Development Grant",
+  "eligible": true,
+  "estimated_amount": 75000
+}
+```

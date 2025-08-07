@@ -1,0 +1,9 @@
+{
+  "form": "RD 400-4",
+  "fields": {
+    "applicant_name": "",
+    "duns_number": "",
+    "assurance_agreement": {"type": "checkbox"},
+    "sam_registration": {"type": "checkbox"}
+  }
+}

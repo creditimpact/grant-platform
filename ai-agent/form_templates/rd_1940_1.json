@@ -1,0 +1,9 @@
+{
+  "form": "RD 1940-1",
+  "fields": {
+    "applicant_name": "",
+    "project_type": "",
+    "duns_number": "",
+    "sam_registration": {"type": "checkbox"}
+  }
+}

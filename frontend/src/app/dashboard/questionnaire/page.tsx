@@ -38,9 +38,15 @@ export default function Questionnaire() {
     state: '',
     zip: '',
     locationZone: '',
+    serviceAreaPopulation: '',
+    organizationType: '',
+    incomeLevel: '',
     businessType: '',
     ein: '',
     ssn: '',
+    duns: '',
+    sam: '',
+    cageCode: '',
       incorporationDate: '',
       annualRevenue: '',
       netProfit: '',
@@ -50,6 +56,9 @@ export default function Questionnaire() {
       businessExpenses: '',
       taxPaid: '',
       taxYear: '',
+      projectType: '',
+      projectCost: '',
+      projectState: '',
       previousRefundsClaimed: '',
       previousGrants: '',
       cpaPrepared: false,
@@ -88,6 +97,12 @@ export default function Questionnaire() {
                 ? 'yes'
                 : 'no'
               : prev.previousRefundsClaimed,
+          sam:
+            typeof mapped.sam === 'boolean'
+              ? mapped.sam
+                ? 'yes'
+                : 'no'
+              : mapped.sam || prev.sam,
         }));
       } catch (err: any) {
         logApiError('/case/questionnaire', undefined, err);
@@ -129,8 +144,11 @@ export default function Questionnaire() {
         businessExpenses: Number(answers.businessExpenses),
         taxPaid: Number(answers.taxPaid),
         taxYear: Number(answers.taxYear),
+        serviceAreaPopulation: Number(answers.serviceAreaPopulation),
+        projectCost: Number(answers.projectCost),
         previousRefundsClaimed: answers.previousRefundsClaimed === 'yes',
         previousGrants: answers.previousGrants === 'yes',
+        sam: answers.sam === 'yes',
       };
       await api.post('/case/questionnaire', payload);
       console.log('Questionnaire submitted successfully', payload);
@@ -218,6 +236,44 @@ export default function Questionnaire() {
               <option value="rural">Rural</option>
               <option value="hubzone">HUBZone</option>
             </select>
+            <FormInput
+              label="Service Area Population"
+              type="number"
+              value={answers.serviceAreaPopulation}
+              onChange={(e) => {
+                setAnswers({ ...answers, serviceAreaPopulation: e.target.value });
+              }}
+            />
+            <label className="block mb-2 font-medium">Organization Type</label>
+            <select
+              className="w-full border rounded p-2 mb-1"
+              value={answers.organizationType}
+              onChange={(e) => {
+                setAnswers({ ...answers, organizationType: e.target.value });
+              }}
+            >
+              <option value="">Select</option>
+              <option value="public_entity">Public Entity</option>
+              <option value="municipality">Municipality</option>
+              <option value="local_authority">Local Authority</option>
+              <option value="tribal_government">Tribal Government</option>
+              <option value="nonprofit">Nonprofit Organization</option>
+              <option value="cooperative">Cooperative</option>
+              <option value="utility">Utility</option>
+            </select>
+            <label className="block mb-2 font-medium">Community Income Level</label>
+            <select
+              className="w-full border rounded p-2 mb-1"
+              value={answers.incomeLevel}
+              onChange={(e) => {
+                setAnswers({ ...answers, incomeLevel: e.target.value });
+              }}
+            >
+              <option value="">Select</option>
+              <option value="low">Low</option>
+              <option value="moderate">Moderate</option>
+              <option value="high">High</option>
+            </select>
           </>
         )}
         {step === 1 && (
@@ -261,6 +317,32 @@ export default function Questionnaire() {
                   }}
                 />
               )}
+            <FormInput
+              label="DUNS Number"
+              value={answers.duns}
+              onChange={(e) => {
+                setAnswers({ ...answers, duns: e.target.value });
+              }}
+            />
+            <label className="block mb-2 font-medium">SAM Registration</label>
+            <select
+              className="w-full border rounded p-2 mb-1"
+              value={answers.sam}
+              onChange={(e) => {
+                setAnswers({ ...answers, sam: e.target.value });
+              }}
+            >
+              <option value="">Select</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+            <FormInput
+              label="CAGE Code"
+              value={answers.cageCode}
+              onChange={(e) => {
+                setAnswers({ ...answers, cageCode: e.target.value });
+              }}
+            />
           </>
         )}
         {step === 2 && (
@@ -324,17 +406,46 @@ export default function Questionnaire() {
               <FormInput
                 label="Tax Year"
                 type="number"
-                value={answers.taxYear}
-                onChange={(e) => {
-                  setAnswers({ ...answers, taxYear: e.target.value });
-                }}
-              />
-              <label className="block mb-2 font-medium">Previous Grants</label>
-              <select
-                className="w-full border rounded p-2 mb-1"
-                value={answers.previousGrants}
-                onChange={(e) => {
-                  setAnswers({ ...answers, previousGrants: e.target.value });
+              value={answers.taxYear}
+              onChange={(e) => {
+                setAnswers({ ...answers, taxYear: e.target.value });
+              }}
+            />
+            <label className="block mb-2 font-medium">Project Type</label>
+            <select
+              className="w-full border rounded p-2 mb-1"
+              value={answers.projectType}
+              onChange={(e) => {
+                setAnswers({ ...answers, projectType: e.target.value });
+              }}
+            >
+              <option value="">Select</option>
+              <option value="community_facilities">Community Facilities</option>
+              <option value="rbdg">Rural Business Development</option>
+              <option value="rcdg">Rural Cooperative Development</option>
+              <option value="redlg">Rural Economic Development Loan/Grant</option>
+            </select>
+            <FormInput
+              label="Project Cost"
+              type="number"
+              value={answers.projectCost}
+              onChange={(e) => {
+                setAnswers({ ...answers, projectCost: e.target.value });
+              }}
+            />
+            <FormInput
+              label="Project State"
+              value={answers.projectState}
+              onChange={(e) => {
+                setAnswers({ ...answers, projectState: e.target.value });
+              }}
+            />
+            <label className="block mb-2 font-medium">Previous Grants</label>
+            <select
+              className="w-full border rounded p-2 mb-1"
+              value={answers.previousGrants}
+              onChange={(e) => {
+                setAnswers({ ...answers, previousGrants: e.target.value });
                 }}
               >
                 <option value="">Select</option>

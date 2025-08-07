@@ -1,0 +1,9 @@
+{
+  "form": "AD-1047",
+  "fields": {
+    "applicant_name": "",
+    "duns_number": "",
+    "debarment_certification": {"type": "checkbox"},
+    "sam_registration": {"type": "checkbox"}
+  }
+}
