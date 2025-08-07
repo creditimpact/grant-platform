@@ -7,7 +7,7 @@ This repository contains three microservices used to test a grant eligibility wo
 - **eligibility-engine/** – Python rules engine returning missing fields and suggested next steps
 - **ai-agent/** – LLM-ready service with conversational endpoints and smart form filling
 
-The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant, a Veteran Owned Business Grant, a comprehensive Rural Development Grant covering USDA sub-programs, and a Green Energy State Incentive aggregating state-level rebates, credits and grants for renewable installations.
+The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant, a Veteran Owned Business Grant, the Employee Retention Credit (ERC), a comprehensive Rural Development Grant covering USDA sub-programs, and a Green Energy State Incentive aggregating state-level rebates, credits and grants for renewable installations.
 
 ```
 project-root/

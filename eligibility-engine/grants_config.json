@@ -2,41 +2,100 @@
 {
   "erc": {
     "name": "Employee Retention Credit",
-    "description": "Refundable payroll tax credit for businesses impacted by COVID-19.",
+    "description": "Federal tax credit for retaining employees and paying wages during COVID-19 (2020-2021).",
     "required_fields": [
-      "revenue_by_quarter",
-      "business_type",
-      "covid_orders",
-      "payroll_data",
-      "ppp_received",
-      "startup_date"
+      "business_location_country",
+      "w2_employee_count",
+      "revenue_drop_2020_percent",
+      "revenue_drop_2021_percent",
+      "government_shutdown_2020",
+      "government_shutdown_2021",
+      "qualified_wages_2020",
+      "qualified_wages_2021",
+      "ppp_wages_double_dip"
     ],
     "required_documents": {
-      "payroll": ["payroll reports", "form 941"],
-      "tax": ["income tax returns"],
-      "business": ["articles of incorporation"]
+      "payroll": ["payroll reports", "employee eligibility tables"],
+      "tax": ["income tax returns", "W-3"],
+      "business": ["proof of business activity", "articles of incorporation"],
+      "ppp": ["PPP documentation"]
     },
-    "eligibility_rules": {
-      "2020": {
-        "revenue_drop_percent": 50,
-        "government_shutdown": true
+    "eligibility_categories": {
+      "__mode__": "any",
+      "2020_revenue_decline": {
+        "rules": {
+          "business_location_country": ["US"],
+          "w2_employee_count_min": 1,
+          "ppp_wages_double_dip": false,
+          "revenue_drop_2020_percent_min": 50
+        },
+        "estimated_award": {
+          "type": "percentage",
+          "percent": 50,
+          "based_on": "qualified_wages_2020",
+          "max": 5000
+        },
+        "required_forms": ["941-X"]
       },
-      "2021": {
-        "revenue_drop_percent": 20,
-        "government_shutdown": true
+      "2020_shutdown": {
+        "rules": {
+          "business_location_country": ["US"],
+          "w2_employee_count_min": 1,
+          "ppp_wages_double_dip": false,
+          "government_shutdown_2020": true
+        },
+        "estimated_award": {
+          "type": "percentage",
+          "percent": 50,
+          "based_on": "qualified_wages_2020",
+          "max": 5000
+        },
+        "required_forms": ["941-X"]
       },
-      "recovery_startup": {
-        "startup_after": "2020-02-15"
+      "2021_revenue_decline": {
+        "rules": {
+          "business_location_country": ["US"],
+          "w2_employee_count_min": 1,
+          "ppp_wages_double_dip": false,
+          "revenue_drop_2021_percent_min": 20
+        },
+        "estimated_award": {
+          "type": "percentage",
+          "percent": 70,
+          "based_on": "qualified_wages_2021",
+          "max": 7000
+        },
+        "required_forms": ["941-X"]
+      },
+      "2021_shutdown": {
+        "rules": {
+          "business_location_country": ["US"],
+          "w2_employee_count_min": 1,
+          "ppp_wages_double_dip": false,
+          "government_shutdown_2021": true
+        },
+        "estimated_award": {
+          "type": "percentage",
+          "percent": 70,
+          "based_on": "qualified_wages_2021",
+          "max": 7000
+        },
+        "required_forms": ["941-X"]
       }
     },
-    "irs_forms": ["941-X", "1120"],
-    "warnings": ["IRS has increased audits for aggressive ERC claims."],
+    "irs_forms": ["941-X"],
+    "warnings": [
+      "Strict IRS audits are ongoing; ensure documentation is thorough.",
+      "Wages funded by PPP loans cannot be claimed for ERC."
+    ],
     "references": ["Notice 2021-20", "Notice 2021-23", "Notice 2021-49", "Notice 2021-65"],
     "ui_questions": [
-      "Did your business experience a significant revenue decline?",
-      "Were you subject to a government-mandated shutdown?",
-      "When was your business established?",
-      "Did you receive a PPP loan?"
+      "Is your business located in the United States?",
+      "How many W-2 employees do you have?",
+      "Did you experience a significant revenue decline in 2020 or 2021?",
+      "Were you subject to government shutdown orders?",
+      "What were your qualified wages for 2020 and 2021?",
+      "Did you use PPP funds for the same wages?"
     ]
   }
 }
