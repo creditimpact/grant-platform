@@ -47,18 +47,23 @@ router.post('/case/questionnaire', auth, async (req, res) => {
 // --- Case Status ---
 router.get('/case/status', auth, async (req, res) => {
   console.log('➡️  GET /case/status', { user: req.user.id });
-  const c = getCase(req.user.id, false);
-  if (!c || !c.answers || Object.keys(c.answers).length === 0) {
-    return res.json({ status: 'not_started' });
+  try {
+    const c = getCase(req.user.id, false);
+    if (!c || !c.answers || Object.keys(c.answers).length === 0) {
+      return res.json({ status: 'not_started' });
+    }
+    if (!c.documents || c.documents.length === 0) {
+      c.documents = await computeDocuments(c.answers);
+    }
+    res.json({
+      status: c.status || 'open',
+      documents: c.documents,
+      eligibility: c.eligibility || null,
+    });
+  } catch (err) {
+    console.error('GET /case/status failed', err);
+    res.status(500).json({ message: 'Failed to retrieve case status' });
   }
-  if (!c.documents || c.documents.length === 0) {
-    c.documents = await computeDocuments(c.answers);
-  }
-  res.json({
-    status: c.status || 'open',
-    documents: c.documents,
-    eligibility: c.eligibility || null,
-  });
 });
 
 // --- Document Uploads ---
