@@ -99,7 +99,7 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
 
 ## Running locally
 
-1. Install Node dependencies and start the API server
+1. Install Node dependencies and start the API server. Dependency versions are pinned in `package.json` and `package-lock.json`.
    ```bash
    npm install
    node server/index.js
