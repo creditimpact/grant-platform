@@ -97,3 +97,35 @@ Sample response:
   "estimated_amount": 10000
 }
 ```
+
+## Tech Startup Payroll Credit Example
+
+```http
+POST http://localhost:4001/check
+Content-Type: application/json
+
+{
+  "gross_receipts": 3000000,
+  "years_active": 3,
+  "technological_uncertainty": true,
+  "experimental_process": true,
+  "scientific_process": true,
+  "rd_credit_amount": 150000,
+  "payroll_tax_liability": 120000,
+  "carryforward_credit": 0,
+  "election_filing_quarter": 1,
+  "current_quarter": 2,
+  "tax_year": 2023
+}
+```
+
+Sample response:
+
+```json
+{
+  "name": "Tech Startup Payroll Credit",
+  "eligible": true,
+  "estimated_amount": 120000,
+  "debug": {"award": {"carryforward": 30000}}
+}
+```

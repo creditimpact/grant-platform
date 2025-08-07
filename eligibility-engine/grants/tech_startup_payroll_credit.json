@@ -1,0 +1,59 @@
+{
+  "name": "Tech Startup Payroll Credit",
+  "year": 2023,
+  "description": "Payroll tax credit for qualified small businesses conducting R&D",
+  "required_fields": [
+    "gross_receipts",
+    "years_active",
+    "technological_uncertainty",
+    "experimental_process",
+    "scientific_process",
+    "rd_credit_amount",
+    "payroll_tax_liability",
+    "carryforward_credit",
+    "election_filing_quarter",
+    "current_quarter",
+    "tax_year"
+  ],
+  "eligibility_categories": {
+    "qualified_small_business": {
+      "gross_receipts": {"max": 5000000},
+      "years_active": {"max": 5}
+    },
+    "rd_four_part_test": {
+      "technological_uncertainty": true,
+      "experimental_process": true,
+      "scientific_process": true
+    },
+    "timing": {
+      "current_quarter": {"min_field": "election_filing_quarter", "offset": 1}
+    },
+    "credit_limits": {
+      "tax_year": {"min": 2023}
+    }
+  },
+  "estimated_award": {
+    "type": "payroll_credit",
+    "credit_field": "rd_credit_amount",
+    "payroll_tax_field": "payroll_tax_liability",
+    "carryforward_field": "carryforward_credit",
+    "annual_cap": 500000
+  },
+  "irs_forms": ["6765", "8974", "941"],
+  "tags": ["federal", "tech", "startup"],
+  "ui_questions": [
+    "What were your gross receipts for the year?",
+    "How many years has your business been active?",
+    "Did your R&D involve technological uncertainty?",
+    "Did you conduct a process of experimentation?",
+    "Was the work based on scientific or engineering principles?",
+    "What is your calculated R&D credit amount for the year?",
+    "What is your payroll tax liability for the quarter?",
+    "Do you have any unused credit to carry forward?",
+    "In which quarter did you file Form 6765 to elect the credit?",
+    "Which quarter are you applying the credit to?"
+  ],
+  "complexity_level": "high",
+  "human_summary": "Payroll tax credit for young technology startups performing qualified R&D.",
+  "risk_notes": "Ensure forms 6765, 8974, and 941 are filed and retain records of carryforward calculations."
+}

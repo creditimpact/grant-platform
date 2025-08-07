@@ -4,6 +4,10 @@ This package contains a lightweight rules engine used to determine business elig
 
 Included templates now cover federal and local programs like the **Business Tax Refund Grant** alongside R&D credits, city incentives, and the **Women-Owned Tech Grant**.
 
+## Tech Startup Payroll Credit
+
+The Tech Startup Payroll Credit allows qualified small businesses to apply a portion of their R&D credit against payroll taxes. To qualify, a company must have less than $5 million in gross receipts, be in operation for five years or less, and meet the IRS four-part R&D test (technological uncertainty, experimentation, and scientific/engineering process). The credit is elected on **Form 6765** and claimed on **Forms 8974** and **941** starting the quarter after the election. Unused amounts automatically carry forward to future quarters up to an annual cap of $500,000.
+
 ## Running the Engine
 
 Install dependencies (FastAPI is only required for the optional API service):

@@ -1,10 +1,27 @@
 """Utility helpers to evaluate eligibility rules and estimate award amounts."""
 
 from typing import Any, Dict, List
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
+def _normalize_numeric(value: Any) -> Any:
+    """Attempt to convert numeric strings to ints for comparisons."""
+    if isinstance(value, str):
+        try:
+            if "." in value:
+                return float(value)
+            return int(value)
+        except ValueError:
+            return value
+    return value
 
 
 def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
     """Evaluate a single rule and return status, message and debug info."""
+    logger.debug("Evaluating rule %s with value %s", key, rule_val)
     base_key = key
     expectation = None
     actual = None
@@ -37,7 +54,7 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
     if key.endswith("_min"):
         base_key = key[:-4]
         expectation = f">= {rule_val}"
-        actual = data.get(base_key)
+        actual = _normalize_numeric(data.get(base_key))
         if actual is None:
             return None, f"❌ {base_key} missing", actual, expectation
         return actual >= rule_val, (
@@ -47,7 +64,7 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
     if key.endswith("_max"):
         base_key = key[:-4]
         expectation = f"<= {rule_val}"
-        actual = data.get(base_key)
+        actual = _normalize_numeric(data.get(base_key))
         if actual is None:
             return None, f"❌ {base_key} missing", actual, expectation
         return actual <= rule_val, (
@@ -58,7 +75,7 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
         base_key = key[:-8]
         min_val, max_val = rule_val
         expectation = f"between {min_val} and {max_val}"
-        actual = data.get(base_key)
+        actual = _normalize_numeric(data.get(base_key))
         if actual is None:
             return None, f"❌ {base_key} missing", actual, expectation
         passed = min_val <= actual <= max_val
@@ -79,7 +96,7 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
 
     if isinstance(rule_val, list):
         expectation = f"in {rule_val}"
-        actual = data.get(key)
+        actual = _normalize_numeric(data.get(key))
         if actual is None:
             return None, f"❌ {key} missing", actual, expectation
         passed = actual in rule_val
@@ -88,7 +105,7 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
         ), actual, expectation
 
     if isinstance(rule_val, dict):
-        actual = data.get(key)
+        actual = _normalize_numeric(data.get(key))
         if actual is None:
             expectation_parts = []
             if "min" in rule_val:
@@ -98,11 +115,18 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
             if "one_of" in rule_val or "allowed" in rule_val:
                 allowed = rule_val.get("one_of") or rule_val.get("allowed")
                 expectation_parts.append(f"in {allowed}")
+            if "min_field" in rule_val:
+                expectation_parts.append(
+                    f">= {rule_val['min_field']} + {rule_val.get('offset', 0)}"
+                )
+            if "max_field" in rule_val:
+                expectation_parts.append(
+                    f"<= {rule_val['max_field']} + {rule_val.get('offset', 0)}"
+                )
             expectation = " and ".join(expectation_parts)
             return None, f"❌ {key} missing", actual, expectation
 
         passed = True
-        msgs: List[str] = []
         expectation_parts = []
         if "min" in rule_val:
             expectation_parts.append(f">= {rule_val['min']}")
@@ -111,6 +135,28 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
         if "max" in rule_val:
             expectation_parts.append(f"<= {rule_val['max']}")
             ok = actual <= rule_val["max"]
+            passed = passed and ok
+        if "min_field" in rule_val:
+            other = _normalize_numeric(data.get(rule_val["min_field"]))
+            offset = rule_val.get("offset", 0)
+            expectation_parts.append(
+                f">= {rule_val['min_field']} + {offset}"
+            )
+            if other is None:
+                return None, f"❌ {rule_val['min_field']} missing", actual, \
+                    f">= {rule_val['min_field']} + {offset}"
+            ok = actual >= other + offset
+            passed = passed and ok
+        if "max_field" in rule_val:
+            other = _normalize_numeric(data.get(rule_val["max_field"]))
+            offset = rule_val.get("offset", 0)
+            expectation_parts.append(
+                f"<= {rule_val['max_field']} + {offset}"
+            )
+            if other is None:
+                return None, f"❌ {rule_val['max_field']} missing", actual, \
+                    f"<= {rule_val['max_field']} + {offset}"
+            ok = actual <= other + offset
             passed = passed and ok
         if "one_of" in rule_val or "allowed" in rule_val:
             allowed = rule_val.get("one_of") or rule_val.get("allowed")
@@ -124,7 +170,7 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
 
     # simple equality
     expectation = str(rule_val)
-    actual = data.get(key)
+    actual = _normalize_numeric(data.get(key))
     if actual is None:
         return None, f"❌ {key} missing", actual, expectation
     passed = actual == rule_val
@@ -143,6 +189,7 @@ def check_rules(data: Dict[str, Any], rules: Dict[str, Any]):
 
     for key, rule_val in rules.items():
         status, msg, actual, expectation = _evaluate_rule(data, key, rule_val)
+        logger.debug("%s -> %s", key, msg)
         reasoning.append(msg)
         debug["checked_rules"][key] = {"value": actual, "expected": expectation}
         if status is None:
@@ -176,6 +223,7 @@ def check_rule_groups(data: Dict[str, Any], groups: Dict[str, Dict[str, Any]]):
     eligibility: Any = True
 
     for name, rules in groups.items():
+        logger.debug("Evaluating rule group %s", name)
         result = check_rules(data, rules)
         aggregated_reasoning.extend([f"[{name}] {msg}" for msg in result["reasoning"]])
         aggregated_debug["groups"][name] = result["debug"]
@@ -196,7 +244,7 @@ def check_rule_groups(data: Dict[str, Any], groups: Dict[str, Dict[str, Any]]):
     }
 
 
-def estimate_award(data: Dict[str, Any], rule: Dict[str, Any]) -> int:
+def estimate_award(data: Dict[str, Any], rule: Dict[str, Any]):
     """Estimate the award based on the rule definition."""
     if not rule:
         return 0
@@ -235,6 +283,21 @@ def estimate_award(data: Dict[str, Any], rule: Dict[str, Any]) -> int:
             if remaining <= 0:
                 break
         return int(total)
+
+    if rtype == "payroll_credit":
+        credit_field = rule.get("credit_field", "rd_credit_amount")
+        payroll_field = rule.get("payroll_tax_field", "payroll_tax_liability")
+        carry_field = rule.get("carryforward_field", "carryforward_credit")
+        annual_cap = rule.get("annual_cap", 0)
+        requested = _normalize_numeric(data.get(credit_field, 0))
+        payroll = _normalize_numeric(data.get(payroll_field, 0))
+        carry = _normalize_numeric(data.get(carry_field, 0))
+        available = requested + carry
+        if annual_cap:
+            available = min(available, annual_cap)
+        amount = min(available, payroll)
+        remaining = available - amount
+        return {"amount": int(amount), "carryforward": int(remaining)}
 
     # default to base amount
     return int(rule.get("base", 0))
