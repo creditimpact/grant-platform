@@ -1,0 +1,38 @@
+{
+  "name": "Business Tax Refund Grant",
+  "year": 2025,
+  "description": "Refund for businesses eligible for tax credits and overpayments",
+  "required_fields": [
+    "business_income",
+    "business_expenses",
+    "tax_paid",
+    "business_type",
+    "tax_year",
+    "previous_refunds_claimed"
+  ],
+  "eligibility_rules": {
+    "business_income": { "min": 10000 },
+    "business_expenses": { "min": 5000 },
+    "tax_paid": { "min": 1000 },
+    "business_type": ["Corporation", "LLC", "Partnership"],
+    "tax_year": { "allowed": [2023, 2024, 2025] },
+    "previous_refunds_claimed": false
+  },
+  "estimated_award": {
+    "type": "percentage",
+    "percentage": 0.10,
+    "base_amount_field": "tax_paid"
+  },
+  "tags": ["tax", "refund", "financial"],
+  "ui_questions": [
+    "What was your total business income for the tax year?",
+    "What were your total deductible business expenses?",
+    "How much tax did your business pay last year?",
+    "What is your business type?",
+    "Which tax year are you claiming the refund for?",
+    "Have you claimed a similar refund in previous years?"
+  ],
+  "complexity_level": "high",
+  "human_summary": "Refund for eligible businesses that paid tax and meet income and expense thresholds",
+  "risk_notes": "Must not have claimed similar refunds previously to avoid duplicate claims"
+}

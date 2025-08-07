@@ -1,5 +1,5 @@
-export const numericFields = ['annualRevenue', 'netProfit', 'numberOfEmployees', 'ownershipPercentage'];
-export const booleanFields = ['previousGrants', 'cpaPrepared', 'minorityOwned', 'womanOwned', 'veteranOwned', 'hasPayroll', 'hasInsurance'];
+export const numericFields = ['annualRevenue', 'netProfit', 'numberOfEmployees', 'ownershipPercentage', 'businessIncome', 'businessExpenses', 'taxPaid', 'taxYear'];
+export const booleanFields = ['previousGrants', 'previousRefundsClaimed', 'cpaPrepared', 'minorityOwned', 'womanOwned', 'veteranOwned', 'hasPayroll', 'hasInsurance'];
 
 export function normalizeQuestionnaire(input: any = {}) {
   const data: any = { ...input };
@@ -56,6 +56,11 @@ export function normalizeQuestionnaire(input: any = {}) {
     'netProfit',
     'numberOfEmployees',
     'ownershipPercentage',
+    'businessIncome',
+    'businessExpenses',
+    'taxPaid',
+    'taxYear',
+    'previousRefundsClaimed',
     'previousGrants',
   ];
 

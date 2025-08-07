@@ -1,5 +1,14 @@
-const numericFields = ['annualRevenue', 'netProfit', 'numberOfEmployees', 'ownershipPercentage'];
-const booleanFields = ['previousGrants'];
+const numericFields = [
+  'annualRevenue',
+  'netProfit',
+  'numberOfEmployees',
+  'ownershipPercentage',
+  'business_income',
+  'business_expenses',
+  'tax_paid',
+  'tax_year',
+];
+const booleanFields = ['previousGrants', 'previous_refunds_claimed'];
 const allowedBusinessTypes = ['Sole', 'Partnership', 'LLC', 'Corporation'];
 
 // Frontend -> backend field mappings
@@ -8,6 +17,11 @@ const fieldMap = {
   employees: 'numberOfEmployees',
   ownershipPercent: 'ownershipPercentage',
   dateEstablished: 'incorporationDate',
+  businessIncome: 'business_income',
+  businessExpenses: 'business_expenses',
+  taxPaid: 'tax_paid',
+  taxYear: 'tax_year',
+  previousRefundsClaimed: 'previous_refunds_claimed',
 };
 
 const reverseFieldMap = Object.fromEntries(
@@ -26,6 +40,10 @@ function normalizeQuestionnaire(input = {}) {
     }
     delete data[src];
   });
+
+  if (data.businessType && data.business_type === undefined) {
+    data.business_type = data.businessType;
+  }
 
   // convert numeric fields
   numericFields.forEach((f) => {
@@ -67,7 +85,18 @@ function normalizeQuestionnaire(input = {}) {
     }
   });
 
-  const required = ['businessName', 'phone', 'email', 'businessType', 'incorporationDate'];
+  const required = [
+    'businessName',
+    'phone',
+    'email',
+    'businessType',
+    'incorporationDate',
+    'business_income',
+    'business_expenses',
+    'tax_paid',
+    'tax_year',
+    'previous_refunds_claimed',
+  ];
   const missing = required.filter(
     (f) => data[f] === undefined || data[f] === '' || data[f] === null || Number.isNaN(data[f])
   );
@@ -115,6 +144,9 @@ function denormalizeQuestionnaire(input = {}) {
       data[dest] = data[src];
     }
   });
+  if (data.business_type && data.businessType === undefined) {
+    data.businessType = data.business_type;
+  }
   return data;
 }
 

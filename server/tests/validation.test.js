@@ -14,12 +14,22 @@ test('normalizeQuestionnaire handles frontend field names and ISO dates', () => 
     employees: '2',
     ownershipPercent: '50',
     previousGrants: 'yes',
+    businessIncome: '20000',
+    businessExpenses: '15000',
+    taxPaid: '3000',
+    taxYear: '2024',
+    previousRefundsClaimed: 'no',
   });
   assert.equal(data.businessType, 'LLC');
   assert.equal(data.incorporationDate, '2020-02-01');
   assert.strictEqual(data.numberOfEmployees, 2);
   assert.strictEqual(data.ownershipPercentage, 50);
   assert.strictEqual(data.previousGrants, true);
+  assert.strictEqual(data.business_income, 20000);
+  assert.strictEqual(data.business_expenses, 15000);
+  assert.strictEqual(data.tax_paid, 3000);
+  assert.strictEqual(data.tax_year, 2024);
+  assert.strictEqual(data.previous_refunds_claimed, false);
   assert.equal(missing.length, 0);
   assert.equal(invalid.length, 0);
 });
@@ -31,6 +41,11 @@ test('normalizeQuestionnaire converts MM/DD/YYYY dates to ISO', () => {
     email: 'a@b.com',
     businessType: 'LLC',
     incorporationDate: '01/02/2020',
+    businessIncome: 20000,
+    businessExpenses: 15000,
+    taxPaid: 3000,
+    taxYear: 2024,
+    previousRefundsClaimed: false,
   });
   assert.equal(data.incorporationDate, '2020-01-02');
 });
@@ -42,6 +57,11 @@ test('normalizeQuestionnaire reports missing required fields', () => {
   assert(missing.includes('email'));
   assert(missing.includes('businessType'));
   assert(missing.includes('incorporationDate'));
+  assert(missing.includes('business_income'));
+  assert(missing.includes('business_expenses'));
+  assert(missing.includes('tax_paid'));
+  assert(missing.includes('tax_year'));
+  assert(missing.includes('previous_refunds_claimed'));
 });
 
 test('normalizeQuestionnaire flags invalid fields', () => {
@@ -53,10 +73,19 @@ test('normalizeQuestionnaire flags invalid fields', () => {
     incorporationDate: '2020-13-01',
     annualRevenue: 'oops',
     ownershipPercentage: '150',
+    businessIncome: 'NaN',
+    businessExpenses: '-1',
+    taxPaid: 'NaN',
+    taxYear: '-2020',
+    previousRefundsClaimed: 'maybe',
   });
   assert(invalid.includes('email'));
   assert(invalid.includes('businessType'));
   assert(invalid.includes('incorporationDate'));
   assert(invalid.includes('annualRevenue'));
   assert(invalid.includes('ownershipPercentage'));
+  assert(invalid.includes('business_income'));
+  assert(invalid.includes('business_expenses'));
+  assert(invalid.includes('tax_paid'));
+  assert(invalid.includes('tax_year'));
 });
