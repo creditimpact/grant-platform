@@ -7,6 +7,8 @@ This repository contains three microservices used to test a grant eligibility wo
 - **eligibility-engine/** – Python rules engine returning missing fields and suggested next steps
 - **ai-agent/** – LLM-ready service with conversational endpoints and smart form filling
 
+All Node.js dependencies are pinned to exact versions, and the server runs on the stable Express 4.18.2 release for consistent builds.
+
 The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant, a Veteran Owned Business Grant, the Employee Retention Credit (ERC), a comprehensive Rural Development Grant covering USDA sub-programs, a Green Energy State Incentive aggregating state-level rebates, credits and grants for renewable installations, an Urban Small Business Grants (2025) package spanning nine city programs, and a California Small Business Grant (2025) bundling the Dream Fund, STEP export vouchers, San Francisco Women’s Entrepreneurship Fund, Route 66 Extraordinary Women Micro-Grant, CDFA grants, RUST assistance, CalChamber awards and the LA Region Small Business Relief Fund.
 The Rural Development configuration now includes federal form templates for SF-424, 424A, RD 400-1, RD 400-4 and RD 400-8.
 
@@ -99,7 +101,7 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
 
 ## Running locally
 
-1. Install Node dependencies and start the API server. Dependency versions are pinned in `package.json` and `package-lock.json`.
+1. Install Node dependencies and start the API server. Dependency versions, including Express 4.18.2, are pinned in `package.json` and `package-lock.json`.
    ```bash
    npm install
    node server/index.js
