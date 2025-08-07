@@ -127,12 +127,11 @@ To fill a grant application form, send JSON directly to `/form-fill`:
 curl -X POST http://localhost:5001/form-fill \
     -H "Content-Type: application/json" \
     -d '{
-        "form_name": "sba_microloan_form",
+        "form_name": "tech_startup_credit_form",
         "user_payload": {
-            "business_name": "Tech Boosters",
-            "annual_revenue": 250000,
-            "zipCode": "10001",
-            "minority_owned": true
+            "startup_year": "2022",
+            "industry": "technology",
+            "zip": "10001"
         }
     }'
 ```

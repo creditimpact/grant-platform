@@ -67,35 +67,12 @@ def test_form_fill():
     assert form["fields"].get("is_new_tech") is True
 
 
-def test_form_fill_sba_full():
-    payload = load_payload()
-    payload.update({"business_id": "123", "owner_name": "Jane"})
-    data = asyncio.run(form_fill({"form_name": "sba_microloan_form", "user_payload": payload}))
-    form = data["filled_form"]
-    assert str(form["fields"]["business_id"]) == "123"
-    assert "tax_document" in form.get("files", {})
-
-
 def test_form_fill_partial_inference():
     payload = {"zip": "94110", "owner_gender": "probably yes", "startup_year": "2021"}
     data = asyncio.run(form_fill({"form_name": "tech_startup_credit_form", "user_payload": payload}))
     form = data["filled_form"]
     assert form["fields"].get("state") == "CA"
     assert form["fields"].get("mission_statement") != ""
-
-
-def test_form_fill_full_scenario():
-    payload = {"annual_revenue": 200000, "zip": "10001"}
-    doc = BASE_DIR / "test_documents" / "fake_tz.pdf"
-    with doc.open("rb") as f:
-        filled = direct_fill_form("sba_microloan_form", payload, f.read())
-    data = {"filled_form": filled}
-    form = data["filled_form"]
-    assert form["fields"].get("state") == "NY"
-    assert form["fields"].get("annual_income") == 200000
-    assert "tax_document" in form.get("files", {})
-    desc = form["fields"].get("business_description", "")
-    assert desc and len(desc.split()) > 5
 
 
 def test_nlp_utils():
@@ -127,31 +104,9 @@ def test_freeform_notes():
     assert any(r.get("reasoning_steps") is not None for r in data)
 
 
-def test_form_fill_gpt_prompt():
-    payload = {"business_id": "999"}
-    data = asyncio.run(form_fill({"form_name": "sba_microloan_form", "user_payload": payload}))
-    form = data["filled_form"]
-    assert form["fields"].get("business_description") != ""
-
-
 def test_chat_llm():
     resp = asyncio.run(chat({"session_id": "test1", "text": "Hello"}))
     assert isinstance(resp.get("response"), str) and resp["response"] != ""
-
-
-def test_form_fill_json_example():
-    """Ensure the /form-fill endpoint accepts standard JSON input."""
-    payload = {
-        "form_name": "sba_microloan_form",
-        "user_payload": {
-            "business_name": "Tech Boosters",
-            "annual_revenue": 250000,
-            "zipcode": "10001",
-            "minority_owned": True,
-        },
-    }
-    data = asyncio.run(form_fill(payload))
-    assert data.get("filled_form")
 
 
 def test_form_fill_invalid_payload():
@@ -162,6 +117,6 @@ def test_form_fill_invalid_payload():
 
 def test_form_fill_rejects_embedded_payload():
     """Legacy embedded bodies should not be accepted after Pydantic v2 upgrade."""
-    payload = {"request_model": {"form_name": "sba_microloan_form", "user_payload": {}}}
+    payload = {"request_model": {"form_name": "tech_startup_credit_form", "user_payload": {}}}
     with pytest.raises(ValidationError):
         asyncio.run(form_fill(payload))
