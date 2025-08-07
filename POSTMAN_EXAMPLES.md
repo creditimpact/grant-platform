@@ -70,3 +70,30 @@ Content-Type: application/json
 ```
 
 *The API also accepts legacy fields `entityType`, `employees`, `ownershipPercent` and `dateEstablished`. Dates may be sent in `YYYY-MM-DD` (preferred) or `MM/DD/YYYY` formats.*
+
+## Veteran Owned Business Grant Example
+```http
+POST http://localhost:4001/check
+Content-Type: application/json
+
+{
+  "owner_veteran": true,
+  "owner_spouse": false,
+  "ownership_percentage": 60,
+  "number_of_employees": 10,
+  "annual_revenue": 3000000,
+  "business_location_state": "TX",
+  "economically_vulnerable_area": true,
+  "business_type": "llc"
+}
+```
+
+Sample response:
+
+```json
+{
+  "name": "Veteran Owned Business Grant",
+  "eligible": true,
+  "estimated_amount": 10000
+}
+```
