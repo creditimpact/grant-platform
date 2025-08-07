@@ -2,7 +2,7 @@
 
 This package contains a lightweight rules engine used to determine business eligibility for a variety of grant and credit programs. Grants are defined as JSON files under `grants/` so new programs can be added without touching the code.
 
-Included templates now cover federal and local programs like the **Business Tax Refund Grant**, the **Women-Owned Tech Grant**, the **Minority Female Founder Grant**, the **Employee Retention Credit (ERC)**, the **Rural Development Grant** with multiple USDA sub-programs, the **Green Energy State Incentive** spanning state-level rebates, tax credits, and direct grants for renewable projects, and the **Urban Small Business Grants (2025)** combining nine city recovery programs.
+Included templates now cover federal and local programs like the **Business Tax Refund Grant**, the **Women-Owned Tech Grant**, the **Minority Female Founder Grant**, the **Employee Retention Credit (ERC)**, the **Rural Development Grant** with multiple USDA sub-programs, the **Green Energy State Incentive** spanning state-level rebates, tax credits, and direct grants for renewable projects, the **Urban Small Business Grants (2025)** combining nine city recovery programs, and the **California Small Business Grant (2025)** bundling statewide initiatives such as the Dream Fund and STEP vouchers.
 
 ## Tech Startup Payroll Credit
 
@@ -11,6 +11,10 @@ The Tech Startup Payroll Credit allows qualified small businesses to apply a por
 ## Urban Small Business Grants (2025)
 
 This composite configuration bundles nine city programs such as the Chicago Microbusiness Recovery Grant and Rockford RE-GROW Grant. Businesses must operate within city limits, show COVID‑19 or structural damage impacts, meet local employee and revenue caps, and provide tax returns, W‑9s, business licenses, bank statements and recovery plans. Estimated awards range from $5k to $25k depending on the city program.
+
+## California Small Business Grant (2025)
+
+This definition aggregates eight statewide initiatives including the California Dream Fund, STEP export vouchers, San Francisco Women’s Entrepreneurship Fund, Route 66 Extraordinary Women Micro‑Grant, California Department of Food and Agriculture grants, RUST underground storage tank assistance, CalChamber Small Business Awards and the LA Region Small Business Relief Fund. Programs target California businesses meeting specific size, revenue, location and training criteria with awards from $2k microgrants up to $100k for agricultural projects.
 
 ## Running the Engine
 

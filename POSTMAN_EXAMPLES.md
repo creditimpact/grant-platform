@@ -210,6 +210,48 @@ Sample response:
 }
 ```
 
+## California Small Business Grant (2025) Example
+```http
+POST http://localhost:4001/check
+Content-Type: application/json
+
+{
+  "business_location_state": "CA",
+  "number_of_employees": 4,
+  "annual_revenue": 500000,
+  "registration_year": 2021,
+  "owner_state": "CA",
+  "sbtaep_training_complete": true,
+  "certified_center_approval": true,
+  "net_income": 100000,
+  "business_age_years": 2,
+  "us_content_percent": 0,
+  "sba_standard_compliant": false,
+  "city": "Los Angeles",
+  "women_owned": false,
+  "technical_assistance_complete": false,
+  "route_66_location": false,
+  "industry": "technology",
+  "project_type": "other",
+  "ust_owner_operator": false,
+  "annual_fuel_sales_gallons": 0,
+  "health_safety_compliant": false,
+  "chamber_nomination": false,
+  "county": "Other",
+  "low_income_community": false,
+  "disaster_affected": false
+}
+```
+
+Sample response:
+```json
+{
+  "name": "California Small Business Grant (2025)",
+  "eligible": true,
+  "estimated_amount": 10000
+}
+```
+
 ## Employee Retention Credit Example
 ```http
 POST http://localhost:4001/check
