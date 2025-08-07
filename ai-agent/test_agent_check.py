@@ -127,3 +127,9 @@ def test_form_424A_template_loads():
     """Ensure the Form 424A template is accessible and structured."""
     form = direct_fill_form("form_424A", {})
     assert form["fields"]["Budget Information"]["OMB Number"] == "4040-0006"
+
+
+def test_form_RD_400_1_template_loads():
+    """Ensure the Form RD 400-1 template can be loaded."""
+    form = direct_fill_form("form_RD_400_1", {})
+    assert form["fields"]["form_number"] == "RD 400-1"
