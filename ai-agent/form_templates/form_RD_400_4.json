@@ -1,0 +1,122 @@
+{
+  "form": "Form RD 400-4",
+  "fields": {
+    "form_metadata": {
+      "form_number": "RD 400-4",
+      "revision_date": "Rev. 3-97",
+      "title": "ASSURANCE AGREEMENT",
+      "subtitle": "(Under Title VI, Civil Rights Act of 1964)",
+      "department": "USDA",
+      "omb_number": "0575-0018"
+    },
+    "legal_authority": {
+      "acts": ["Title VI of the Civil Rights Act of 1964"],
+      "usc_references": ["42 USC 2000d et. seq."],
+      "cfr_parts": ["7 CFR Part 15"],
+      "agency_regulations": ["7 C.F.R. § 1901.202"],
+      "agencies": [
+        "Rural Housing Service",
+        "Rural Business-Cooperative Service",
+        "Rural Utilities Service",
+        "Farm Service Agency"
+      ]
+    },
+    "recipient_info": {
+      "name": "",
+      "address": ""
+    },
+    "primary_assurance": {
+      "compliance_statement": "Recipient assures compliance with Title VI of the Civil Rights Act of 1964, 7 CFR Part 15, and Agency regulations",
+      "non_discrimination_clause": "No person in the United States shall, on the ground of race, color, or national origin, be excluded from participation in, be denied the benefits of, or be otherwise subjected to discrimination in connection with any program or activity for which Recipient receives Federal financial assistance",
+      "federal_financial_assistance_definition": "As defined in 7 C.F.R. § 14.2"
+    },
+    "recipient_obligations": [
+      {
+        "section": 1,
+        "title": "Transfer obligations",
+        "requirement": "Any transfer of aided facility (other than personal property) by sale, lease or other conveyance shall be subject to this agreement and transferee's assumption of obligations"
+      },
+      {
+        "section": 2,
+        "title": "Record keeping and access requirements",
+        "subsections": [
+          {
+            "subsection": "a",
+            "requirement": "Keep records and submit timely, complete, and accurate information as Government determines necessary for compliance verification"
+          },
+          {
+            "subsection": "b",
+            "requirement": "Permit access by authorized Agency or USDA employees during normal business hours to books, records, accounts, information sources, and facilities for compliance verification"
+          },
+          {
+            "subsection": "c",
+            "requirement": "Make available to users, participants, beneficiaries and other interested persons information regarding agreement provisions and regulations to inform them of discrimination protection"
+          }
+        ]
+      },
+      {
+        "section": 3,
+        "title": "Duration of obligations",
+        "subsections": [
+          {
+            "subsection": "a",
+            "scope": "Real property (including structures)",
+            "duration": "As long as property is used for the purpose for which Federal financial assistance was made, or for similar purpose, or as long as Recipient retains ownership/possession, whichever is longer"
+          },
+          {
+            "subsection": "b",
+            "scope": "Personal property",
+            "duration": "As long as Recipient retains ownership or possession of the property"
+          },
+          {
+            "subsection": "c",
+            "scope": "Any other aided facility or activity",
+            "duration": "Until the last advance of funds under the loan or grant has been made"
+          }
+        ]
+      },
+      {
+        "section": 4,
+        "title": "Breach or violation remedies",
+        "government_options": [
+          {
+            "option": "a",
+            "action": "Terminate or refuse to render or continue financial assistance for the aided property, facility, project, service or activity"
+          },
+          {
+            "option": "b",
+            "action": "Enforce agreement by suit for specific performance or by any other available remedy under United States or State laws"
+          }
+        ],
+        "note": "Rights and remedies are cumulative"
+      }
+    ],
+    "execution_section": {
+      "witness_clause": "In witness whereof",
+      "execution_requirements": {
+        "corporate": "Executed by duly authorized officers with corporate seal affixed",
+        "individual": "Executed by natural person"
+      },
+      "required_elements": [
+        "Date",
+        "Recipient signature",
+        "Corporate seal (if applicable)",
+        "Attestation",
+        "Title signatures"
+      ]
+    },
+    "paperwork_reduction_act": {
+      "act_year": "1995",
+      "omb_control_number": "0570-0018",
+      "response_requirement": "No persons required to respond unless valid OMB control number displayed",
+      "estimated_completion_time": "15 minutes per response",
+      "time_includes": [
+        "Reviewing instructions",
+        "Searching existing data sources",
+        "Gathering and maintaining data needed",
+        "Completing and reviewing collection of information"
+      ]
+    }
+  },
+  "text": "Form RD 400-4 documents assurances of compliance with Title VI of the Civil Rights Act for recipients of USDA Rural Development assistance."
+}

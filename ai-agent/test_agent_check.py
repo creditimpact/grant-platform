@@ -133,3 +133,8 @@ def test_form_RD_400_1_template_loads():
     """Ensure the Form RD 400-1 template can be loaded."""
     form = direct_fill_form("form_RD_400_1", {})
     assert form["fields"]["form_number"] == "RD 400-1"
+
+def test_form_RD_400_4_template_loads():
+    """Ensure the Form RD 400-4 template can be loaded."""
+    form = direct_fill_form("form_RD_400_4", {})
+    assert form["fields"]["form_metadata"]["form_number"] == "RD 400-4"
