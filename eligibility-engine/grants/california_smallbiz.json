@@ -1,31 +1,141 @@
 {
-  "name": "California Small Business Grant",
+  "name": "California Small Business Grant (2025)",
   "year": 2025,
-  "description": "State grant for California-based small businesses",
+  "description": "Collection of California state and regional programs supporting small businesses.",
+  "general_eligibility": "Applicants must be California-based small businesses meeting program-specific size, revenue and training requirements and submit W-9, business license, proof of income and an action plan where applicable.",
   "required_fields": [
-    "state",
-    "employees"
+    "business_location_state",
+    "number_of_employees",
+    "annual_revenue",
+    "registration_year",
+    "owner_state",
+    "sbtaep_training_complete",
+    "certified_center_approval",
+    "net_income",
+    "business_age_years",
+    "us_content_percent",
+    "sba_standard_compliant",
+    "city",
+    "women_owned",
+    "technical_assistance_complete",
+    "route_66_location",
+    "industry",
+    "project_type",
+    "ust_owner_operator",
+    "annual_fuel_sales_gallons",
+    "health_safety_compliant",
+    "chamber_nomination",
+    "county",
+    "low_income_community",
+    "disaster_affected"
   ],
-  "eligibility_rules": {
-    "state": [
-      "CA"
-    ],
-    "employees_min": 1,
-    "employees_max": 100
+  "eligibility_categories": {
+    "__mode__": "any",
+    "california_dream_fund": {
+      "rules": {
+        "business_location_state": ["CA"],
+        "number_of_employees_max": 5,
+        "annual_revenue_max": 1000000,
+        "registration_year_min": 2019,
+        "owner_state": ["CA"],
+        "sbtaep_training_complete": true,
+        "certified_center_approval": true
+      },
+      "estimated_award": {"type": "base", "base": 10000},
+      "required_forms": ["W-9", "business_license", "proof_of_income", "action_plan"]
+    },
+    "california_step": {
+      "rules": {
+        "business_location_state": ["CA"],
+        "net_income_min": 1,
+        "business_age_years_min": 1,
+        "us_content_percent_min": 51,
+        "sba_standard_compliant": true
+      },
+      "estimated_award": {"type": "base", "base": 10000},
+      "required_forms": ["W-9", "business_license", "proof_of_income", "action_plan"]
+    },
+    "san_francisco_womens_entrepreneurship_fund": {
+      "rules": {
+        "business_location_state": ["CA"],
+        "city": ["San Francisco"],
+        "women_owned": true,
+        "annual_revenue_max": 500000,
+        "net_income_max": 27500,
+        "technical_assistance_complete": true
+      },
+      "estimated_award": {"type": "base", "base": 5000},
+      "required_forms": ["W-9", "business_license", "proof_of_income", "action_plan"]
+    },
+    "route_66_extraordinary_women": {
+      "rules": {
+        "business_location_state": ["CA"],
+        "route_66_location": true,
+        "women_owned": true,
+        "number_of_employees_max": 19
+      },
+      "estimated_award": {"type": "base", "base": 2000},
+      "required_forms": ["W-9", "business_license", "proof_of_income"]
+    },
+    "cdfa_grants": {
+      "rules": {
+        "business_location_state": ["CA"],
+        "industry": ["agriculture", "farm"],
+        "project_type": ["healthy_soils", "infrastructure"]
+      },
+      "estimated_award": {"type": "base", "base": 100000},
+      "required_forms": ["W-9", "business_license", "action_plan"]
+    },
+    "rust_grants": {
+      "rules": {
+        "business_location_state": ["CA"],
+        "ust_owner_operator": true,
+        "number_of_employees_max": 20,
+        "annual_fuel_sales_gallons_max": 1500000,
+        "health_safety_compliant": true
+      },
+      "estimated_award": {"type": "base", "base": 70000},
+      "required_forms": ["W-9", "business_license", "proof_of_income"]
+    },
+    "calchamber_small_business_awards": {
+      "rules": {
+        "business_location_state": ["CA"],
+        "chamber_nomination": true
+      },
+      "estimated_award": {"type": "base", "base": 5000},
+      "required_forms": ["W-9", "business_license"]
+    },
+    "la_region_small_business_relief": {
+      "rules": {
+        "business_location_state": ["CA"],
+        "county": ["Los Angeles"],
+        "annual_revenue_max": 6000000,
+        "number_of_employees_max": 99,
+        "low_income_community": true,
+        "disaster_affected": true
+      },
+      "estimated_award": {"type": "base", "base": 25000},
+      "required_forms": ["W-9", "business_license", "proof_of_income", "action_plan"]
+    }
   },
-  "estimated_award": {
-    "type": "base",
-    "base": 10000
-  },
-  "tags": [
-    "state",
-    "california"
-  ],
+  "tags": ["state", "california", "small_business"],
   "ui_questions": [
-    "Which state is your business located in?",
-    "How many employees do you have?"
+    "In which state is your business located?",
+    "How many employees does your business have?",
+    "What is your annual revenue?",
+    "What year was your business registered?",
+    "Are the owners California residents?",
+    "Have you completed SB TAEP training and received approval from a certified center?",
+    "Is your business profitable and at least one year old?",
+    "What percentage of your product content is from the United States?",
+    "Is your business women-owned?",
+    "Where in California is your business located (city, county, Route 66)?",
+    "Does your project involve agriculture or infrastructure improvements?",
+    "Do you own or operate underground storage tanks and meet health and safety standards?",
+    "Have you been nominated by a Chamber of Commerce?",
+    "Is your business in Los Angeles County and affected by disasters or located in a low-income community?"
   ],
-  "complexity_level": "medium",
-  "human_summary": "State grant for California-based small businesses",
+  "complexity_level": "high",
+  "human_summary": "2025 California programs including Dream Fund, STEP, SF Women's Fund, Route 66 Micro-Grant, CDFA grants, RUST, CalChamber awards and LA Region relief.",
   "risk_notes": ""
 }

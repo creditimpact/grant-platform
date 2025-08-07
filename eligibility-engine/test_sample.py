@@ -19,6 +19,12 @@ def test_engine():
         "owner_minority": True,
         "rural_area": False,
         "tags": ["technology", "startup"],
+        "business_income": 150000,
+        "business_expenses": 100000,
+        "tax_paid": 20000,
+        "business_type": "LLC",
+        "tax_year": 2024,
+        "previous_refunds_claimed": False,
     }
     results = analyze_eligibility(user, explain=True)
     # at least one grant should be fully eligible
