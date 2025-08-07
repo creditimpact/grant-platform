@@ -14,5 +14,11 @@
   "city": "Boston",
   "owner_minority": true,
   "rural_area": true,
-  "tags": ["technology"]
+  "tags": ["technology"],
+  "business_income": 15000,
+  "business_expenses": 12000,
+  "tax_paid": 500,
+  "business_type": "LLC",
+  "tax_year": 2023,
+  "previous_refunds_claimed": false
 }
