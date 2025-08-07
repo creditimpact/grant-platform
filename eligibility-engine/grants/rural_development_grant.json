@@ -51,7 +51,8 @@
   "tags": ["federal", "rural"],
   "requiredForms": [
     "form_sf424",
-    "form_424A"
+    "form_424A",
+    "form_RD_400_1"
   ],
   "ui_questions": [
     "What type of organization are you?",
