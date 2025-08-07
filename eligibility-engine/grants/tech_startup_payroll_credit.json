@@ -71,7 +71,8 @@
     "Which quarter are you applying the credit to?"
   ],
   "requiredForms": [
-    "form_8974"
+    "form_8974",
+    "form_6765"
   ],
   "complexity_level": "high",
   "human_summary": "Payroll tax credit for young technology startups performing qualified R&D.",
