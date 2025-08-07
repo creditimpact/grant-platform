@@ -44,30 +44,47 @@ def analyze_eligibility(
 
         if grant.get("eligibility_categories"):
             rule_result = check_rule_groups(user_data, grant.get("eligibility_categories"))
+            if rule_result.get("estimated_award"):
+                award_info = rule_result.get("estimated_award")
+            elif rule_result["eligible"]:
+                award_info = estimate_award(user_data, grant.get("estimated_award", {}))
+            else:
+                award_info = 0
+            required_forms = grant.get("requiredForms", []) + rule_result.get("required_forms", [])
         else:
             rule_result = check_rules(user_data, grant.get("eligibility_rules", {}))
-        award_info = (
-            estimate_award(user_data, grant.get("estimated_award", {}))
-            if rule_result["eligible"]
-            else 0
-        )
+            award_info = (
+                estimate_award(user_data, grant.get("estimated_award", {}))
+                if rule_result["eligible"]
+                else 0
+            )
+            required_forms = grant.get("requiredForms", [])
+
         if isinstance(award_info, dict):
             amount = award_info.get("amount", 0)
         else:
             amount = award_info
+
+        debug_data = {**rule_result["debug"]}
+        debug_data["award"] = award_info if isinstance(award_info, dict) else {"amount": amount}
+        if rule_result.get("selected_group"):
+            debug_data["selected_group"] = rule_result.get("selected_group")
+
         result = {
             "name": grant.get("name"),
             "eligible": rule_result["eligible"],
             "score": rule_result["score"],
             "estimated_amount": amount,
             "reasoning": rule_result["reasoning"],
-            "debug": {**rule_result["debug"], "award": award_info if isinstance(award_info, dict) else {}},
+            "debug": debug_data,
             "missing_fields": rule_result["debug"].get("missing_fields", []),
             "tag_score": tag_score,
             "reasoning_steps": [],
             "llm_summary": "",
             "next_steps": "" if rule_result["eligible"] else "Review eligibility criteria",
         }
+        if required_forms:
+            result["requiredForms"] = required_forms
         logger.debug("Grant %s result: eligible=%s score=%s", grant.get("name"), result["eligible"], result["score"])
         results.append(result)
 

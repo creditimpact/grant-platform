@@ -1,42 +1,148 @@
 {
   "name": "Green Energy State Incentive",
   "year": 2025,
-  "description": "Rebate for businesses investing in renewable energy upgrades",
+  "description": "State and city level grants, tax credits, and rebates for renewable energy projects",
   "required_fields": [
     "state",
-    "energy_expenses"
+    "applicant_type",
+    "project_type",
+    "project_cost",
+    "system_size_kw",
+    "certified_installer",
+    "approved_equipment",
+    "equity_eligible_contractor"
   ],
-  "eligibility_rules": {
-    "state": [
-      "CA",
-      "NY",
-      "TX"
-    ],
-    "energy_expenses_min": 10000
-  },
-  "estimated_award": {
-    "type": "tiered",
-    "based_on": "energy_expenses",
-    "tiers": [
-      {
-        "upto": 50000,
-        "percent": 20
+  "eligibility_categories": {
+    "__mode__": "any",
+    "nyserda": {
+      "rules": {
+        "state": "NY",
+        "applicant_type": ["business", "farmer", "homeowner"],
+        "project_type": ["pv", "wind", "efficiency"],
+        "certified_installer": true
       },
-      {
-        "percent": 10
-      }
-    ]
+      "estimated_award": {
+        "type": "percentage",
+        "based_on": "project_cost",
+        "percent": 100,
+        "max": 500000
+      },
+      "required_forms": ["online_application", "w9", "invoices", "business_license"]
+    },
+    "nj_clean_energy": {
+      "rules": {
+        "state": "NJ",
+        "applicant_type": ["individual", "business"],
+        "project_type": ["pv", "ev"],
+        "certified_installer": true
+      },
+      "estimated_award": {
+        "type": "percentage",
+        "based_on": "project_cost",
+        "percent": 100,
+        "max": 10000
+      },
+      "required_forms": ["online_application", "w9", "invoices", "business_license"]
+    },
+    "ca_sgip": {
+      "rules": {
+        "state": "CA",
+        "applicant_type": ["business"],
+        "project_type": "battery_storage",
+        "certified_installer": true
+      },
+      "estimated_award": {
+        "type": "percentage",
+        "based_on": "project_cost",
+        "percent": 100,
+        "max": 1000000
+      },
+      "required_forms": ["sgip_form", "w9", "invoices", "installation_contract"]
+    },
+    "ma_solar_tax_credit": {
+      "rules": {
+        "state": "MA",
+        "applicant_type": ["individual", "business"],
+        "project_type": "solar",
+        "approved_equipment": true,
+        "system_size_kw_min": 1
+      },
+      "estimated_award": {
+        "type": "base",
+        "base": 1000
+      },
+      "required_forms": ["ma_tax_form", "w9"]
+    },
+    "tx_solar_tax_credit": {
+      "rules": {
+        "state": "TX",
+        "applicant_type": ["individual", "business"],
+        "project_type": "solar",
+        "approved_equipment": true,
+        "system_size_kw_min": 1
+      },
+      "estimated_award": {
+        "type": "flat_per_unit",
+        "per": "system_size_kw",
+        "amount": 1000
+      },
+      "required_forms": ["tx_tax_form", "w9"]
+    },
+    "fl_solar_rebate": {
+      "rules": {
+        "state": "FL",
+        "applicant_type": ["individual", "business"],
+        "project_type": ["pv", "ev"],
+        "certified_installer": true
+      },
+      "estimated_award": {
+        "type": "percentage",
+        "based_on": "project_cost",
+        "percent": 100,
+        "max": 5000
+      },
+      "required_forms": ["application", "w9", "invoices", "business_license"]
+    },
+    "il_solar_rebate": {
+      "rules": {
+        "state": "IL",
+        "applicant_type": ["individual", "business"],
+        "project_type": "solar",
+        "certified_installer": true,
+        "equity_eligible_contractor": true
+      },
+      "estimated_award": {
+        "type": "percentage",
+        "based_on": "project_cost",
+        "percent": 100,
+        "max": 5000
+      },
+      "required_forms": ["online_application", "w9", "invoices", "business_license"]
+    }
   },
-  "tags": [
-    "state",
-    "green",
-    "energy"
-  ],
+  "tags": ["state", "energy", "green"],
   "ui_questions": [
-    "Which state is the project located in?",
-    "How much have you spent on energy improvements?"
+    "Which state is your project located in?",
+    "What type of applicant are you (individual, business, farmer, homeowner)?",
+    "What type of green energy project are you undertaking (solar, wind, battery storage, EV, efficiency)?",
+    "What is the total project cost?",
+    "What is the system size in kW?",
+    "Are you using a certified installer?",
+    "Is the equipment on an approved list?",
+    "For Illinois projects, are you using an Equity Eligible Contractor?"
   ],
-  "complexity_level": "medium",
-  "human_summary": "Rebate for businesses investing in renewable energy upgrades",
-  "risk_notes": ""
+  "complexity_level": "high",
+  "human_summary": "State and city level green energy grants, rebates, and tax credits for renewable installations.",
+  "risk_notes": "",
+  "requiredForms": [
+    "online_application",
+    "w9",
+    "invoices",
+    "business_license",
+    "sgip_form",
+    "installation_contract",
+    "ma_tax_form",
+    "tx_tax_form",
+    "application"
+  ]
 }
