@@ -54,3 +54,10 @@ def test_startup_payroll_credit_carryforward_cap():
     grant = _get_grant(results)
     assert grant["estimated_amount"] == 200000
     assert grant["debug"]["award"]["carryforward"] == 300000
+
+
+def test_form_6765_required():
+    payload = base_payload()
+    results = analyze_eligibility(payload, explain=True)
+    grant = _get_grant(results)
+    assert "form_6765" in grant.get("requiredForms", [])
