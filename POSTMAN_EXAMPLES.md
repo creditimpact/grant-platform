@@ -154,3 +154,29 @@ Sample response:
   "estimated_amount": 75000
 }
 ```
+
+## Green Energy State Incentive Example
+```http
+POST http://localhost:4001/check
+Content-Type: application/json
+
+{
+  "state": "NY",
+  "applicant_type": "business",
+  "project_type": "pv",
+  "project_cost": 600000,
+  "system_size_kw": 500,
+  "certified_installer": true,
+  "approved_equipment": true,
+  "equity_eligible_contractor": true
+}
+```
+
+Sample response:
+```json
+{
+  "name": "Green Energy State Incentive",
+  "eligible": true,
+  "estimated_amount": 500000
+}
+```
