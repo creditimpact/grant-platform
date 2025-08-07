@@ -1,0 +1,132 @@
+{
+  "form": "Standard Form 424A",
+  "fields": {
+    "Budget Information": {
+      "OMB Number": "4040-0006",
+      "Expiration Date": "06/30/2028",
+      "Section": "A",
+      "Grant Program": {
+        "Assistance Listing": "Estimated Unobligated Funds",
+        "New or Revised Budget": {
+          "Function or Activity Number": {
+            "Federal": {
+              "Non-Federal": {
+                "Total": {
+                  "a": "$",
+                  "b": "$",
+                  "c": "$",
+                  "d": "$",
+                  "e": "$",
+                  "f": "$",
+                  "g": "$"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Standard Form": "424A (Rev. 7-97)",
+      "Prescribed by": "OMB (Circular A-102)",
+      "Page": "1"
+    }
+  },
+  "sections": [
+    {
+      "section": "Section B - Budget Categories",
+      "fields": [
+        {
+          "label": "6. Object Class Categories",
+          "items": [
+            {"code": "a", "name": "Personnel", "amount": null},
+            {"code": "b", "name": "Fringe Benefits", "amount": null},
+            {"code": "c", "name": "Travel", "amount": null},
+            {"code": "d", "name": "Equipment", "amount": null},
+            {"code": "e", "name": "Supplies", "amount": null},
+            {"code": "f", "name": "Contractual", "amount": null},
+            {"code": "g", "name": "Construction", "amount": null},
+            {"code": "h", "name": "Other", "amount": null},
+            {"code": "i", "name": "Total Direct Charges (sum of 6a-6h)", "amount": null},
+            {"code": "j", "name": "Indirect Charges", "amount": null},
+            {"code": "k", "name": "TOTALS (sum of 6i and 6j)", "amount": null}
+          ]
+        },
+        {
+          "label": "7. Program Income",
+          "amount": null
+        }
+      ],
+      "metadata": {
+        "form": "Standard Form 424A",
+        "revision_date": "7-97",
+        "prescribed_by": "OMB Circular A-102",
+        "page": "1A",
+        "note": "Authorized for Local Reproduction"
+      }
+    },
+    {
+      "section": "Section C - Non-Federal Resources",
+      "fields": [
+        {"label": "Grant Program (a)", "amount": null},
+        {"label": "Applicant (b)", "amount": null},
+        {"label": "State (c)", "amount": null},
+        {"label": "Other Sources (d)", "amount": null},
+        {"label": "TOTALS (e)", "amount": null}
+      ],
+      "totals": [
+        {"label": "8", "amount": null},
+        {"label": "9", "amount": null},
+        {"label": "10", "amount": null},
+        {"label": "11", "amount": null},
+        {"label": "12 TOTAL (sum of lines 8-11)", "amount": null}
+      ]
+    },
+    {
+      "section": "Section D - Forecasted Cash Needs",
+      "fields": [
+        {"label": "13 Federal", "amount": null},
+        {"label": "14 Non-Federal", "amount": null},
+        {"label": "15 TOTAL (sum of lines 13 and 14)", "amount": null}
+      ],
+      "time_periods": {
+        "Total for 1st Year": null,
+        "1st Quarter": null,
+        "2nd Quarter": null,
+        "3rd Quarter": null,
+        "4th Quarter": null,
+        "Future Funding Periods (Years)": null
+      }
+    },
+    {
+      "section": "Section E - Budget Estimates of Federal Funds Needed for Balance of the Project",
+      "fields": [
+        {"label": "16", "amount": null},
+        {"label": "17", "amount": null},
+        {"label": "18", "amount": null},
+        {"label": "19", "amount": null},
+        {"label": "20 TOTAL (sum of lines 16-19)", "amount": null}
+      ]
+    },
+    {
+      "section": "Section F - Other Budget Information",
+      "fields": [
+        {"label": "21 Direct Charges (a) Grant Program", "amount": null},
+        {"label": "22 Indirect Charges", "amount": null},
+        {"label": "23 Remarks", "text": ""}
+      ],
+      "quarterly_breakdown": {
+        "First": null,
+        "Second": null,
+        "Third": null,
+        "Fourth": null
+      }
+    }
+  ],
+  "metadata": {
+    "form": "Standard Form 424A",
+    "revision_date": "7-97",
+    "prescribed_by": "OMB Circular A-102",
+    "page": "2",
+    "note": "Authorized for Local Reproduction"
+  },
+  "text": "BUDGET INFORMATION - Non - Construction Programs OMB Number : 4040-0006\nExpiration Date : 06/30/2028\nSECTION A BUDGET SUMMARY\nGrant Program\nAssistance Listing Estimated Unobligated Funds New or Revised Budget\nFunction or\nActivity Number\nFederal Non - Federal Federal Non - Federal Total\n( a ) ( b ) ( c ) ( d ) ( e ) ( f ) ( g )\n1 . $ $ $ $ $\n2 .\n3 .\n4 .\n5 . Totals $ $ $ $ $\nStandard Form 424A ( Rev. 7-97 )\nPrescribed by OMB ( Circular A -102 ) Page 1 ."
+}
