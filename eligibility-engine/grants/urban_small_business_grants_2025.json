@@ -1,0 +1,138 @@
+{
+  "name": "Urban Small Business Grants (2025)",
+  "year": 2025,
+  "description": "Composite of city-level grant programs supporting small businesses recovering from COVID-19 or structural damage.",
+  "general_eligibility": "Businesses must be located within city limits, demonstrate COVID-19 or related structural damage impacts, meet size limits, and submit official applications with tax, financial and recovery documentation.",
+  "required_fields": [
+    "city",
+    "employee_count",
+    "annual_revenue",
+    "revenue_decline_percent",
+    "business_age_years",
+    "industry",
+    "owner_veteran",
+    "owner_minority",
+    "covid_impact",
+    "structural_damage",
+    "geographic_zone"
+  ],
+  "eligibility_categories": {
+    "__mode__": "any",
+    "chicago_microbusiness": {
+      "rules": {
+        "city": ["Chicago"],
+        "employee_count_max": 5,
+        "annual_revenue_max": 500000,
+        "revenue_decline_percent_min": 25,
+        "business_age_years_min": 1,
+        "covid_impact": true
+      },
+      "estimated_award": {"type": "base", "base": 5000},
+      "required_forms": ["city_application", "W-9", "business_license", "bank_statements"]
+    },
+    "rockford_regrow": {
+      "rules": {
+        "city": ["Rockford"],
+        "employee_count_max": 50,
+        "revenue_decline_percent_min": 20,
+        "business_age_years_min": 1,
+        "covid_impact": true
+      },
+      "estimated_award": {"type": "base", "base": 25000},
+      "required_forms": ["city_application", "W-9", "tax_returns", "bank_statements"]
+    },
+    "aurora_resilience": {
+      "rules": {
+        "city": ["Aurora"],
+        "employee_count_max": 50,
+        "revenue_decline_percent_min": 15,
+        "owner_minority": true,
+        "covid_impact": true
+      },
+      "estimated_award": {"type": "base", "base": 10000},
+      "required_forms": ["city_application", "W-9", "business_license", "recovery_plan"]
+    },
+    "evanston_recovery": {
+      "rules": {
+        "city": ["Evanston"],
+        "employee_count_max": 25,
+        "revenue_decline_percent_min": 15,
+        "covid_impact": true
+      },
+      "estimated_award": {"type": "base", "base": 7000},
+      "required_forms": ["city_application", "W-9", "tax_returns"]
+    },
+    "springfield_downtown": {
+      "rules": {
+        "city": ["Springfield"],
+        "geographic_zone": ["downtown"],
+        "structural_damage": true,
+        "employee_count_max": 30,
+        "business_age_years_min": 1
+      },
+      "estimated_award": {"type": "base", "base": 10000},
+      "required_forms": ["city_application", "damage_photos", "insurance_claims", "W-9"]
+    },
+    "peoria_restoration": {
+      "rules": {
+        "city": ["Peoria"],
+        "employee_count_max": 40,
+        "revenue_decline_percent_min": 10,
+        "business_age_years_min": 1,
+        "covid_impact": true
+      },
+      "estimated_award": {"type": "base", "base": 20000},
+      "required_forms": ["city_application", "W-9", "bank_statements", "recovery_plan"]
+    },
+    "naperville_neighborhood": {
+      "rules": {
+        "city": ["Naperville"],
+        "industry": ["restaurant", "retail"],
+        "employee_count_max": 75,
+        "revenue_decline_percent_min": 15,
+        "covid_impact": true
+      },
+      "estimated_award": {"type": "base", "base": 10000},
+      "required_forms": ["city_application", "W-9", "business_license", "bank_statements"]
+    },
+    "champaign_urbana_tech": {
+      "rules": {
+        "city": ["Champaign", "Urbana"],
+        "industry": ["technology"],
+        "employee_count_max": 20,
+        "business_age_years_max": 5,
+        "covid_impact": true
+      },
+      "estimated_award": {"type": "base", "base": 10000},
+      "required_forms": ["city_application", "W-9", "financial_statements"]
+    },
+    "joliet_sustainability": {
+      "rules": {
+        "city": ["Joliet"],
+        "employee_count_max": 60,
+        "revenue_decline_percent_min": 20,
+        "covid_impact": true,
+        "owner_veteran": true
+      },
+      "estimated_award": {"type": "base", "base": 15000},
+      "required_forms": ["city_application", "W-9", "proof_of_service", "tax_returns"]
+    }
+  },
+  "tags": ["city", "covid", "small_business"],
+  "ui_questions": [
+    "In which city is your business located?",
+    "How many employees does your business have?",
+    "What is your annual revenue?",
+    "What percentage did revenue decline due to COVID-19?",
+    "How many years has the business been operating?",
+    "What industry best describes your business?",
+    "Is the owner a veteran?",
+    "Is the owner a minority?",
+    "Did COVID-19 impact your business operations?",
+    "Did the business sustain structural damage?",
+    "If applicable, what is your geographic zone within the city?"
+  ],
+  "complexity_level": "medium",
+  "human_summary": "Nine city-level programs offering grants to urban small businesses impacted by COVID-19 or structural damage.",
+  "risk_notes": "Applicants must submit city applications and supporting financial documentation."
+}
