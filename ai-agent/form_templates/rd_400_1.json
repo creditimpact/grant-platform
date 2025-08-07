@@ -1,9 +1,0 @@
-{
-  "form": "RD 400-1",
-  "fields": {
-    "applicant_name": "",
-    "duns_number": "",
-    "civil_rights_certified": {"type": "checkbox"},
-    "sam_registration": {"type": "checkbox"}
-  }
-}

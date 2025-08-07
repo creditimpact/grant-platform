@@ -1,9 +1,0 @@
-{
-  "form": "AD-1049",
-  "fields": {
-    "applicant_name": "",
-    "duns_number": "",
-    "lobbying_certification": {"type": "checkbox"},
-    "sam_registration": {"type": "checkbox"}
-  }
-}

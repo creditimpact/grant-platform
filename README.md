@@ -136,11 +136,10 @@ To fill a grant application form, send JSON directly to `/form-fill`:
 curl -X POST http://localhost:5001/form-fill \
     -H "Content-Type: application/json" \
     -d '{
-        "form_name": "tech_startup_credit_form",
+        "form_name": "form_8974",
         "user_payload": {
-            "startup_year": "2022",
-            "industry": "technology",
-            "zip": "10001"
+            "employer_identification_number": "12-3456789",
+            "name": "Acme Corp"
         }
     }'
 ```
