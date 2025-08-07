@@ -11,7 +11,7 @@ def test_rural_development_forms_exist():
         "project_cost": 100000,
     }
     for form in [
-        "sf_424",
+        "form_sf424",
         "rd_1940_1",
         "rd_1942_46",
         "rd_400_1",
@@ -20,5 +20,11 @@ def test_rural_development_forms_exist():
         "ad_1049",
     ]:
         filled = fill_form(form, data)
-        assert filled["fields"].get("applicant_name") == "Test Org"
-        assert "duns_number" in filled["fields"]
+        if form == "form_sf424":
+            assert filled["fields"].get("OMB Number") == "4040-0004"
+            assert any(
+                sec.get("section") == "Applicant Information" for sec in filled.get("sections", [])
+            )
+        else:
+            assert filled["fields"].get("applicant_name") == "Test Org"
+            assert "duns_number" in filled["fields"]

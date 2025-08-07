@@ -50,7 +50,7 @@
   },
   "tags": ["federal", "rural"],
   "requiredForms": [
-    "sf_424",
+    "form_sf424",
     "rd_1940_1",
     "rd_1942_46",
     "rd_400_1",
