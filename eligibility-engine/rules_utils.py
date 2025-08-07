@@ -217,22 +217,30 @@ def check_rules(data: Dict[str, Any], rules: Dict[str, Any]):
 
 def check_rule_groups(data: Dict[str, Any], groups: Dict[str, Dict[str, Any]]):
     """Evaluate multiple rule groups (e.g., WOSB, EDWOSB) and aggregate results."""
+    mode = groups.get("__mode__", "all")
+    grouped = {k: v for k, v in groups.items() if k != "__mode__"}
     aggregated_reasoning: List[str] = []
     aggregated_debug: Dict[str, Any] = {"groups": {}, "missing_fields": []}
     scores: List[int] = []
-    eligibility: Any = True
+    eligibility: Any = (False if mode == "any" else True)
 
-    for name, rules in groups.items():
+    for name, rules in grouped.items():
         logger.debug("Evaluating rule group %s", name)
         result = check_rules(data, rules)
         aggregated_reasoning.extend([f"[{name}] {msg}" for msg in result["reasoning"]])
         aggregated_debug["groups"][name] = result["debug"]
         aggregated_debug["missing_fields"].extend(result["debug"].get("missing_fields", []))
 
-        if result["eligible"] is False:
-            eligibility = False
-        elif result["eligible"] is None and eligibility is not False:
-            eligibility = None
+        if mode == "any":
+            if result["eligible"]:
+                eligibility = True
+            elif result["eligible"] is None and eligibility is False:
+                eligibility = None
+        else:
+            if result["eligible"] is False:
+                eligibility = False
+            elif result["eligible"] is None and eligibility is not False:
+                eligibility = None
         scores.append(result["score"])
 
     score = int(sum(scores) / len(scores)) if scores else 0
@@ -259,7 +267,36 @@ def estimate_award(data: Dict[str, Any], rule: Dict[str, Any]):
             percent = rule.get("percentage", 0)
             if percent <= 1:
                 percent *= 100
-        return int(base * (percent / 100))
+        amount = base * (percent / 100)
+        max_cap = rule.get("max") or rule.get("cap")
+        if max_cap is not None:
+            amount = min(amount, max_cap)
+        return int(amount)
+
+    if rtype == "population_subsidy":
+        base_field = rule.get("base_amount_field", "project_cost")
+        pop_field = rule.get("population_field", "service_area_population")
+        income_field = rule.get("income_field", "income_level")
+        project_type_field = rule.get("project_type_field", "project_type")
+        base = _normalize_numeric(data.get(base_field, 0))
+        population = _normalize_numeric(data.get(pop_field, 0))
+        income = data.get(income_field)
+        percent = rule.get("default_percent", 0)
+        for tier in rule.get("tiers", []):
+            max_pop = tier.get("max_population")
+            income_req = tier.get("income_level")
+            if max_pop is not None and population > max_pop:
+                continue
+            if income_req and income != income_req:
+                continue
+            percent = tier.get("percent", percent)
+            break
+        amount = base * (percent / 100)
+        caps = rule.get("caps", {})
+        proj_type = data.get(project_type_field)
+        if proj_type in caps:
+            amount = min(amount, caps[proj_type])
+        return int(amount)
 
     if rtype == "flat_per_unit":
         units = data.get(rule.get("per", ""), 0)

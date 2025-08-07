@@ -7,7 +7,7 @@ This repository contains three microservices used to test a grant eligibility wo
 - **eligibility-engine/** – Python rules engine returning missing fields and suggested next steps
 - **ai-agent/** – LLM-ready service with conversational endpoints and smart form filling
 
-The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant and a Veteran Owned Business Grant.
+The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant, a Veteran Owned Business Grant and a comprehensive Rural Development Grant covering USDA sub-programs.
 
 ```
 project-root/
@@ -78,6 +78,15 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
 | state | string | no | |
 | zipCode | string | no | |
 | locationZone | string | no | e.g. `urban` |
+| serviceAreaPopulation | number | no | population of the area served |
+| organizationType | string | no | e.g. `municipality`, `nonprofit` |
+| incomeLevel | string | no | `low`, `moderate`, or `high` |
+| projectType | string | no | `community_facilities`, `rbdg`, `rcdg`, `redlg` |
+| projectCost | number | no | total project budget |
+| projectState | string | no | state where project occurs |
+| duns | string | no | DUNS registration number |
+| sam | boolean/string | no | SAM registration status |
+| cageCode | string | no | CAGE code |
 | businessType | string | yes | allowed: `Sole`, `Partnership`, `LLC`, `Corporation` |
 | incorporationDate | string (date) | yes | format `dd/MM/YYYY` |
 | businessEIN | string | no | |

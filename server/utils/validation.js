@@ -7,8 +7,10 @@ const numericFields = [
   'business_expenses',
   'tax_paid',
   'tax_year',
+  'service_area_population',
+  'project_cost',
 ];
-const booleanFields = ['previousGrants', 'previous_refunds_claimed'];
+const booleanFields = ['previousGrants', 'previous_refunds_claimed', 'sam_registration'];
 const allowedBusinessTypes = ['Sole', 'Partnership', 'LLC', 'Corporation'];
 
 // Frontend -> backend field mappings
@@ -22,6 +24,15 @@ const fieldMap = {
   taxPaid: 'tax_paid',
   taxYear: 'tax_year',
   previousRefundsClaimed: 'previous_refunds_claimed',
+  serviceAreaPopulation: 'service_area_population',
+  organizationType: 'entity_type',
+  incomeLevel: 'income_level',
+  projectType: 'project_type',
+  projectState: 'project_state',
+  projectCost: 'project_cost',
+  duns: 'duns_number',
+  sam: 'sam_registration',
+  cageCode: 'cage_code',
 };
 
 const reverseFieldMap = Object.fromEntries(

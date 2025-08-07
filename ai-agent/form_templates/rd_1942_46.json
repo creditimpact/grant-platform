@@ -1,0 +1,10 @@
+{
+  "form": "RD 1942-46",
+  "fields": {
+    "applicant_name": "",
+    "project_cost": "",
+    "duns_number": "",
+    "matching_funds": {"type": "checkbox"},
+    "sam_registration": {"type": "checkbox"}
+  }
+}
