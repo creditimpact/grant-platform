@@ -181,6 +181,35 @@ Sample response:
 }
 ```
 
+## Urban Small Business Grants (2025) Example
+```http
+POST http://localhost:4001/check
+Content-Type: application/json
+
+{
+  "city": "Chicago",
+  "employee_count": 3,
+  "annual_revenue": 150000,
+  "revenue_decline_percent": 40,
+  "business_age_years": 2,
+  "industry": "retail",
+  "owner_veteran": false,
+  "owner_minority": false,
+  "covid_impact": true,
+  "structural_damage": false,
+  "geographic_zone": "south"
+}
+```
+
+Sample response:
+```json
+{
+  "name": "Urban Small Business Grants (2025)",
+  "eligible": true,
+  "estimated_amount": 5000
+}
+```
+
 ## Employee Retention Credit Example
 ```http
 POST http://localhost:4001/check

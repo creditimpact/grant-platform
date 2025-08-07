@@ -2,11 +2,15 @@
 
 This package contains a lightweight rules engine used to determine business eligibility for a variety of grant and credit programs. Grants are defined as JSON files under `grants/` so new programs can be added without touching the code.
 
-Included templates now cover federal and local programs like the **Business Tax Refund Grant**, the **Women-Owned Tech Grant**, the **Minority Female Founder Grant**, the **Employee Retention Credit (ERC)**, the **Rural Development Grant** with multiple USDA sub-programs, and the **Green Energy State Incentive** spanning state-level rebates, tax credits, and direct grants for renewable projects.
+Included templates now cover federal and local programs like the **Business Tax Refund Grant**, the **Women-Owned Tech Grant**, the **Minority Female Founder Grant**, the **Employee Retention Credit (ERC)**, the **Rural Development Grant** with multiple USDA sub-programs, the **Green Energy State Incentive** spanning state-level rebates, tax credits, and direct grants for renewable projects, and the **Urban Small Business Grants (2025)** combining nine city recovery programs.
 
 ## Tech Startup Payroll Credit
 
 The Tech Startup Payroll Credit allows qualified small businesses to apply a portion of their R&D credit against payroll taxes. To qualify, a company must have less than $5 million in gross receipts, be in operation for five years or less, and meet the IRS four-part R&D test (technological uncertainty, experimentation, and scientific/engineering process). The credit is elected on **Form 6765** and claimed on **Forms 8974** and **941** starting the quarter after the election. Unused amounts automatically carry forward to future quarters up to an annual cap of $500,000.
+
+## Urban Small Business Grants (2025)
+
+This composite configuration bundles nine city programs such as the Chicago Microbusiness Recovery Grant and Rockford RE-GROW Grant. Businesses must operate within city limits, show COVID‑19 or structural damage impacts, meet local employee and revenue caps, and provide tax returns, W‑9s, business licenses, bank statements and recovery plans. Estimated awards range from $5k to $25k depending on the city program.
 
 ## Running the Engine
 
