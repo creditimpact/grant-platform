@@ -34,6 +34,41 @@ test('normalizeQuestionnaire handles frontend field names and ISO dates', () => 
   assert.equal(invalid.length, 0);
 });
 
+test('normalizeQuestionnaire handles rural development fields', () => {
+  const { data, missing, invalid } = normalizeQuestionnaire({
+    businessName: 'Biz',
+    phone: '555',
+    email: 'a@b.com',
+    businessType: 'LLC',
+    incorporationDate: '2020-02-01',
+    businessIncome: 20000,
+    businessExpenses: 15000,
+    taxPaid: 3000,
+    taxYear: 2024,
+    previousRefundsClaimed: false,
+    serviceAreaPopulation: '1234',
+    organizationType: 'nonprofit',
+    incomeLevel: 'low',
+    projectType: 'rcdg',
+    projectCost: '500000',
+    projectState: 'CA',
+    duns: '123456789',
+    sam: 'yes',
+    cageCode: '1A2B3',
+  });
+  assert.strictEqual(data.service_area_population, 1234);
+  assert.equal(data.entity_type, 'nonprofit');
+  assert.equal(data.income_level, 'low');
+  assert.equal(data.project_type, 'rcdg');
+  assert.strictEqual(data.project_cost, 500000);
+  assert.equal(data.project_state, 'CA');
+  assert.equal(data.duns_number, '123456789');
+  assert.strictEqual(data.sam_registration, true);
+  assert.equal(data.cage_code, '1A2B3');
+  assert.equal(missing.length, 0);
+  assert.equal(invalid.length, 0);
+});
+
 test('normalizeQuestionnaire converts MM/DD/YYYY dates to ISO', () => {
   const { data } = normalizeQuestionnaire({
     businessName: 'Biz',
