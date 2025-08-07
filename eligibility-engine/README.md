@@ -2,7 +2,7 @@
 
 This package contains a lightweight rules engine used to determine business eligibility for a variety of grant and credit programs. Grants are defined as JSON files under `grants/` so new programs can be added without touching the code.
 
-Included templates now cover federal and local programs like the **Business Tax Refund Grant**, the **Women-Owned Tech Grant**, and the **Rural Development Grant** with multiple USDA sub-programs.
+Included templates now cover federal and local programs like the **Business Tax Refund Grant**, the **Women-Owned Tech Grant**, the **Minority Female Founder Grant**, and the **Rural Development Grant** with multiple USDA sub-programs.
 
 ## Tech Startup Payroll Credit
 
@@ -74,9 +74,19 @@ See `test_payload.json` for a sample business profile. Running the engine with t
     "eligible": true,
     "score": 100,
     "estimated_amount": 20000,
-    "reasoning": ["✅ owner_gender = female, expected female", "✅ owner_minority = True, expected True"],
+    "reasoning": [
+      "[ownership_and_control] ✅ owner_gender = female, expected female",
+      "[ownership_and_control] ✅ ownership_percentage = 60, expected >= 51",
+      "[business_size] ✅ number_of_employees = 5, expected <= 50",
+      "[business_age] ✅ business_age_years = 2, expected >= 0.5"
+    ],
     "debug": {
-      "checked_rules": {"owner_gender": {"value": "female", "expected": "female"}},
+      "groups": {
+        "ownership_and_control": {"missing_fields": []},
+        "location": {"missing_fields": []},
+        "business_size": {"missing_fields": []},
+        "business_age": {"missing_fields": []}
+      },
       "missing_fields": []
     }
   },
