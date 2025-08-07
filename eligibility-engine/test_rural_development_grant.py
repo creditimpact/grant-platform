@@ -20,6 +20,7 @@ def test_community_facilities_award():
     assert "form_sf424" in grant.get("requiredForms", [])
     assert "form_424A" in grant.get("requiredForms", [])
     assert "form_RD_400_1" in grant.get("requiredForms", [])
+    assert "form_RD_400_4" in grant.get("requiredForms", [])
 
 
 def test_rcdg_cap():
