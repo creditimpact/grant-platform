@@ -1,33 +1,67 @@
 {
   "name": "Minority Female Founder Grant",
   "year": 2025,
-  "description": "Grant for early stage companies led by minority women",
+  "description": "Competitive grants for U.S. businesses led by minority women entrepreneurs.",
   "required_fields": [
     "owner_gender",
     "owner_minority",
-    "business_age_years"
+    "ownership_percentage",
+    "owner_is_decision_maker",
+    "business_age_years",
+    "number_of_employees",
+    "annual_revenue",
+    "business_location_state"
   ],
-  "eligibility_rules": {
-    "owner_gender": "female",
-    "owner_minority": true,
-    "business_age_years_max": 5
+  "eligibility_categories": {
+    "ownership_and_control": {
+      "owner_gender": "female",
+      "owner_minority": true,
+      "ownership_percentage_min": 51,
+      "owner_is_decision_maker": true
+    },
+    "location": {
+      "business_location_state": ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC","PR","VI","GU","AS","MP"]
+    },
+    "business_size": {
+      "number_of_employees_max": 50,
+      "annual_revenue_max": 3000000
+    },
+    "business_age": {
+      "business_age_years_min": 0.5
+    }
   },
   "estimated_award": {
     "type": "base",
     "base": 20000
   },
-  "tags": [
-    "federal",
-    "women",
-    "minority"
-  ],
+  "required_documents": {
+    "application": [
+      "online_application_form",
+      "team_details",
+      "financial_statements",
+      "proof_of_activity",
+      "annual_income_report",
+      "client_or_project_list",
+      "intent_letter",
+      "founder_resume"
+    ],
+    "post_award": [
+      "W-9",
+      "certificate_of_incorporation",
+      "owner_id"
+    ]
+  },
+  "tags": ["women", "minority", "startup"],
   "ui_questions": [
-    "Is the founder a woman?",
-    "Does the founder belong to a minority group?",
-    "How many years has the business been in operation?"
+    "Is your business at least 51% owned and managed by a minority woman?",
+    "Is your business registered and active in the United States?",
+    "How many years has your business been operating?",
+    "How many people are employed by your business?",
+    "What was your most recent annual revenue?",
+    "Are you the primary decision maker for the business?"
   ],
-  "notes": "Founder must own at least 51% of the company",
+  "notes": "Application fees may apply for some programs. SAM.gov or SF-424 registrations are not required.",
   "complexity_level": "medium",
-  "human_summary": "Grant for early stage companies led by minority women",
+  "human_summary": "Competitive grants for U.S. businesses with at least 51% minority female ownership, under 50 employees, and less than $3M in revenue.",
   "risk_notes": ""
 }
