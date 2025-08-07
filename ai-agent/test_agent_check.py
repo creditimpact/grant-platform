@@ -120,3 +120,9 @@ def test_form_fill_rejects_embedded_payload():
     payload = {"request_model": {"form_name": "tech_startup_credit_form", "user_payload": {}}}
     with pytest.raises(ValidationError):
         asyncio.run(form_fill(payload))
+
+
+def test_form_6765_template_loads():
+    """Ensure the new Form 6765 template is accessible."""
+    form = direct_fill_form("form_6765", {})
+    assert "Form" in form["fields"]

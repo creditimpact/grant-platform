@@ -1,0 +1,143 @@
+{
+"fields": {
+"Form": "6765 Credit for Increasing Research Activities",
+"OMB No.": "1545-0619",
+"Revision Date": "December 2024",
+"Department": "Department of the Treasury",
+"Website": "www.irs.gov/Form6765",
+"Sequence Attachment No.": "676",
+"Instructions": "Attach to your tax return",
+"Internal Revenue Service": true,
+"Sections": [
+{
+"Section": "A - Regular Credit",
+"Questions": [
+{
+"Question": "Are you electing the reduced credit under section 280C?",
+"Options": [
+"Yes",
+"No"
+]
+},
+{
+"Question": "Are you a member of a controlled group or business under common control?",
+"Options": [
+"Yes",
+"No"
+]
+}
+],
+"Fields": [
+{
+"Field": "Certain amounts paid or incurred to energy consortia",
+"Line": 1
+},
+{
+"Field": "Basic research payments to qualified organizations",
+"Line": 2
+},
+{
+"Field": "Qualified organization base period amount",
+"Line": 3
+},
+{
+"Field": "Total qualified research expenses (QRES)",
+"Line": 5
+},
+{
+"Field": "Fixed-base percentage",
+"Line": 6
+},
+{
+"Field": "Average annual gross receipts",
+"Line": 7
+},
+{
+"Field": "Multiply line 7 by the percentage on line 6",
+"Line": 8
+},
+{
+"Field": "Subtract line 8 from line 5",
+"Line": 9
+},
+{
+"Field": "Multiply line 5 by 50%",
+"Line": 10
+},
+{
+"Field": "Enter the smaller of line 9 or line 10",
+"Line": 11
+},
+{
+"Field": "Add lines 1, 4, and 11",
+"Line": 12
+},
+{
+"Field": "Multiply line 12 by 15.8% if electing reduced credit under section 280C, else by 20%",
+"Line": 13
+}
+]
+},
+{
+"Section": "B - Alternative Simplified Credit",
+"Fields": [
+{
+"Field": "Certain amounts paid or incurred to energy consortia",
+"Line": 14
+},
+{
+"Field": "Basic research payments to qualified organizations",
+"Line": 15
+},
+{
+"Field": "Qualified organization base period amount",
+"Line": 16
+},
+{
+"Field": "Subtract line 16 from line 15",
+"Line": 17
+},
+{
+"Field": "Add lines 14 and 17",
+"Line": 18
+},
+{
+"Field": "Multiply line 18 by 20%",
+"Line": 19
+},
+{
+"Field": "Total qualified research expenses (QRES)",
+"Line": 20
+},
+{
+"Field": "Total QRES for the prior 3 tax years",
+"Line": 21
+},
+{
+"Field": "Divide line 21 by 6.0",
+"Line": 22
+},
+{
+"Field": "Subtract line 22 from line 20",
+"Line": 23
+},
+{
+"Field": "Multiply line 23 by 14% if skipped lines 22 and 23, else by 6%",
+"Line": 24
+},
+{
+"Field": "Add lines 19 and 24",
+"Line": 25
+},
+{
+"Field": "Multiply line 25 by 79% if electing reduced credit under section 280C, else enter line 25",
+"Line": 26
+}
+]
+}
+],
+"Paperwork Reduction Act Notice": true,
+"Cat. No.": "13700H"
+},
+"text": "Form 6765 Credit for Increasing Research Activities OMB No. 1545-0619\n( Rev. December 2024 )\nAttach to your tax return .\nDepartment of the Treasury . Go to www.irs.gov/Form6765 for instructions and the latest information . Sequence Attachment No. 676\nInternal Revenue Service\nName ( s ) shown on return Identifying number .\nA Are you electing the reduced credit under section 280C ? See instructions . ☐ Yes ☐ No\nB Are you a member of a controlled group or business under common control ?. Yes ☐ No\nIf \" Yes , \" complete and attach the required statement . See instructions for required attachment .\nSection A - Regular Credit . Skip this section and go to Section B if you are electing or previously elected ( and are not revoking ) the\nalternative simplified credit .\n1 Certain amounts paid or incurred to energy consortia ( see instructions ) 1\n.\n2 Basic research payments to qualified organizations ( see instructions ) 2\n3 Qualified organization base period amount . 3\n4 Subtract line 3 from line 2. If zero or less , enter -0- 4\nNote : Complete Section F before going to line 5 .\n5 Total qualified research expenses ( QRES ) . Enter amount from line 48 5\n6 Enter fixed - base percentage , but not more than 16 % ( 0.16 ) . See instructions 6 %\n7 Enter average annual gross receipts . See instructions 7\n8 Multiply line 7 by the percentage on line 6 8\n9 Subtract line 8 from line 5. If zero or less , enter -0- 9\n10 Multiply line 5 by 50 % ( 0.50 ) 10\n11 Enter the smaller of line 9 or line 10 11\n12 Add lines 1 , 4 , and 11 . 12\n13 If you elect to reduce the credit under section 280C , then multiply line 12 by 15.8 % ( 0.158 ) . If not ,\nmultiply line 12 by 20 % ( 0.20 ) and see instructions for the statement that must be attached . 13\nSection B - Alternative Simplified Credit . Skip this section if you are completing Section A.\n14 Certain amounts paid or incurred to energy consortia ( see the line 1 instructions ) 14\n15 Basic research payments to qualified organizations ( see the line 2 instructions ) 15\n16 Qualified organization base period amount ( see the line 3 instructions ) . 16\n17 Subtract line 16 from line 15. If zero or less , enter -0- 17\n18 Add lines 14 and 17 18\n19 Multiply line 18 by 20 % ( 0.20 ) 19\nNote : Complete Section F before going to line 20 .\n20 Total qualified research expenses ( QRES ) . Enter amount from line 48 20\n22\n21 Enter your total QRES for the prior 3 tax years . If you had no QRES in any 1 of\nthose years , skip lines 22 and 23 21\nDivide line 21 by 6.0 22\n23 Subtract line 22 from line 20. If zero or less , enter -0- 23\n22222\n24 Multiply line 23 by 14 % ( 0.14 ) . If you skipped lines 22 and 23 , multiply line 20 by 6 % ( 0.06 ) . 24\n25 Add lines 19 and 24 25\n26 If you elect to reduce the credit under section 280C , then multiply line 25 by 79 % ( 0.79 ) . If not , enter\nthe amount from line 25 and see the line 13 instructions for the statement that must be attached 26\nFor Paperwork Reduction Act Notice , see separate instructions . Cat . No. 13700H Form 6765 ( Rev. 12-2024 )"
+}
