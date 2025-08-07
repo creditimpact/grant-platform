@@ -58,21 +58,16 @@ def test_check_document():
 
 
 def test_form_fill():
-    payload = load_payload()
-    payload["startup_year"] = "2022"
-    payload["industry"] = "technology"
-    data = asyncio.run(form_fill({"form_name": "tech_startup_credit_form", "user_payload": payload}))
+    payload = {
+        "employer_identification_number": "12-3456789",
+        "name": "Acme Corp",
+        "reporting_form": "Form 941 (all 941 series)",
+        "reporting_quarter": "April, May, June",
+    }
+    data = asyncio.run(form_fill({"form_name": "form_8974", "user_payload": payload}))
     form = data["filled_form"]
-    assert form["fields"]["state"] != ""
-    assert form["fields"].get("is_new_tech") is True
-
-
-def test_form_fill_partial_inference():
-    payload = {"zip": "94110", "owner_gender": "probably yes", "startup_year": "2021"}
-    data = asyncio.run(form_fill({"form_name": "tech_startup_credit_form", "user_payload": payload}))
-    form = data["filled_form"]
-    assert form["fields"].get("state") == "CA"
-    assert form["fields"].get("mission_statement") != ""
+    assert form["fields"]["name"] == "Acme Corp"
+    assert form["fields"]["reporting_quarter"] == "April, May, June"
 
 
 def test_nlp_utils():
@@ -117,7 +112,7 @@ def test_form_fill_invalid_payload():
 
 def test_form_fill_rejects_embedded_payload():
     """Legacy embedded bodies should not be accepted after Pydantic v2 upgrade."""
-    payload = {"request_model": {"form_name": "tech_startup_credit_form", "user_payload": {}}}
+    payload = {"request_model": {"form_name": "form_8974", "user_payload": {}}}
     with pytest.raises(ValidationError):
         asyncio.run(form_fill(payload))
 

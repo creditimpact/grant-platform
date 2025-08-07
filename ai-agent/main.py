@@ -114,7 +114,10 @@ async def form_fill(
         ...,
         # Pydantic v2 removed the ``embed`` parameter so we rely on the default
         # behavior which expects the JSON fields at the top level.
-        example={"form_name": "tech_startup_credit_form", "user_payload": {"zip": "94110"}}
+        example={
+            "form_name": "form_8974",
+            "user_payload": {"employer_identification_number": "12-3456789"},
+        }
     )
 ):
     """Fill a grant form template with provided user data."""
