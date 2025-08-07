@@ -2,6 +2,8 @@
 
 This package contains a lightweight rules engine used to determine business eligibility for a variety of grant and credit programs. Grants are defined as JSON files under `grants/` so new programs can be added without touching the code.
 
+Included templates now cover federal and local programs like the **Business Tax Refund Grant** alongside R&D credits and city incentives.
+
 ## Running the Engine
 
 Install dependencies (FastAPI is only required for the optional API service):

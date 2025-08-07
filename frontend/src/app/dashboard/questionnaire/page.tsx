@@ -41,17 +41,22 @@ export default function Questionnaire() {
     businessType: '',
     ein: '',
     ssn: '',
-    incorporationDate: '',
-    annualRevenue: '',
-    netProfit: '',
-    numberOfEmployees: '',
-    ownershipPercentage: '',
-    previousGrants: '',
-    cpaPrepared: false,
-    minorityOwned: false,
-    womanOwned: false,
-    veteranOwned: false,
-    hasPayroll: false,
+      incorporationDate: '',
+      annualRevenue: '',
+      netProfit: '',
+      numberOfEmployees: '',
+      ownershipPercentage: '',
+      businessIncome: '',
+      businessExpenses: '',
+      taxPaid: '',
+      taxYear: '',
+      previousRefundsClaimed: '',
+      previousGrants: '',
+      cpaPrepared: false,
+      minorityOwned: false,
+      womanOwned: false,
+      veteranOwned: false,
+      hasPayroll: false,
     hasInsurance: false,
   });
 
@@ -77,6 +82,12 @@ export default function Questionnaire() {
                 ? 'yes'
                 : 'no'
               : prev.previousGrants,
+          previousRefundsClaimed:
+            typeof mapped.previousRefundsClaimed === 'boolean'
+              ? mapped.previousRefundsClaimed
+                ? 'yes'
+                : 'no'
+              : prev.previousRefundsClaimed,
         }));
       } catch (err: any) {
         logApiError('/case/questionnaire', undefined, err);
@@ -114,6 +125,11 @@ export default function Questionnaire() {
         netProfit: Number(answers.netProfit),
         numberOfEmployees: Number(answers.numberOfEmployees),
         ownershipPercentage: Number(answers.ownershipPercentage),
+        businessIncome: Number(answers.businessIncome),
+        businessExpenses: Number(answers.businessExpenses),
+        taxPaid: Number(answers.taxPaid),
+        taxYear: Number(answers.taxYear),
+        previousRefundsClaimed: answers.previousRefundsClaimed === 'yes',
         previousGrants: answers.previousGrants === 'yes',
       };
       await api.post('/case/questionnaire', payload);
@@ -273,28 +289,72 @@ export default function Questionnaire() {
                 setAnswers({ ...answers, numberOfEmployees: e.target.value });
               }}
             />
-            <FormInput
-              label="Ownership Percentage"
-              type="number"
-              value={answers.ownershipPercentage}
-              onChange={(e) => {
-                setAnswers({ ...answers, ownershipPercentage: e.target.value });
-              }}
-            />
-            <label className="block mb-2 font-medium">Previous Grants</label>
-            <select
-              className="w-full border rounded p-2 mb-1"
-              value={answers.previousGrants}
-              onChange={(e) => {
-                setAnswers({ ...answers, previousGrants: e.target.value });
-              }}
-            >
-              <option value="">Select</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </>
-        )}
+              <FormInput
+                label="Ownership Percentage"
+                type="number"
+                value={answers.ownershipPercentage}
+                onChange={(e) => {
+                  setAnswers({ ...answers, ownershipPercentage: e.target.value });
+                }}
+              />
+              <FormInput
+                label="Business Income"
+                type="number"
+                value={answers.businessIncome}
+                onChange={(e) => {
+                  setAnswers({ ...answers, businessIncome: e.target.value });
+                }}
+              />
+              <FormInput
+                label="Business Expenses"
+                type="number"
+                value={answers.businessExpenses}
+                onChange={(e) => {
+                  setAnswers({ ...answers, businessExpenses: e.target.value });
+                }}
+              />
+              <FormInput
+                label="Tax Paid"
+                type="number"
+                value={answers.taxPaid}
+                onChange={(e) => {
+                  setAnswers({ ...answers, taxPaid: e.target.value });
+                }}
+              />
+              <FormInput
+                label="Tax Year"
+                type="number"
+                value={answers.taxYear}
+                onChange={(e) => {
+                  setAnswers({ ...answers, taxYear: e.target.value });
+                }}
+              />
+              <label className="block mb-2 font-medium">Previous Grants</label>
+              <select
+                className="w-full border rounded p-2 mb-1"
+                value={answers.previousGrants}
+                onChange={(e) => {
+                  setAnswers({ ...answers, previousGrants: e.target.value });
+                }}
+              >
+                <option value="">Select</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+              <label className="block mb-2 font-medium">Previous Refunds Claimed</label>
+              <select
+                className="w-full border rounded p-2 mb-1"
+                value={answers.previousRefundsClaimed}
+                onChange={(e) => {
+                  setAnswers({ ...answers, previousRefundsClaimed: e.target.value });
+                }}
+              >
+                <option value="">Select</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </>
+          )}
         {step === 3 && (
             <div className="space-y-2">
               <label className="inline-flex items-center space-x-2">

@@ -46,8 +46,9 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
                 expectation_parts.append(f">= {rule_val['min']}")
             if "max" in rule_val:
                 expectation_parts.append(f"<= {rule_val['max']}")
-            if "one_of" in rule_val:
-                expectation_parts.append(f"in {rule_val['one_of']}")
+            if "one_of" in rule_val or "allowed" in rule_val:
+                allowed = rule_val.get("one_of") or rule_val.get("allowed")
+                expectation_parts.append(f"in {allowed}")
             expectation = " and ".join(expectation_parts)
             return None, f"❌ {key} missing", actual, expectation
 
@@ -62,9 +63,10 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
             expectation_parts.append(f"<= {rule_val['max']}")
             ok = actual <= rule_val["max"]
             passed = passed and ok
-        if "one_of" in rule_val:
-            expectation_parts.append(f"in {rule_val['one_of']}")
-            ok = actual in rule_val["one_of"]
+        if "one_of" in rule_val or "allowed" in rule_val:
+            allowed = rule_val.get("one_of") or rule_val.get("allowed")
+            expectation_parts.append(f"in {allowed}")
+            ok = actual in allowed
             passed = passed and ok
         expectation = " and ".join(expectation_parts)
         return passed, (
@@ -125,8 +127,14 @@ def estimate_award(data: Dict[str, Any], rule: Dict[str, Any]) -> int:
     rtype = rule.get("type", "base")
 
     if rtype == "percentage":
-        base = data.get(rule.get("based_on", ""), 0)
-        return int(base * (rule.get("percent", 0) / 100))
+        base_field = rule.get("based_on") or rule.get("base_amount_field") or ""
+        base = data.get(base_field, 0)
+        percent = rule.get("percent")
+        if percent is None:
+            percent = rule.get("percentage", 0)
+            if percent <= 1:
+                percent *= 100
+        return int(base * (percent / 100))
 
     if rtype == "flat_per_unit":
         units = data.get(rule.get("per", ""), 0)

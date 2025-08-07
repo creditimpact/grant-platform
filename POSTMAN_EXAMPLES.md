@@ -60,6 +60,11 @@ Content-Type: application/json
   "netProfit": 80000,
   "numberOfEmployees": 5,
   "ownershipPercentage": 100,
+  "businessIncome": 550000,
+  "businessExpenses": 520000,
+  "taxPaid": 20000,
+  "taxYear": 2024,
+  "previousRefundsClaimed": false,
   "previousGrants": false
 }
 ```
