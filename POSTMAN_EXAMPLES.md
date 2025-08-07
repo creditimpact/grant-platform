@@ -180,3 +180,28 @@ Sample response:
   "estimated_amount": 500000
 }
 ```
+
+## Employee Retention Credit Example
+```http
+POST http://localhost:4001/check
+Content-Type: application/json
+
+{
+  "business_location_country": "US",
+  "w2_employee_count": 5,
+  "revenue_drop_2020_percent": 55,
+  "government_shutdown_2021": true,
+  "qualified_wages_2020": 10000,
+  "qualified_wages_2021": 10000,
+  "ppp_wages_double_dip": false
+}
+```
+
+Sample response:
+```json
+{
+  "name": "Employee Retention Credit",
+  "eligible": true,
+  "estimated_amount": 7000
+}
+```
