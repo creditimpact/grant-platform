@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 import logging
 
 from grants_loader import load_grants
-from rules_utils import check_rules, estimate_award
+from rules_utils import check_rules, check_rule_groups, estimate_award
 
 logging.basicConfig(level=logging.INFO)
 
@@ -40,7 +40,10 @@ def analyze_eligibility(
             )
             continue
 
-        rule_result = check_rules(user_data, grant.get("eligibility_rules", {}))
+        if grant.get("eligibility_categories"):
+            rule_result = check_rule_groups(user_data, grant.get("eligibility_categories"))
+        else:
+            rule_result = check_rules(user_data, grant.get("eligibility_rules", {}))
         amount = (
             estimate_award(user_data, grant.get("estimated_award", {}))
             if rule_result["eligible"]

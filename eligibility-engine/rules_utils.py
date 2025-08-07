@@ -8,6 +8,32 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
     base_key = key
     expectation = None
     actual = None
+    if key.endswith("_each_min"):
+        base_key = key[:-9]
+        expectation = f"each >= {rule_val}"
+        actual = data.get(base_key)
+        if actual is None:
+            return None, f"❌ {base_key} missing", actual, expectation
+        if not isinstance(actual, list):
+            return False, f"❌ {base_key} not a list", actual, expectation
+        passed = all(val >= rule_val for val in actual)
+        return passed, (
+            f"{'✅' if passed else '❌'} {base_key} = {actual}, expected each >= {rule_val}"
+        ), actual, expectation
+
+    if key.endswith("_each_max"):
+        base_key = key[:-9]
+        expectation = f"each <= {rule_val}"
+        actual = data.get(base_key)
+        if actual is None:
+            return None, f"❌ {base_key} missing", actual, expectation
+        if not isinstance(actual, list):
+            return False, f"❌ {base_key} not a list", actual, expectation
+        passed = all(val <= rule_val for val in actual)
+        return passed, (
+            f"{'✅' if passed else '❌'} {base_key} = {actual}, expected each <= {rule_val}"
+        ), actual, expectation
+
     if key.endswith("_min"):
         base_key = key[:-4]
         expectation = f">= {rule_val}"
@@ -116,6 +142,34 @@ def check_rules(data: Dict[str, Any], rules: Dict[str, Any]):
         "score": score,
         "reasoning": reasoning,
         "debug": debug,
+    }
+
+
+def check_rule_groups(data: Dict[str, Any], groups: Dict[str, Dict[str, Any]]):
+    """Evaluate multiple rule groups (e.g., WOSB, EDWOSB) and aggregate results."""
+    aggregated_reasoning: List[str] = []
+    aggregated_debug: Dict[str, Any] = {"groups": {}, "missing_fields": []}
+    scores: List[int] = []
+    eligibility: Any = True
+
+    for name, rules in groups.items():
+        result = check_rules(data, rules)
+        aggregated_reasoning.extend([f"[{name}] {msg}" for msg in result["reasoning"]])
+        aggregated_debug["groups"][name] = result["debug"]
+        aggregated_debug["missing_fields"].extend(result["debug"].get("missing_fields", []))
+
+        if result["eligible"] is False:
+            eligibility = False
+        elif result["eligible"] is None and eligibility is not False:
+            eligibility = None
+        scores.append(result["score"])
+
+    score = int(sum(scores) / len(scores)) if scores else 0
+    return {
+        "eligible": eligibility,
+        "score": score,
+        "reasoning": aggregated_reasoning,
+        "debug": aggregated_debug,
     }
 
 

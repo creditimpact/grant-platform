@@ -2,7 +2,7 @@
 
 This package contains a lightweight rules engine used to determine business eligibility for a variety of grant and credit programs. Grants are defined as JSON files under `grants/` so new programs can be added without touching the code.
 
-Included templates now cover federal and local programs like the **Business Tax Refund Grant** alongside R&D credits and city incentives.
+Included templates now cover federal and local programs like the **Business Tax Refund Grant** alongside R&D credits, city incentives, and the **Women-Owned Tech Grant**.
 
 ## Running the Engine
 
@@ -43,10 +43,21 @@ The API includes automatic OpenAPI docs at `/docs` when running.
 1. Create a JSON file in `grants/` following the existing examples. Include:
    - `name`, `year`, and `description`.
    - `required_fields` a list of data keys needed.
-   - `eligibility_rules` describing the logic. Supports `any_of`, `all_of`, range checks, and conditional blocks.
+   - Either `eligibility_rules` or `eligibility_categories` describing the logic. Categories allow separate rule blocks (e.g. WOSB vs. SBIR requirements).
+   - Rule keys ending in `_min`/`_max` compare numbers. Keys ending in `_each_min`/`_each_max` ensure all values in a list meet the threshold.
    - `estimated_award` describing how to calculate the potential amount.
    - `tags` and `ui_questions` to help the UI.
 2. The file name becomes the grant `key` used by the API.
+
+## Women-Owned Tech Grant
+
+The Women-Owned Tech Grant demonstrates the new grouped rule logic. Its configuration lives at `grants/women_owned_tech.json` and defines three categories:
+
+- **WOSB** – verifies small business status, majority U.S.‑citizen women ownership and control, for‑profit structure, and U.S. presence.
+- **EDWOSB** – adds economic disadvantage checks ensuring each woman owner's net worth, income, and assets fall below program limits.
+- **SBIR/STTR** – enforces research program rules including U.S. ownership, employee limits, domestic research, partner requirements for STTR, and federal registrations.
+
+Each category is evaluated separately and aggregated into an overall eligibility result.
 
 ## Sample Payload
 

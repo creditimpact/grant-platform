@@ -3,28 +3,73 @@
   "year": 2025,
   "description": "Support for tech companies owned by women",
   "required_fields": [
-    "owner_gender",
-    "industry"
+    "sba_small_business",
+    "women_ownership_percent",
+    "women_us_citizen_residents",
+    "women_controlled",
+    "woman_leader_full_time",
+    "for_profit",
+    "entity_type",
+    "owner_debarred",
+    "federal_litigation",
+    "us_based_or_impact",
+    "owner_net_worths",
+    "owner_avg_incomes",
+    "owner_total_assets",
+    "num_employees",
+    "us_ownership_percent",
+    "institutional_investor_controlled",
+    "research_location",
+    "has_research_institution_partner",
+    "sam_registered",
+    "self_certified"
   ],
-  "eligibility_rules": {
-    "owner_gender": "female",
-    "industry": [
-      "technology",
-      "software"
-    ]
+  "eligibility_categories": {
+    "wosb": {
+      "sba_small_business": true,
+      "women_ownership_percent_min": 51,
+      "women_us_citizen_residents": true,
+      "women_controlled": true,
+      "woman_leader_full_time": true,
+      "for_profit": true,
+      "entity_type": ["llc", "c_corp", "s_corp", "partnership", "sole_proprietorship"],
+      "owner_debarred": false,
+      "federal_litigation": false,
+      "us_based_or_impact": true
+    },
+    "edwosb": {
+      "owner_net_worths_each_max": 850000,
+      "owner_avg_incomes_each_max": 400000,
+      "owner_total_assets_each_max": 6500000
+    },
+    "sbir_sttr": {
+      "num_employees_max": 500,
+      "us_ownership_percent_min": 50,
+      "institutional_investor_controlled": false,
+      "research_location": "us",
+      "has_research_institution_partner": true,
+      "sam_registered": true,
+      "self_certified": true
+    }
   },
   "estimated_award": {
     "type": "base",
     "base": 20000
   },
-  "tags": [
-    "federal",
-    "women",
-    "technology"
-  ],
+  "tags": ["federal", "women", "technology"],
   "ui_questions": [
-    "Is your business majority owned by women?",
-    "What industry are you in?"
+    "Does your business meet SBA small business standards?",
+    "What percentage of the business is owned by U.S. citizen women?",
+    "Do women owners control daily and strategic decisions?",
+    "Is at least one woman leader working full-time in the business?",
+    "Is the business for-profit and legally organized?",
+    "Have any owners been debarred or involved in federal litigation?",
+    "Is the business based in or impacting the U.S. economy?",
+    "How many employees do you have?",
+    "Is at least 50% of the company owned by U.S. citizens or permanent residents?",
+    "Is research work conducted solely within the United States?",
+    "If participating in STTR, do you collaborate with a U.S. research institution?",
+    "Are you registered in SAM and self-certified?"
   ],
   "complexity_level": "medium",
   "human_summary": "Support for tech companies owned by women",
