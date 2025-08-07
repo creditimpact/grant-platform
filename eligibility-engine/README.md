@@ -2,7 +2,7 @@
 
 This package contains a lightweight rules engine used to determine business eligibility for a variety of grant and credit programs. Grants are defined as JSON files under `grants/` so new programs can be added without touching the code.
 
-Included templates now cover federal and local programs like the **Business Tax Refund Grant**, the **Women-Owned Tech Grant**, the **Minority Female Founder Grant**, the **Rural Development Grant** with multiple USDA sub-programs, and the **Green Energy State Incentive** spanning state-level rebates, tax credits, and direct grants for renewable projects.
+Included templates now cover federal and local programs like the **Business Tax Refund Grant**, the **Women-Owned Tech Grant**, the **Minority Female Founder Grant**, the **Employee Retention Credit (ERC)**, the **Rural Development Grant** with multiple USDA sub-programs, and the **Green Energy State Incentive** spanning state-level rebates, tax credits, and direct grants for renewable projects.
 
 ## Tech Startup Payroll Credit
 
