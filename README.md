@@ -7,7 +7,7 @@ This repository contains three microservices used to test a grant eligibility wo
 - **eligibility-engine/** – Python rules engine returning missing fields and suggested next steps
 - **ai-agent/** – LLM-ready service with conversational endpoints and smart form filling
 
-The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant.
+The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant and a Veteran Owned Business Grant.
 
 ```
 project-root/
@@ -19,6 +19,17 @@ project-root/
 ```
 
 The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files.
+
+### Veteran Owned Business Grant
+
+This program awards a flat $10,000 to five veteran-owned small businesses each year.
+To qualify, a business must:
+
+- Have at least 51% ownership by a veteran or military spouse.
+- Employ between 3 and 20 people.
+- Earn no more than $5 million in annual revenue.
+- Operate in one of the 50 U.S. states and be located in an economically vulnerable area.
+- Avoid disqualified business types such as non-profits or restricted franchises.
 
 ## Grant Submission Pipeline
 

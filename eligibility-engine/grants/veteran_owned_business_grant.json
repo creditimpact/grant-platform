@@ -1,0 +1,48 @@
+{
+  "name": "Veteran Owned Business Grant",
+  "year": 2025,
+  "description": "Support for veteran-owned small businesses meeting specific ownership, size, income, and location criteria",
+  "required_fields": [
+    "owner_veteran",
+    "owner_spouse",
+    "ownership_percentage",
+    "number_of_employees",
+    "annual_revenue",
+    "business_location_state",
+    "economically_vulnerable_area",
+    "business_type"
+  ],
+  "eligibility_categories": {
+    "ownership_and_control": {
+      "any_true": ["owner_veteran", "owner_spouse"],
+      "ownership_percentage_min": 51
+    },
+    "business_size": {
+      "number_of_employees_between": [3, 20]
+    },
+    "income": {
+      "annual_revenue_max": 5000000
+    },
+    "location": {
+      "business_location_state": ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"],
+      "economically_vulnerable_area": true
+    },
+    "exclusions": {
+      "business_type": ["llc", "s_corp", "c_corp", "partnership", "sole_proprietorship"]
+    }
+  },
+  "estimated_award": {
+    "type": "base",
+    "base": 10000
+  },
+  "tags": ["veteran", "small_business", "economic_vulnerability"],
+  "ui_questions": [
+    "Are you a veteran or a military spouse with at least 51% ownership of the business?",
+    "Does your business have between 3 and 20 employees?",
+    "Is your annual revenue less than or equal to $5 million?",
+    "Is your business located in an economically vulnerable area?"
+  ],
+  "complexity_level": "medium",
+  "human_summary": "Support for veteran-owned small businesses with up to 20 employees and $5M revenue.",
+  "risk_notes": "Excludes non-profits, illegal businesses, and certain franchises."
+}

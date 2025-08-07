@@ -54,6 +54,29 @@ def _evaluate_rule(data: Dict[str, Any], key: str, rule_val: Any):
             f"{'✅' if actual <= rule_val else '❌'} {base_key} = {actual}, expected <= {rule_val}"
         ), actual, expectation
 
+    if key.endswith("_between"):
+        base_key = key[:-8]
+        min_val, max_val = rule_val
+        expectation = f"between {min_val} and {max_val}"
+        actual = data.get(base_key)
+        if actual is None:
+            return None, f"❌ {base_key} missing", actual, expectation
+        passed = min_val <= actual <= max_val
+        return passed, (
+            f"{'✅' if passed else '❌'} {base_key} = {actual}, expected between {min_val}-{max_val}"
+        ), actual, expectation
+
+    if key == "any_true":
+        expectation = f"any of {rule_val} true"
+        actual = {k: data.get(k) for k in rule_val}
+        missing = [k for k, v in actual.items() if v is None]
+        if missing:
+            return None, f"❌ {', '.join(missing)} missing", actual, expectation
+        passed = any(actual.values())
+        return passed, (
+            f"{'✅' if passed else '❌'} any_true {actual}"
+        ), actual, expectation
+
     if isinstance(rule_val, list):
         expectation = f"in {rule_val}"
         actual = data.get(key)
