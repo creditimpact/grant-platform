@@ -18,6 +18,7 @@ def test_community_facilities_award():
     assert grant["eligible"] is True
     assert grant["estimated_amount"] == 75000
     assert "form_sf424" in grant.get("requiredForms", [])
+    assert "form_424A" in grant.get("requiredForms", [])
 
 
 def test_rcdg_cap():
