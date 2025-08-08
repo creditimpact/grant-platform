@@ -11,6 +11,15 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
+Create a `.env` file in this directory and set your MongoDB connection string:
+
+```
+MONGODB_URI=mongodb://localhost:27017
+```
+
+The service uses [python-dotenv](https://github.com/theskumar/python-dotenv) to
+load this file automatically.
+
 ## Endpoints
 
 - `POST /check` – submit user data, notes or an uploaded document. Free-form
