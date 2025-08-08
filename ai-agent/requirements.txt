@@ -7,3 +7,4 @@ python-dotenv==1.0.0
 openai==0.27.8
 pymongo==4.6.3
 pytest==8.0.2
+coverage==7.4.0

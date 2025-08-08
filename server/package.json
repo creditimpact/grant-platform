@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "node --test"
+    "test": "node --test --experimental-test-coverage > coverage.txt && node scripts/check-coverage.js coverage.txt"
   },
   "dependencies": {
     "bcryptjs": "3.0.2",

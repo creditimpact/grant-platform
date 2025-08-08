@@ -198,16 +198,20 @@ The frontend will be available at [http://localhost:3000](http://localhost:3000)
 
 ## Testing
 
-Each microservice includes a small test suite. Run them individually from the repository root:
+Each microservice includes a small test suite with coverage reporting. Run them individually from the repository root:
 
 ```bash
-# Express API
+# Express API (coverage written to server/coverage.txt)
 cd server && npm test
 
-# Python services
-cd ai-agent && pip install -r requirements.txt && pytest
-cd ai-analyzer && pip install -r requirements.txt && pytest
-cd eligibility-engine && pip install -r requirements.txt && pytest
+# Frontend unit tests and E2E (coverage in frontend/coverage)
+cd frontend && npm test
+cd frontend && npm run e2e
+
+# Python services (coverage.xml output)
+cd ai-agent && pip install -r requirements.txt && coverage run -m pytest && coverage report
+cd ai-analyzer && pip install -r requirements.txt && coverage run -m pytest && coverage report
+cd eligibility-engine && pip install -r requirements.txt && coverage run -m pytest && coverage report
 ```
 
 Continuous integration runs these commands on every push and pull request using the workflow in `.github/workflows/ci.yml`.
