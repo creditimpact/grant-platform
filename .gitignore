@@ -2,6 +2,10 @@ node_modules
 .env
 uploads
 server/uploads
+# Coverage outputs
+coverage/
+**/coverage.txt
+**/coverage/
 # Frontend build outputs
 /frontend/.next
 /frontend/node_modules

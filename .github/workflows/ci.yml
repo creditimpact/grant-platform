@@ -17,6 +17,10 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npm test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server-coverage
+          path: server/coverage.txt
 
   ai-agent:
     runs-on: ubuntu-latest
@@ -29,7 +33,13 @@ jobs:
         with:
           python-version: '3.10'
       - run: pip install -r requirements.txt
-      - run: pytest
+      - run: coverage run -m pytest
+      - run: coverage report --fail-under=70
+      - run: coverage xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-agent-coverage
+          path: ai-agent/coverage.xml
 
   ai-analyzer:
     runs-on: ubuntu-latest
@@ -42,7 +52,13 @@ jobs:
         with:
           python-version: '3.10'
       - run: pip install -r requirements.txt
-      - run: pytest
+      - run: coverage run -m pytest
+      - run: coverage report --fail-under=70
+      - run: coverage xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-analyzer-coverage
+          path: ai-analyzer/coverage.xml
 
   eligibility-engine:
     runs-on: ubuntu-latest
@@ -55,5 +71,30 @@ jobs:
         with:
           python-version: '3.10'
       - run: pip install -r requirements.txt
-      - run: pytest
+      - run: coverage run -m pytest
+      - run: coverage report --fail-under=70
+      - run: coverage xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eligibility-engine-coverage
+          path: eligibility-engine/coverage.xml
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm test
+      - run: npx playwright install --with-deps
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
 
