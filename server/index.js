@@ -15,11 +15,29 @@ const app = express();
 
 // === Middlewares ===
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || 'https://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
 app.use(morgan('dev'));
+const rateLimits = {};
+app.use((req, res, next) => {
+  const ip = req.ip;
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+  const limit = parseInt(process.env.RATE_LIMIT || '100', 10);
+  const entry = rateLimits[ip] || { count: 0, start: now };
+  if (now - entry.start > windowMs) {
+    entry.count = 0;
+    entry.start = now;
+  }
+  entry.count += 1;
+  rateLimits[ip] = entry;
+  if (entry.count > limit) {
+    return res.status(429).json({ message: 'Too many requests' });
+  }
+  next();
+});
 // serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

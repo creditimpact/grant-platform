@@ -13,10 +13,20 @@ const connectDB = async () => {
       throw new Error('MONGO_URI environment variable is not set');
     }
 
-    const conn = await mongoose.connect(mongoURI, {
+    const options = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-    });
+    };
+    if (process.env.MONGO_USER && process.env.MONGO_PASS) {
+      options.auth = {
+        username: process.env.MONGO_USER,
+        password: process.env.MONGO_PASS,
+      };
+    }
+    if (process.env.MONGO_TLS === 'true') {
+      options.tls = true;
+    }
+    const conn = await mongoose.connect(mongoURI, options);
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
