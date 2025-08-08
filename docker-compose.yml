@@ -5,13 +5,22 @@ services:
     restart: always
     ports:
       - '27017:27017'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongoAdmin
+      - MONGO_INITDB_ROOT_PASSWORD=changeMe
+    command: ["mongod", "--auth", "--tlsMode", "requireTLS", "--tlsCertificateKeyFile", "/etc/mongo/certs/mongo.pem", "--tlsCAFile", "/etc/mongo/certs/ca.pem"]
+    volumes:
+      - ./mongo-certs:/etc/mongo/certs:ro
 
   server:
     build: ./server
     ports:
       - '5000:5000'
     environment:
-      - MONGO_URI=mongodb://mongo:27017/grants
+      - MONGO_URI=mongodb://mongo:27017/grants?authSource=admin&tls=true
+      - MONGO_USER=serverUser
+      - MONGO_PASS=serverPass
+      - MONGO_CA_FILE=/etc/mongo/ca.pem
       - JWT_SECRET=devsecret
       - AI_ANALYZER_URL=https://ai-analyzer:8000
       - ELIGIBILITY_ENGINE_URL=https://eligibility-engine:4001
@@ -20,6 +29,8 @@ services:
       - mongo
       - ai-agent
       - ai-analyzer
+    volumes:
+      - ./mongo-certs/ca.pem:/etc/mongo/ca.pem:ro
 
   eligibility-engine:
     build: ./eligibility-engine
@@ -35,7 +46,12 @@ services:
     depends_on:
       - eligibility-engine
     environment:
-      - MONGO_URI=mongodb://mongo:27017/grants
+      - MONGO_URI=mongodb://mongo:27017/ai_agent?authSource=admin&tls=true
+      - MONGO_USER=agentUser
+      - MONGO_PASS=agentPass
+      - MONGO_CA_FILE=/etc/mongo/ca.pem
+    volumes:
+      - ./mongo-certs/ca.pem:/etc/mongo/ca.pem:ro
 
   ai-analyzer:
     build: ./ai-analyzer

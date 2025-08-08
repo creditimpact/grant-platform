@@ -3,12 +3,24 @@ from typing import Dict, Any, List
 from pymongo import MongoClient
 import os
 
+# Require explicit credentials and TLS for all connections
 MONGO_URI = os.getenv("MONGO_URI")
-if not MONGO_URI and os.getenv("NODE_ENV") == "development":
-    MONGO_URI = "mongodb://localhost:27017"
-if not MONGO_URI:
-    raise ValueError("MONGO_URI environment variable is not set")
-client = MongoClient(MONGO_URI)
+MONGO_USER = os.getenv("MONGO_USER")
+MONGO_PASS = os.getenv("MONGO_PASS")
+MONGO_CA_FILE = os.getenv("MONGO_CA_FILE")
+
+if not all([MONGO_URI, MONGO_USER, MONGO_PASS]):
+    raise ValueError("MONGO_URI, MONGO_USER, and MONGO_PASS must be set")
+
+client = MongoClient(
+    MONGO_URI,
+    username=MONGO_USER,
+    password=MONGO_PASS,
+    tls=True,
+    tlsCAFile=MONGO_CA_FILE,
+    authSource=os.getenv("MONGO_AUTH_DB", "admin"),
+    tlsAllowInvalidCertificates=False,
+)
 db = client["ai_agent"]
 collection = db["session_memory"]
 

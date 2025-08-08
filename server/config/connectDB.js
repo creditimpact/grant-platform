@@ -3,15 +3,25 @@ require('dotenv').config(); // טען את קובץ ה־.env (אם זה לא נ�
 
 const connectDB = async () => {
   try {
-    const mongoURI =
-      process.env.MONGO_URI ||
-      (process.env.NODE_ENV === 'development' ? 'mongodb://localhost:27017/grants' : '');
+    const mongoURI = process.env.MONGO_URI;
 
     if (!mongoURI) {
       throw new Error('MONGO_URI environment variable is not set');
     }
+    if (!process.env.MONGO_USER || !process.env.MONGO_PASS) {
+      throw new Error('MONGO_USER and MONGO_PASS must be set');
+    }
+    if (!process.env.MONGO_CA_FILE) {
+      throw new Error('MONGO_CA_FILE must be set for TLS');
+    }
 
-    const conn = await mongoose.connect(mongoURI);
+    const conn = await mongoose.connect(mongoURI, {
+      user: process.env.MONGO_USER,
+      pass: process.env.MONGO_PASS,
+      authSource: process.env.MONGO_AUTH_DB || 'admin',
+      tls: true,
+      tlsCAFile: process.env.MONGO_CA_FILE,
+    });
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);

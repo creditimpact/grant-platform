@@ -6,8 +6,9 @@
 - Secured the `/llm-debug/{session_id}` endpoint behind authentication and environment flag.
 - Hardened file uploads in AI Analyzer with size limits (5MB) and ClamAV virus scanning.
 - Enforced authenticated inter-service communication by sending `X-API-Key` headers and defaulting internal URLs to HTTPS.
-- Improved MongoDB security with optional username/password and TLS support.
+- Enforced MongoDB authentication and TLS across services and documented least-privilege roles.
 - Added simple in-memory rate limiting middleware to the Express server.
+ - Added a script to verify MongoDB TLS connectivity (`npm run verify:mongo`).
 
 ## Further Recommendations
 
