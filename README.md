@@ -3,7 +3,7 @@
 This repository contains three microservices used to test a grant eligibility workflow.
 
 - **server/** – Express API for authentication, file uploads and analysis forwarding
-- **ai-analyzer/** – FastAPI service that extracts text using Tesseract OCR and simple NLP with confidence scores
+- **ai-analyzer/** – FastAPI service that extracts text using Tesseract OCR and simple NLP with confidence scores while enforcing API key authentication, a 5MB upload limit and ClamAV virus scanning
 - **eligibility-engine/** – Python rules engine returning missing fields and suggested next steps
 - **ai-agent/** – LLM-ready service with conversational endpoints and smart form filling
 
@@ -25,7 +25,7 @@ project-root/
   frontend/             Next.js application
 ```
 
-The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files.
+The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files up to 5MB each and scans them for viruses before analysis.
 
 ### Veteran Owned Business Grant
 
