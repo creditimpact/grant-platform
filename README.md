@@ -195,3 +195,21 @@ docker-compose up --build
 ```
 
 The frontend will be available at [http://localhost:3000](http://localhost:3000) and the API at [http://localhost:5000/api](http://localhost:5000/api).
+
+## Testing
+
+Each microservice includes a small test suite. Run them individually from the repository root:
+
+```bash
+# Express API
+cd server && npm test
+
+# Python services
+cd ai-agent && pip install -r requirements.txt && pytest
+cd ai-analyzer && pip install -r requirements.txt && pytest
+cd eligibility-engine && pip install -r requirements.txt && pytest
+```
+
+Continuous integration runs these commands on every push and pull request using the workflow in `.github/workflows/ci.yml`.
+
+When contributing new features, add tests in the corresponding service and keep test imports local to that service.
