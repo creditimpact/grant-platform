@@ -22,6 +22,8 @@ def scan_for_viruses(data: bytes) -> None:
             result = subprocess.run(["clamscan", tmp.name], capture_output=True)
             if result.returncode == 1:
                 raise HTTPException(status_code=400, detail="Virus detected")
+            if result.returncode != 0:
+                raise HTTPException(status_code=500, detail="Virus scan failed")
     except FileNotFoundError:
         raise HTTPException(status_code=500, detail="Virus scanner not available")
 
