@@ -3,9 +3,11 @@ from typing import Dict, Any, List
 from pymongo import MongoClient
 import os
 
-MONGO_URI = os.getenv("MONGODB_URI")
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI and os.getenv("NODE_ENV") == "development":
+    MONGO_URI = "mongodb://localhost:27017"
 if not MONGO_URI:
-    raise ValueError("MONGODB_URI environment variable is not set")
+    raise ValueError("MONGO_URI environment variable is not set")
 client = MongoClient(MONGO_URI)
 db = client["ai_agent"]
 collection = db["session_memory"]

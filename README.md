@@ -124,7 +124,7 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
    pip install -r requirements.txt
    python -m uvicorn main:app --port 5001
    ```
-   The AI agent requires its own `.env` file (see `ai-agent/.env.example`) with `MONGODB_URI` and, optionally, `OPENAI_API_KEY`.
+   The AI agent requires its own `.env` file (see `ai-agent/.env.example`) with `MONGO_URI` and, optionally, `OPENAI_API_KEY`.
 4. Start the eligibility engine
    ```bash
    cd eligibility-engine
