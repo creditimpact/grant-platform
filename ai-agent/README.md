@@ -12,10 +12,14 @@ uvicorn main:app --reload
 ```
 
 Create a `.env` file in this directory (you can copy from `.env.example`) and set
-your MongoDB connection string and optional OpenAI API key:
+credentials for an authenticated, TLS-enabled MongoDB connection along with an
+optional OpenAI API key:
 
 ```
-MONGO_URI=mongodb://localhost:27017
+MONGO_URI=mongodb://mongo:27017/ai_agent?authSource=admin&tls=true
+MONGO_USER=agentUser
+MONGO_PASS=strongPassword
+MONGO_CA_FILE=/path/to/ca.pem
 OPENAI_API_KEY=your_api_key_here
 ```
 

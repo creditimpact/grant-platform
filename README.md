@@ -11,7 +11,7 @@ All Node.js dependencies are pinned to exact versions, and the server runs on th
 
 ## Persistence
 
-User cases, pipeline state, uploaded file metadata and AI agent conversations are now stored in MongoDB. Sessions are persisted in a TTL-indexed collection and file uploads stream to disk with their paths tracked in the database.
+User cases, pipeline state, uploaded file metadata and AI agent conversations are now stored in MongoDB. Sessions are persisted in a TTL-indexed collection and file uploads stream to disk with their paths tracked in the database. See [`docs/mongo-security.md`](docs/mongo-security.md) for details on authentication, TLS and role setup.
 
 The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant, a Veteran Owned Business Grant, the Employee Retention Credit (ERC), a comprehensive Rural Development Grant covering USDA sub-programs, a Green Energy State Incentive aggregating state-level rebates, credits and grants for renewable installations, an Urban Small Business Grants (2025) package spanning nine city programs, and a California Small Business Grant (2025) bundling the Dream Fund, STEP export vouchers, San Francisco Women’s Entrepreneurship Fund, Route 66 Extraordinary Women Micro-Grant, CDFA grants, RUST assistance, CalChamber awards and the LA Region Small Business Relief Fund.
 The Rural Development configuration now includes federal form templates for SF-424, 424A, RD 400-1, RD 400-4 and RD 400-8.
@@ -127,7 +127,15 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
    npm install
    node server/index.js
    ```
-   Create a `.env` file in the repository root (copy from `.env.example`) and set `MONGO_URI` along with other service URLs.
+   Create a `.env` file in the repository root (copy from `.env.example`) and set
+   credentials for a TLS-enabled MongoDB connection along with other service URLs:
+
+   ```
+   MONGO_URI=mongodb://mongo:27017/grants?authSource=admin&tls=true
+   MONGO_USER=serverUser
+   MONGO_PASS=strongPassword
+   MONGO_CA_FILE=/path/to/ca.pem
+   ```
 
 2. Start the AI analyzer service
    ```bash
@@ -141,7 +149,9 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
    pip install -r requirements.txt
    python -m uvicorn main:app --port 5001
    ```
-   The AI agent requires its own `.env` file (see `ai-agent/.env.example`) with `MONGO_URI` and, optionally, `OPENAI_API_KEY`.
+   The AI agent requires its own `.env` file (see `ai-agent/.env.example`) with
+   authenticated TLS settings for MongoDB (`MONGO_URI`, `MONGO_USER`,
+   `MONGO_PASS`, and `MONGO_CA_FILE`) and, optionally, `OPENAI_API_KEY`.
 4. Start the eligibility engine
    ```bash
    cd eligibility-engine
