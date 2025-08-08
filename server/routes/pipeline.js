@@ -4,12 +4,14 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
+const createAgent = require('../utils/tlsAgent');
 const auth = require('../middleware/authMiddleware');
 const { createCase, updateCase, getCase } = require('../utils/pipelineStore');
 
 const router = express.Router();
 
 const serviceHeaders = { 'X-API-Key': process.env.INTERNAL_API_KEY };
+const agent = createAgent();
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -55,6 +57,7 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
         method: 'POST',
         body: form,
         headers: { ...form.getHeaders(), ...serviceHeaders },
+        agent,
       });
       if (!resp.ok) {
         const text = await resp.text();
@@ -80,6 +83,7 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...serviceHeaders },
       body: JSON.stringify(normalized),
+      agent,
     });
     if (!eligResp.ok) {
       const text = await eligResp.text();
@@ -101,6 +105,7 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...serviceHeaders },
         body: JSON.stringify({ form_name: formName, user_payload: normalized }),
+        agent,
       });
       if (!agentResp.ok) {
         const text = await agentResp.text();

@@ -2,7 +2,7 @@
 
 ## Register
 ```http
-POST http://localhost:5000/api/auth/register
+POST https://localhost:5000/api/auth/register
 Content-Type: application/json
 
 {
@@ -14,7 +14,7 @@ Content-Type: application/json
 
 ## Login
 ```http
-POST http://localhost:5000/api/auth/login
+POST https://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
@@ -25,13 +25,13 @@ Content-Type: application/json
 
 ## Protected Route
 ```http
-GET http://localhost:5000/api/users
+GET https://localhost:5000/api/users
 Authorization: Bearer <JWT_TOKEN>
 ```
 
 ## Upload PNG Document
 ```http
-POST http://localhost:5000/api/files/upload
+POST https://localhost:5000/api/files/upload
 Authorization: Bearer <JWT_TOKEN>
 Content-Type: multipart/form-data
 file: <path to your file.png>
@@ -40,7 +40,7 @@ key: id_document
 
 ## Save Questionnaire
 ```http
-POST http://localhost:5000/api/case/questionnaire
+POST https://localhost:5000/api/case/questionnaire
 Authorization: Bearer <JWT_TOKEN>
 Content-Type: application/json
 
@@ -73,7 +73,7 @@ Content-Type: application/json
 
 ## Veteran Owned Business Grant Example
 ```http
-POST http://localhost:4001/check
+POST https://localhost:4001/check
 Content-Type: application/json
 
 {
@@ -101,7 +101,7 @@ Sample response:
 ## Tech Startup Payroll Credit Example
 
 ```http
-POST http://localhost:4001/check
+POST https://localhost:4001/check
 Content-Type: application/json
 
 {
@@ -133,7 +133,7 @@ Sample response:
 ## Rural Development Grant Example
 
 ```http
-POST http://localhost:4001/check
+POST https://localhost:4001/check
 Content-Type: application/json
 
 {
@@ -157,7 +157,7 @@ Sample response:
 
 ## Green Energy State Incentive Example
 ```http
-POST http://localhost:4001/check
+POST https://localhost:4001/check
 Content-Type: application/json
 
 {
@@ -183,7 +183,7 @@ Sample response:
 
 ## Urban Small Business Grants (2025) Example
 ```http
-POST http://localhost:4001/check
+POST https://localhost:4001/check
 Content-Type: application/json
 
 {
@@ -212,7 +212,7 @@ Sample response:
 
 ## California Small Business Grant (2025) Example
 ```http
-POST http://localhost:4001/check
+POST https://localhost:4001/check
 Content-Type: application/json
 
 {
@@ -254,7 +254,7 @@ Sample response:
 
 ## Employee Retention Credit Example
 ```http
-POST http://localhost:4001/check
+POST https://localhost:4001/check
 Content-Type: application/json
 
 {

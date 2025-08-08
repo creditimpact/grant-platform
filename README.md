@@ -53,9 +53,9 @@ All service calls exchange JSON payloads, are logged, and bubble up descriptive 
 Environment variables configuring service locations:
 
 ```
-AI_ANALYZER_URL=http://ai-analyzer:8000
-ELIGIBILITY_ENGINE_URL=http://eligibility-engine:4001
-AI_AGENT_URL=http://ai-agent:5001
+AI_ANALYZER_URL=https://ai-analyzer:8000
+ELIGIBILITY_ENGINE_URL=https://eligibility-engine:4001
+AI_AGENT_URL=https://ai-agent:5001
 ```
 
 ## Authentication
@@ -63,13 +63,13 @@ AI_AGENT_URL=http://ai-agent:5001
 Internal Python services (AI Agent, AI Analyzer, Eligibility Engine) require an `X-API-Key` header that matches `INTERNAL_API_KEY`. Example:
 
 ```bash
-curl -H "X-API-Key: your_key" http://localhost:5001/status
+curl -k -H "X-API-Key: your_key" https://localhost:5001/status
 ```
 
 Requests without a key return **401 Unauthorized**. The Express server protects routes under `/api` using JWT bearer tokens:
 
 ```bash
-curl -H "Authorization: Bearer <token>" http://localhost:5000/api/users
+curl -k -H "Authorization: Bearer <token>" https://localhost:5000/api/users
 ```
 
 A missing or invalid token results in **401 Unauthorized**.
@@ -159,14 +159,14 @@ and provide human readable summaries. Eligibility results now include a `next_st
 along with any missing information:
 
 ```bash
-curl -X POST http://localhost:5001/check -H "Content-Type: application/json" \
+curl -k -X POST https://localhost:5001/check -H "Content-Type: application/json" \
     -d '{"notes": "We started around 2021 and are women-led in biotech"}'
 ```
 
 To fill a grant application form, send JSON directly to `/form-fill`:
 
 ```bash
-curl -X POST http://localhost:5001/form-fill \
+curl -k -X POST https://localhost:5001/form-fill \
     -H "Content-Type: application/json" \
     -d '{
         "form_name": "form_8974",
@@ -194,7 +194,7 @@ The backend uses `AI_ANALYZER_URL`, `ELIGIBILITY_ENGINE_URL` and `AI_AGENT_URL` 
 
 ### Testing file uploads
 
-1. Visit [http://localhost:3000](http://localhost:3000) and register or log in.
+1. Visit [https://localhost:3000](https://localhost:3000) and register or log in.
 2. From the dashboard choose **OPEN CASE** and complete the questionnaire wizard.
 3. On the **Documents** step upload sample files (PDF, JPG, JPEG or PNG). Use the **Replace** button to update a document.
 4. When all documents are uploaded, click **Submit for Analysis** to see eligibility results.
@@ -211,7 +211,7 @@ The repository includes a `docker-compose.yml` that spins up all services in one
 docker-compose up --build
 ```
 
-The frontend will be available at [http://localhost:3000](http://localhost:3000) and the API at [http://localhost:5000/api](http://localhost:5000/api).
+The frontend will be available at [https://localhost:3000](https://localhost:3000) and the API at [https://localhost:5000/api](https://localhost:5000/api).
 
 ## Testing
 

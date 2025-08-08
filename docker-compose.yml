@@ -13,9 +13,9 @@ services:
     environment:
       - MONGO_URI=mongodb://mongo:27017/grants
       - JWT_SECRET=devsecret
-      - AI_ANALYZER_URL=http://ai-analyzer:8000
-      - ELIGIBILITY_ENGINE_URL=http://eligibility-engine:4001
-      - AI_AGENT_URL=http://ai-agent:5001
+      - AI_ANALYZER_URL=https://ai-analyzer:8000
+      - ELIGIBILITY_ENGINE_URL=https://eligibility-engine:4001
+      - AI_AGENT_URL=https://ai-agent:5001
     depends_on:
       - mongo
       - ai-agent
@@ -47,6 +47,6 @@ services:
     ports:
       - '3000:3000'
     environment:
-      - NEXT_PUBLIC_API_BASE=http://server:5000/api
+      - NEXT_PUBLIC_API_BASE=https://server:5000/api
     depends_on:
       - server

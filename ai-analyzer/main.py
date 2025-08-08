@@ -66,5 +66,18 @@ async def analyze(file: UploadFile = File(...)):
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import uvicorn, ssl, os
+
+    cert = os.getenv("TLS_CERT_PATH")
+    key = os.getenv("TLS_KEY_PATH")
+    ca = os.getenv("TLS_CA_PATH")
+    kwargs: dict[str, object] = {}
+    if cert and key:
+        kwargs = {
+            "ssl_certfile": cert,
+            "ssl_keyfile": key,
+        }
+        if ca:
+            kwargs["ssl_ca_certs"] = ca
+            kwargs["ssl_cert_reqs"] = ssl.CERT_REQUIRED
+    uvicorn.run(app, host="0.0.0.0", port=8000, **kwargs)
