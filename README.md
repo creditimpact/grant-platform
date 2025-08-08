@@ -214,6 +214,10 @@ cd ai-analyzer && pip install -r requirements.txt && coverage run -m pytest && c
 cd eligibility-engine && pip install -r requirements.txt && coverage run -m pytest && coverage report
 ```
 
+### Linting and Coverage
+
+Run `npm run lint` in the `frontend` folder and `flake8 .` within each Python service to perform static analysis. Coverage results are written per service (e.g., `server/coverage.txt`, `frontend/coverage`, `ai-agent/coverage.xml`) and the CI workflow aggregates them via Codecov.
+
 Continuous integration runs these commands on every push and pull request using the workflow in `.github/workflows/ci.yml`.
 
 When contributing new features, add tests in the corresponding service and keep test imports local to that service.
