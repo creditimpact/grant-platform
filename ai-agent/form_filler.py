@@ -1,8 +1,10 @@
 """Smarter form filling utilities."""
+import ast
 import json
 from pathlib import Path
 from typing import Dict, Any
 from datetime import datetime
+import operator as op
 from document_utils import extract_fields, guess_attachment
 from nlp_utils import normalize_text_field, infer_state_from_zip, llm_complete
 
@@ -13,6 +15,85 @@ ZIP_STATE = {
     "1": "NY",
     "6": "IL",
 }
+
+
+SAFE_FUNCTIONS = {"int": int, "float": float}
+
+
+def safe_eval(expr: str, names: Dict[str, Any]) -> Any:
+    """Safely evaluate a limited Python expression.
+
+    Only a small subset of Python is supported: arithmetic operations,
+    boolean logic, comparisons and calls to whitelisted helper functions.
+    Any attempt to use other syntax or names will raise ``ValueError``.
+    """
+
+    def _eval(node: ast.AST) -> Any:
+        if isinstance(node, ast.Expression):
+            return _eval(node.body)
+        if isinstance(node, ast.Constant):
+            return node.value
+        if isinstance(node, ast.Name):
+            if node.id in context:
+                return context[node.id]
+            raise ValueError(f"Unknown variable: {node.id}")
+        if isinstance(node, ast.BinOp):
+            bin_ops = {
+                ast.Add: op.add,
+                ast.Sub: op.sub,
+                ast.Mult: op.mul,
+                ast.Div: op.truediv,
+                ast.Mod: op.mod,
+            }
+            if type(node.op) in bin_ops:
+                return bin_ops[type(node.op)](_eval(node.left), _eval(node.right))
+            raise ValueError("Unsupported binary operator")
+        if isinstance(node, ast.UnaryOp):
+            unary_ops = {ast.UAdd: op.pos, ast.USub: op.neg, ast.Not: op.not_}
+            if type(node.op) in unary_ops:
+                return unary_ops[type(node.op)](_eval(node.operand))
+            raise ValueError("Unsupported unary operator")
+        if isinstance(node, ast.BoolOp):
+            if isinstance(node.op, ast.And):
+                return all(_eval(v) for v in node.values)
+            if isinstance(node.op, ast.Or):
+                return any(_eval(v) for v in node.values)
+            raise ValueError("Unsupported boolean operator")
+        if isinstance(node, ast.Compare):
+            cmp_ops = {
+                ast.Eq: op.eq,
+                ast.NotEq: op.ne,
+                ast.Lt: op.lt,
+                ast.LtE: op.le,
+                ast.Gt: op.gt,
+                ast.GtE: op.ge,
+            }
+            left = _eval(node.left)
+            for oper, comp in zip(node.ops, node.comparators):
+                if type(oper) not in cmp_ops:
+                    raise ValueError("Unsupported comparison operator")
+                right = _eval(comp)
+                if not cmp_ops[type(oper)](left, right):
+                    return False
+                left = right
+            return True
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name) and node.func.id in SAFE_FUNCTIONS:
+                func = SAFE_FUNCTIONS[node.func.id]
+                if node.keywords:
+                    raise ValueError("Keyword arguments not allowed")
+                args = [_eval(arg) for arg in node.args]
+                return func(*args)
+            raise ValueError("Function calls are not allowed")
+        raise ValueError(f"Unsupported expression: {type(node).__name__}")
+
+    try:
+        tree = ast.parse(expr, mode="eval")
+    except SyntaxError as exc:  # pragma: no cover - ast raises SyntaxError
+        raise ValueError("Invalid expression") from exc
+
+    context = {**SAFE_FUNCTIONS, **names}
+    return _eval(tree.body)
 
 
 def _generate_text(data: Dict[str, Any], example: str | None = None) -> str:
@@ -45,8 +126,8 @@ def _fill_template(
         try:
             ctx = dict(data)
             ctx["current_year"] = datetime.utcnow().year
-            safe = {"__builtins__": {}, "int": int, "float": float}
-            data[key] = eval(expr, safe, ctx)
+            ctx.update(SAFE_FUNCTIONS)
+            data[key] = safe_eval(expr, ctx)
             if reasoning is not None:
                 reasoning.append(f"{key} computed from expression")
         except Exception:
@@ -73,7 +154,9 @@ def _fill_template(
         expr = rule.get("if")
         val = rule.get("value", True)
         try:
-            if eval(expr, {"__builtins__": {}}, data):
+            ctx = dict(data)
+            ctx.update(SAFE_FUNCTIONS)
+            if safe_eval(expr, ctx):
                 data[key] = val
         except Exception:
             pass
@@ -108,14 +191,18 @@ def _fill_template(
 
         if show_if:
             try:
-                if not eval(show_if, {"__builtins__": {}}, data):
+                ctx = dict(data)
+                ctx.update(SAFE_FUNCTIONS)
+                if not safe_eval(show_if, ctx):
                     continue
             except Exception:
                 pass
 
         if required_if:
             try:
-                required = bool(eval(required_if, {"__builtins__": {}}, data))
+                ctx = dict(data)
+                ctx.update(SAFE_FUNCTIONS)
+                required = bool(safe_eval(required_if, ctx))
             except Exception:
                 pass
 

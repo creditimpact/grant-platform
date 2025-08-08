@@ -38,6 +38,15 @@ load this file automatically.
 Add a new JSON file under `form_templates/` using the existing examples as a
 starting point. The `fields` object will be merged with user data.
 
+## Safe Expression Evaluation
+
+Computed, conditional and visibility rules inside form templates are expressed
+using a very small subset of Python. These expressions are evaluated with a
+custom AST-based interpreter that supports arithmetic, boolean logic and
+comparisons while restricting function calls to a tiny whitelist (`int` and
+`float`).  Any invalid or malicious expression is rejected, preventing arbitrary
+code execution and keeping template evaluation safe.
+
 ## Testing Documents
 
 Example documents live under `test_documents/`. They are simple text files used
