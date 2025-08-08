@@ -58,6 +58,23 @@ ELIGIBILITY_ENGINE_URL=http://eligibility-engine:4001
 AI_AGENT_URL=http://ai-agent:5001
 ```
 
+## Authentication
+
+Internal Python services (AI Agent, AI Analyzer, Eligibility Engine) require an `X-API-Key` header that matches `INTERNAL_API_KEY`. Example:
+
+```bash
+curl -H "X-API-Key: your_key" http://localhost:5001/status
+```
+
+Requests without a key return **401 Unauthorized**. The Express server protects routes under `/api` using JWT bearer tokens:
+
+```bash
+curl -H "Authorization: Bearer <token>" http://localhost:5000/api/users
+```
+
+A missing or invalid token results in **401 Unauthorized**.
+
+
 ### Case Management API
 
 The frontend interacts with a simpler set of endpoints that manage a user's in‑progress case:
