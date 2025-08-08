@@ -1,4 +1,4 @@
-pytesseract
-pillow
-fastapi
-uvicorn
+pytesseract==0.3.10
+pillow==9.5.0
+fastapi==0.95.2
+uvicorn==0.22.0

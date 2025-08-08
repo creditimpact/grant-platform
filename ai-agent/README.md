@@ -7,6 +7,7 @@ future foundation for chatbot or cockpit style integrations.
 ## Running
 
 ```bash
+pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
