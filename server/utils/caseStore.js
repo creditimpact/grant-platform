@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
+const createAgent = require('./tlsAgent');
 const Case = require('../models/Case');
 
 function loadGrantConfig() {
@@ -9,6 +10,8 @@ function loadGrantConfig() {
   const clean = raw.startsWith('//') ? raw.split('\n').slice(1).join('\n') : raw;
   return JSON.parse(clean);
 }
+
+const agent = createAgent();
 
 async function computeDocuments(answers = {}) {
   const docs = [
@@ -109,11 +112,12 @@ async function computeDocuments(answers = {}) {
 
   try {
     const config = loadGrantConfig();
-    const baseUrl = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
+    const baseUrl = process.env.ELIGIBILITY_ENGINE_URL || 'https://localhost:4001';
     const response = await fetch(`${baseUrl.replace(/\/$/, '')}/check`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(answers),
+      agent,
     });
     const results = await response.json();
     if (Array.isArray(results)) {

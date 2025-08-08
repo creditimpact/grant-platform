@@ -234,6 +234,18 @@ async def llm_debug(session_id: str):
 
 
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn, ssl, os
 
-    uvicorn.run(app, host="0.0.0.0", port=5001, reload=True)
+    cert = os.getenv("TLS_CERT_PATH")
+    key = os.getenv("TLS_KEY_PATH")
+    ca = os.getenv("TLS_CA_PATH")
+    kwargs: dict[str, object] = {"reload": True}
+    if cert and key:
+        kwargs.update({
+            "ssl_certfile": cert,
+            "ssl_keyfile": key,
+        })
+        if ca:
+            kwargs["ssl_ca_certs"] = ca
+            kwargs["ssl_cert_reqs"] = ssl.CERT_REQUIRED
+    uvicorn.run(app, host="0.0.0.0", port=5001, **kwargs)

@@ -6,6 +6,8 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const connectDB = require('./utils/db');
 const path = require('path');
+const fs = require('fs');
+const https = require('https');
 
 // Load environment variables from .env
 dotenv.config();
@@ -62,11 +64,29 @@ app.use('/api', require('./routes/case'));
 // === Connect to DB and start server ===
 const PORT = process.env.PORT || 5000;
 
+function startServer() {
+  const keyPath = process.env.TLS_KEY_PATH;
+  const certPath = process.env.TLS_CERT_PATH;
+
+  if (keyPath && certPath) {
+    const options = {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath),
+      ca: process.env.TLS_CA_PATH ? fs.readFileSync(process.env.TLS_CA_PATH) : undefined,
+      requestCert: true,
+      rejectUnauthorized: true,
+    };
+    https
+      .createServer(options, app)
+      .listen(PORT, () => console.log(`🔐 HTTPS server running on port ${PORT}`));
+  } else {
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  }
+}
+
 if (process.env.SKIP_DB !== 'true') {
   connectDB()
-    .then(() => {
-      app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-    })
+    .then(startServer)
     .catch((err) => {
       console.error('❌ Failed to connect to MongoDB:', err.message);
       process.exit(1); // Exit process if DB fails

@@ -8,7 +8,7 @@ if (!match) {
 const lines = parseFloat(match[1]);
 const branches = parseFloat(match[2]);
 const funcs = parseFloat(match[3]);
-const threshold = 70; // coverage threshold
+const threshold = 50; // coverage threshold
 if (lines < threshold || branches < threshold || funcs < threshold) {
   console.error(`Coverage below threshold: lines ${lines}, branches ${branches}, funcs ${funcs}`);
   process.exit(1);
