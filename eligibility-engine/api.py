@@ -1,8 +1,17 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from engine import analyze_eligibility
 from grants_loader import load_grants
+import os
 
-app = FastAPI(title="Grant Eligibility Engine")
+API_KEY = os.getenv("INTERNAL_API_KEY")
+
+
+async def verify_api_key(x_api_key: str = Header(None)):
+    if not API_KEY or x_api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+app = FastAPI(title="Grant Eligibility Engine", dependencies=[Depends(verify_api_key)])
 
 
 @app.get("/")

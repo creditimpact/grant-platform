@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request, Body, UploadFile, File, Form
+from fastapi import FastAPI, Request, Body, UploadFile, File, Form, Depends, Header, HTTPException
 from pydantic import BaseModel
 from typing import Any
 from pathlib import Path
 import json
 import sys
+import os
 from dotenv import load_dotenv
 
 # Resolve project directories and load environment variables
@@ -31,6 +32,14 @@ from session_memory import append_memory, get_missing_fields, save_draft_form, g
 from nlp_utils import llm_semantic_inference, llm_complete
 from grants_loader import load_grants
 
+API_KEY = os.getenv("INTERNAL_API_KEY")
+
+
+async def verify_api_key(x_api_key: str = Header(None)):
+    """Ensure requests include the expected API key."""
+    if not API_KEY or x_api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
 
 class FormFillRequest(BaseModel):
     """Schema for the /form-fill endpoint."""
@@ -40,7 +49,7 @@ class FormFillRequest(BaseModel):
     session_id: str | None = None
 
 
-app = FastAPI(title="AI Agent Service")
+app = FastAPI(title="AI Agent Service", dependencies=[Depends(verify_api_key)])
 
 
 @app.get("/")
@@ -210,9 +219,14 @@ async def chat(message: dict):
     return {"response": response}
 
 
-@app.get("/llm-debug/{session_id}")
+ENABLE_DEBUG = os.getenv("ENABLE_DEBUG", "false").lower() == "true"
+
+
+@app.get("/llm-debug/{session_id}", dependencies=[Depends(verify_api_key)])
 async def llm_debug(session_id: str):
     """Return a summary of agent actions for debugging."""
+    if not ENABLE_DEBUG:
+        raise HTTPException(status_code=403, detail="Debug access disabled")
     history = get_conversation(session_id)
     summary = [list(record.keys())[0] for record in history if record]
     inferred = [r.get("payload") for r in history if r.get("payload")]

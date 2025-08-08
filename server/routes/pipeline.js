@@ -9,6 +9,8 @@ const { createCase, updateCase, getCase } = require('../utils/pipelineStore');
 
 const router = express.Router();
 
+const serviceHeaders = { 'X-API-Key': process.env.INTERNAL_API_KEY };
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, '../uploads');
@@ -42,7 +44,7 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
     await updateCase(caseId, { documents: docMeta });
 
     // ---- AI Analyzer step ----
-    const analyzerBase = process.env.AI_ANALYZER_URL || 'http://localhost:8000';
+    const analyzerBase = process.env.AI_ANALYZER_URL || 'https://localhost:8000';
     const analyzerUrl = `${analyzerBase.replace(/\/$/, '')}/analyze`;
     let extracted = {};
     for (const file of req.files) {
@@ -52,7 +54,7 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
       const resp = await fetch(analyzerUrl, {
         method: 'POST',
         body: form,
-        headers: form.getHeaders(),
+        headers: { ...form.getHeaders(), ...serviceHeaders },
       });
       if (!resp.ok) {
         const text = await resp.text();
@@ -71,12 +73,12 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
     await updateCase(caseId, { status: 'analyzed', normalized });
 
     // ---- Eligibility Engine ----
-    const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
+    const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'https://localhost:4001';
     const engineUrl = `${engineBase.replace(/\/$/, '')}/check`;
     console.log(`→ POST ${engineUrl}`);
     const eligResp = await fetch(engineUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...serviceHeaders },
       body: JSON.stringify(normalized),
     });
     if (!eligResp.ok) {
@@ -90,14 +92,14 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
     await updateCase(caseId, { status: 'checked', eligibility });
 
     // ---- AI Agent form filling ----
-    const agentBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
+    const agentBase = process.env.AI_AGENT_URL || 'https://localhost:5001';
     const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
     const filled = {};
     for (const formName of eligibility.requiredForms || []) {
       console.log(`→ POST ${agentUrl}`, { form: formName });
       const agentResp = await fetch(agentUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...serviceHeaders },
         body: JSON.stringify({ form_name: formName, user_payload: normalized }),
       });
       if (!agentResp.ok) {
