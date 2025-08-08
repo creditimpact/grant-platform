@@ -1,4 +1,5 @@
 import os
+import logging
 from importlib import reload
 
 from fastapi.testclient import TestClient
@@ -11,9 +12,19 @@ def get_client():
     return TestClient(main_module.app)
 
 
-def test_requires_api_key():
+def test_requires_api_key(caplog):
     client = get_client()
-    resp = client.get("/status")
+    with caplog.at_level(logging.INFO):
+        resp = client.get("/status")
     assert resp.status_code == 401
+    assert any(r.message == "auth_failure" for r in caplog.records)
+
+    caplog.clear()
+    with caplog.at_level(logging.INFO):
+        resp = client.get("/status", headers={"X-API-Key": "wrong"})
+    assert resp.status_code == 401
+    record = next(r for r in caplog.records if r.message == "auth_failure")
+    assert record.api_key == "[REDACTED]"
+
     resp = client.get("/status", headers={"X-API-Key": "test-key"})
     assert resp.status_code == 200

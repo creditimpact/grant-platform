@@ -1,16 +1,27 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Request
 import os
 import tempfile
 import subprocess
+import sys
+from pathlib import Path
 from ocr_utils import extract_text
 from nlp_parser import parse_fields
 
+CURRENT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(CURRENT_DIR.parent))
+from common.logger import get_logger, audit_log
+
 API_KEY = os.getenv("INTERNAL_API_KEY")
 
+logger = get_logger(__name__)
 
-async def verify_api_key(x_api_key: str = Header(None)):
+
+async def verify_api_key(request: Request, x_api_key: str = Header(None)):
+    ip = request.client.host if request.client else "unknown"
     if not API_KEY or x_api_key != API_KEY:
+        audit_log(logger, "auth_failure", ip=ip, api_key=x_api_key)
         raise HTTPException(status_code=401, detail="Unauthorized")
+    audit_log(logger, "auth_success", ip=ip)
 
 
 def scan_for_viruses(data: bytes) -> None:
@@ -64,6 +75,7 @@ async def analyze(file: UploadFile = File(...)):
         "year_founded": fields.get("year_founded", "N/A"),
         "confidence": confidence,
     }
+    logger.info("analyze", extra={"filename": file.filename, "content_type": file.content_type})
     return response
 
 

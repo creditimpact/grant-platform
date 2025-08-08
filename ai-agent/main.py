@@ -13,6 +13,9 @@ load_dotenv(CURRENT_DIR / ".env")
 
 # ensure local imports work regardless of working directory
 sys.path.insert(0, str(CURRENT_DIR))
+# allow importing shared utilities
+sys.path.insert(0, str(CURRENT_DIR.parent))
+from common.logger import get_logger, audit_log
 
 # allow importing the eligibility engine
 BASE_DIR = CURRENT_DIR.parent
@@ -34,11 +37,16 @@ from grants_loader import load_grants
 
 API_KEY = os.getenv("INTERNAL_API_KEY")
 
+logger = get_logger(__name__)
 
-async def verify_api_key(x_api_key: str = Header(None)):
+
+async def verify_api_key(request: Request, x_api_key: str = Header(None)):
     """Ensure requests include the expected API key."""
+    ip = request.client.host if request.client else "unknown"
     if not API_KEY or x_api_key != API_KEY:
+        audit_log(logger, "auth_failure", ip=ip, api_key=x_api_key)
         raise HTTPException(status_code=401, detail="Unauthorized")
+    audit_log(logger, "auth_success", ip=ip)
 
 
 class FormFillRequest(BaseModel):
@@ -117,6 +125,8 @@ async def check(
 
     if session_id:
         append_memory(session_id, {"payload": payload, "results": results})
+
+    logger.info("eligibility_check", extra={"session_id": session_id, "grants_returned": len(results)})
 
     return results
 
