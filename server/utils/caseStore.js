@@ -1,13 +1,11 @@
 const fs = require('fs');
 const path = require('path');
-const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
-
-const cases = {};
+const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
+const Case = require('../models/Case');
 
 function loadGrantConfig() {
   const configPath = path.join(__dirname, '../../eligibility-engine/grants_config.json');
   const raw = fs.readFileSync(configPath, 'utf8');
-  // remove leading comment line if present
   const clean = raw.startsWith('//') ? raw.split('\n').slice(1).join('\n') : raw;
   return JSON.parse(clean);
 }
@@ -72,7 +70,6 @@ async function computeDocuments(answers = {}) {
     },
   ];
 
-  // Dynamic requirements based on answers
   if (answers.businessType === 'Corporation' || answers.businessType === 'LLC') {
     docs.push({
       key: 'articles_incorporation',
@@ -110,7 +107,6 @@ async function computeDocuments(answers = {}) {
     });
   }
 
-  // Append grant-specific document requirements
   try {
     const config = loadGrantConfig();
     const baseUrl = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
@@ -142,21 +138,16 @@ async function computeDocuments(answers = {}) {
   return docs;
 }
 
-function getCase(userId, createIfMissing = true) {
-  if (!cases[userId]) {
-    if (!createIfMissing) return null;
-    cases[userId] = {
-      status: 'open',
-      answers: {},
-      documents: [],
-      eligibility: null,
-    };
+async function getCase(userId, createIfMissing = true) {
+  let c = await Case.findOne({ userId });
+  if (!c && createIfMissing) {
+    c = await Case.create({ userId });
   }
-  return cases[userId];
+  return c;
 }
 
-function createCase(userId) {
+async function createCase(userId) {
   return getCase(userId, true);
 }
 
-module.exports = { cases, getCase, createCase, computeDocuments };
+module.exports = { getCase, createCase, computeDocuments };

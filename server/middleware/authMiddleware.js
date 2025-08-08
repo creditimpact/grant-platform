@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const Session = require('../models/Session');
 
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -11,13 +12,14 @@ const auth = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // שמירה של כל המשתמש (אפשר גם decoded.email אם תרצה)
+    const session = await Session.findOne({ token });
+    if (!session) {
+      return res.status(401).json({ message: 'Session expired' });
+    }
     req.user = {
       id: decoded.userId,
       email: decoded.email,
     };
-
     next();
   } catch (err) {
     console.error('JWT verify failed:', err.message);

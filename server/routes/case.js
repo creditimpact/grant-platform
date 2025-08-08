@@ -11,9 +11,9 @@ const { normalizeQuestionnaire, denormalizeQuestionnaire } = require('../utils/v
 const router = express.Router();
 
 // --- Questionnaire ---
-router.get('/case/questionnaire', auth, (req, res) => {
+router.get('/case/questionnaire', auth, async (req, res) => {
   console.log('➡️  GET /case/questionnaire', { user: req.user.id });
-  const c = getCase(req.user.id, false);
+  const c = await getCase(req.user.id, false);
   const data = c?.answers ? denormalizeQuestionnaire(c.answers) : {};
   res.json(data);
 });
@@ -33,10 +33,11 @@ router.post('/case/questionnaire', auth, async (req, res) => {
       return res.status(400).json({ message, missing, invalid });
     }
     console.log('  ✓ validation passed', { normalized: data });
-    const c = getCase(req.user.id);
+    const c = await getCase(req.user.id);
     c.answers = { ...c.answers, ...data };
     c.documents = await computeDocuments(c.answers);
     c.status = 'questionnaire';
+    await c.save();
     res.json({ message: 'saved' });
   } catch (err) {
     console.error('POST /case/questionnaire failed', err);
@@ -48,12 +49,13 @@ router.post('/case/questionnaire', auth, async (req, res) => {
 router.get('/case/status', auth, async (req, res) => {
   console.log('➡️  GET /case/status', { user: req.user.id });
   try {
-    const c = getCase(req.user.id, false);
+    const c = await getCase(req.user.id, false);
     if (!c || !c.answers || Object.keys(c.answers).length === 0) {
       return res.json({ status: 'not_started' });
     }
     if (!c.documents || c.documents.length === 0) {
       c.documents = await computeDocuments(c.answers);
+      await c.save();
     }
     res.json({
       status: c.status || 'open',
@@ -86,7 +88,7 @@ router.post('/files/upload', auth, upload.single('file'), async (req, res) => {
   console.log('➡️  POST /files/upload', { user: req.user.id, key, file: req.file?.originalname });
   if (!key || !req.file) return res.status(400).json({ message: 'Missing key or file' });
   try {
-    const c = getCase(req.user.id);
+    const c = await getCase(req.user.id);
     if (!c.documents || c.documents.length === 0) {
       c.documents = await computeDocuments(c.answers);
     }
@@ -103,6 +105,7 @@ router.post('/files/upload', auth, upload.single('file'), async (req, res) => {
       doc.url = `/uploads/${req.file.filename}`;
     }
     c.status = 'documents';
+    await c.save();
     res.json({ message: 'uploaded', document: doc });
   } catch (err) {
     console.error('POST /files/upload failed', err);
@@ -111,9 +114,9 @@ router.post('/files/upload', auth, upload.single('file'), async (req, res) => {
 });
 
 // --- Eligibility Report ---
-router.get('/eligibility-report', auth, (req, res) => {
+router.get('/eligibility-report', auth, async (req, res) => {
   console.log('➡️  GET /eligibility-report', { user: req.user.id });
-  const c = getCase(req.user.id, false);
+  const c = await getCase(req.user.id, false);
   if (!c || !c.eligibility) return res.status(404).json({ message: 'No report available' });
   res.json(c.eligibility);
 });
@@ -124,7 +127,7 @@ router.post('/eligibility-report', auth, async (req, res) => {
     body: req.body,
   });
 
-  const c = getCase(req.user.id, false);
+  const c = await getCase(req.user.id, false);
   if (!c) return res.status(400).json({ message: 'No case found' });
 
   try {
@@ -222,6 +225,7 @@ router.post('/eligibility-report', auth, async (req, res) => {
     c.eligibility = eligibility;
     c.generatedForms = filled;
     c.status = 'results';
+    await c.save();
     res.json({ eligibility, documents: filled });
   } catch (err) {
     console.error('POST /eligibility-report failed', err);

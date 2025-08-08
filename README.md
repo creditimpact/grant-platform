@@ -9,6 +9,10 @@ This repository contains three microservices used to test a grant eligibility wo
 
 All Node.js dependencies are pinned to exact versions, and the server runs on the stable Express 4.18.2 release for consistent builds. Python microservice dependencies are likewise pinned in their respective `requirements.txt` files.
 
+## Persistence
+
+User cases, pipeline state, uploaded file metadata and AI agent conversations are now stored in MongoDB. Sessions are persisted in a TTL-indexed collection and file uploads stream to disk with their paths tracked in the database.
+
 The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant, a Veteran Owned Business Grant, the Employee Retention Credit (ERC), a comprehensive Rural Development Grant covering USDA sub-programs, a Green Energy State Incentive aggregating state-level rebates, credits and grants for renewable installations, an Urban Small Business Grants (2025) package spanning nine city programs, and a California Small Business Grant (2025) bundling the Dream Fund, STEP export vouchers, San Francisco Women’s Entrepreneurship Fund, Route 66 Extraordinary Women Micro-Grant, CDFA grants, RUST assistance, CalChamber awards and the LA Region Small Business Relief Fund.
 The Rural Development configuration now includes federal form templates for SF-424, 424A, RD 400-1, RD 400-4 and RD 400-8.
 
