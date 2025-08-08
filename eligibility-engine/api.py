@@ -2,13 +2,24 @@ from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from engine import analyze_eligibility
 from grants_loader import load_grants
 import os
+import sys
+from pathlib import Path
+from common.logger import get_logger, audit_log
+
+CURRENT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(CURRENT_DIR.parent))
 
 API_KEY = os.getenv("INTERNAL_API_KEY")
 
+logger = get_logger(__name__)
 
-async def verify_api_key(x_api_key: str = Header(None)):
+
+async def verify_api_key(request: Request, x_api_key: str = Header(None)):
+    ip = request.client.host if request.client else "unknown"
     if not API_KEY or x_api_key != API_KEY:
+        audit_log(logger, "auth_failure", ip=ip, api_key=x_api_key)
         raise HTTPException(status_code=401, detail="Unauthorized")
+    audit_log(logger, "auth_success", ip=ip)
 
 
 app = FastAPI(title="Grant Eligibility Engine", dependencies=[Depends(verify_api_key)])
@@ -34,6 +45,7 @@ async def check_eligibility(request: Request):
     try:
         data = await request.json()
         result = analyze_eligibility(data, explain=True)
+        logger.info("eligibility_check", extra={"fields": list(data.keys())})
         return result
     except Exception as e:
         return {"error": str(e)}
