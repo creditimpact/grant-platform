@@ -18,7 +18,7 @@ This definition aggregates eight statewide initiatives including the California 
 
 ## Running the Engine
 
-Install dependencies (FastAPI is only required for the optional API service):
+Install dependencies (versions are pinned in `requirements.txt`; FastAPI is only required for the optional API service):
 
 ```bash
 pip install -r requirements.txt  # if running outside Codex environment
