@@ -44,11 +44,15 @@ app.use('/api', require('./routes/case'));
 // === Connect to DB and start server ===
 const PORT = process.env.PORT || 5000;
 
-connectDB()
-  .then(() => {
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error('❌ Failed to connect to MongoDB:', err.message);
-    process.exit(1); // Exit process if DB fails
-  });
+if (process.env.SKIP_DB !== 'true') {
+  connectDB()
+    .then(() => {
+      app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+      console.error('❌ Failed to connect to MongoDB:', err.message);
+      process.exit(1); // Exit process if DB fails
+    });
+}
+
+module.exports = app;
