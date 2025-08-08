@@ -7,7 +7,7 @@ This repository contains three microservices used to test a grant eligibility wo
 - **eligibility-engine/** – Python rules engine returning missing fields and suggested next steps
 - **ai-agent/** – LLM-ready service with conversational endpoints and smart form filling
 
-All Node.js dependencies are pinned to exact versions, and the server runs on the stable Express 4.18.2 release for consistent builds.
+All Node.js dependencies are pinned to exact versions, and the server runs on the stable Express 4.18.2 release for consistent builds. Python microservice dependencies are likewise pinned in their respective `requirements.txt` files.
 
 The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant, a Veteran Owned Business Grant, the Employee Retention Credit (ERC), a comprehensive Rural Development Grant covering USDA sub-programs, a Green Energy State Incentive aggregating state-level rebates, credits and grants for renewable installations, an Urban Small Business Grants (2025) package spanning nine city programs, and a California Small Business Grant (2025) bundling the Dream Fund, STEP export vouchers, San Francisco Women’s Entrepreneurship Fund, Route 66 Extraordinary Women Micro-Grant, CDFA grants, RUST assistance, CalChamber awards and the LA Region Small Business Relief Fund.
 The Rural Development configuration now includes federal form templates for SF-424, 424A, RD 400-1, RD 400-4 and RD 400-8.
@@ -108,17 +108,25 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
    ```
    Environment variables should be placed in a `.env` file. See `.env.example` for required keys.
 
-2. Start the AI agent service
+2. Start the AI analyzer service
+   ```bash
+   cd ai-analyzer
+   pip install -r requirements.txt
+   python -m uvicorn main:app --port 8000
+   ```
+3. Start the AI agent service
    ```bash
    cd ai-agent
+   pip install -r requirements.txt
    python -m uvicorn main:app --port 5001
    ```
-3. Start the eligibility engine
+4. Start the eligibility engine
    ```bash
    cd eligibility-engine
-   python -m uvicorn main:app --port 4001
+   pip install -r requirements.txt
+   python -m uvicorn api:app --port 4001
    ```
-4. (Optional) Run the eligibility engine tests
+5. (Optional) Run the eligibility engine tests
    ```bash
    cd eligibility-engine
    python -m pytest
