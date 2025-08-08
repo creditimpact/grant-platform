@@ -1,26 +1,20 @@
-"""Very lightweight file-based session memory."""
-from pathlib import Path
-import json
+"""MongoDB-backed session memory."""
 from typing import Dict, Any, List
+from pymongo import MongoClient
+import os
 
-MEM_DIR = Path(__file__).parent / "memory"
-MEM_DIR.mkdir(exist_ok=True)
+client = MongoClient(os.getenv("MONGO_URI", "mongodb://localhost:27017"))
+db = client["ai_agent"]
+collection = db["session_memory"]
 
 
 def load_memory(session_id: str) -> List[Dict[str, Any]]:
-    path = MEM_DIR / f"{session_id}.json"
-    if not path.exists():
-        return []
-    with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
+    doc = collection.find_one({"_id": session_id})
+    return doc.get("records", []) if doc else []
 
 
 def append_memory(session_id: str, record: Dict[str, Any]) -> None:
-    data = load_memory(session_id)
-    data.append(record)
-    path = MEM_DIR / f"{session_id}.json"
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    collection.update_one({"_id": session_id}, {"$push": {"records": record}}, upsert=True)
 
 
 def save_draft_form(session_id: str, form_key: str, fields: Dict[str, Any]) -> None:

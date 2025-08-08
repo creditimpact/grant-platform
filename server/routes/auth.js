@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Session = require('../models/Session');
 const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -45,6 +46,7 @@ router.post('/register', async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: '1h'
     });
+    await Session.create({ userId: user._id, token });
 
     res.json({ token });
   } catch (err) {
@@ -74,6 +76,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    await Session.create({ userId: user._id, token });
 
     res.json({ token });
   } catch (err) {

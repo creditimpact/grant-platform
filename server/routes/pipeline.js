@@ -1,34 +1,27 @@
 const express = require('express');
 const multer = require('multer');
 const FormData = require('form-data');
+const fs = require('fs');
+const path = require('path');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 const auth = require('../middleware/authMiddleware');
 const { createCase, updateCase, getCase } = require('../utils/pipelineStore');
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
-/**
- * @typedef {Object} RawSubmission
- * @property {Object.<string, any>} fields - user supplied form fields
- * @property {File[]} files - uploaded documents
- */
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '../uploads');
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  },
+});
 
-/**
- * @typedef {Object} NormalizedData
- * @property {Object.<string, any>} data - cleaned submission ready for eligibility checks
- */
-
-/**
- * @typedef {Object} EligibilityResult
- * @property {Object[]} grants - grant eligibility results
- * @property {string[]} requiredForms - names of forms to generate
- */
-
-/**
- * @typedef {Object} FormFillResult
- * @property {{ formType: string, url: string }[]} filledForms - generated PDFs
- */
+const upload = multer({ storage });
 
 // Main submission endpoint
 router.post('/submit-case', auth, upload.any(), async (req, res) => {
@@ -38,15 +31,23 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
     files: req.files.map((f) => f.originalname),
   });
 
-  const caseId = createCase(req.user.id);
+  const caseId = await createCase(req.user.id);
   try {
+    const docMeta = req.files.map((f) => ({
+      originalname: f.originalname,
+      path: f.path,
+      mimetype: f.mimetype,
+      size: f.size,
+    }));
+    await updateCase(caseId, { documents: docMeta });
+
     // ---- AI Analyzer step ----
     const analyzerBase = process.env.AI_ANALYZER_URL || 'http://localhost:8000';
     const analyzerUrl = `${analyzerBase.replace(/\/$/, '')}/analyze`;
     let extracted = {};
     for (const file of req.files) {
       const form = new FormData();
-      form.append('file', file.buffer, file.originalname);
+      form.append('file', fs.createReadStream(file.path), file.originalname);
       console.log(`→ POST ${analyzerUrl}`, { file: file.originalname });
       const resp = await fetch(analyzerUrl, {
         method: 'POST',
@@ -56,7 +57,7 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
       if (!resp.ok) {
         const text = await resp.text();
         console.error('AI analyzer error', resp.status, text);
-        updateCase(caseId, { status: 'error', error: text });
+        await updateCase(caseId, { status: 'error', error: text });
         return res
           .status(502)
           .json({ message: `AI analyzer error ${resp.status}`, details: text });
@@ -67,7 +68,7 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
     }
     const normalized = { ...req.body, ...extracted };
     console.log('Normalized data', normalized);
-    updateCase(caseId, { status: 'analyzed', normalized });
+    await updateCase(caseId, { status: 'analyzed', normalized });
 
     // ---- Eligibility Engine ----
     const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
@@ -81,12 +82,12 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
     if (!eligResp.ok) {
       const text = await eligResp.text();
       console.error('Eligibility engine error', eligResp.status, text);
-      updateCase(caseId, { status: 'error', error: text });
+      await updateCase(caseId, { status: 'error', error: text });
       return res.status(502).json({ message: `Eligibility engine error ${eligResp.status}`, details: text });
     }
     const eligibility = await eligResp.json();
     console.log('← Eligibility engine response', eligibility);
-    updateCase(caseId, { status: 'checked', eligibility });
+    await updateCase(caseId, { status: 'checked', eligibility });
 
     // ---- AI Agent form filling ----
     const agentBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
@@ -102,7 +103,7 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
       if (!agentResp.ok) {
         const text = await agentResp.text();
         console.error('AI agent form-fill error', agentResp.status, text);
-        updateCase(caseId, { status: 'error', error: text });
+        await updateCase(caseId, { status: 'error', error: text });
         return res
           .status(502)
           .json({ message: `AI agent form-fill error ${agentResp.status}`, details: text });
@@ -111,22 +112,19 @@ router.post('/submit-case', auth, upload.any(), async (req, res) => {
       console.log('← AI agent response', agentData);
       filled[formName] = agentData.filled_form || agentData;
     }
-    updateCase(caseId, { status: 'forms_filled', documents: filled });
-
-    // ---- Placeholder: digital signature & submission hooks ----
-    // updateCase(caseId, { status: 'signed' });
+    await updateCase(caseId, { status: 'forms_filled', documents: filled });
 
     res.json({ caseId, eligibility, documents: filled });
   } catch (err) {
     console.error('Pipeline processing failed:', err);
-    updateCase(caseId, { status: 'error', error: err.message });
+    await updateCase(caseId, { status: 'error', error: err.message });
     res.status(500).json({ message: 'Pipeline failed', error: err.message });
   }
 });
 
 // Status endpoint
-router.get('/status/:caseId', auth, (req, res) => {
-  const c = getCase(req.user.id, req.params.caseId);
+router.get('/status/:caseId', auth, async (req, res) => {
+  const c = await getCase(req.user.id, req.params.caseId);
   if (!c) return res.status(404).json({ message: 'Case not found' });
   res.json({ status: c.status, eligibility: c.eligibility, documents: c.documents });
 });
