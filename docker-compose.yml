@@ -34,6 +34,8 @@ services:
       - '5001:5001'
     depends_on:
       - eligibility-engine
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/grants
 
   ai-analyzer:
     build: ./ai-analyzer

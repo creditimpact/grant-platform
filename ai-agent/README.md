@@ -15,7 +15,7 @@ Create a `.env` file in this directory (you can copy from `.env.example`) and se
 your MongoDB connection string and optional OpenAI API key:
 
 ```
-MONGODB_URI=mongodb://localhost:27017
+MONGO_URI=mongodb://localhost:27017
 OPENAI_API_KEY=your_api_key_here
 ```
 
