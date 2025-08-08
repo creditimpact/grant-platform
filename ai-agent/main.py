@@ -4,9 +4,13 @@ from typing import Any
 from pathlib import Path
 import json
 import sys
+from dotenv import load_dotenv
+
+# Resolve project directories and load environment variables
+CURRENT_DIR = Path(__file__).resolve().parent
+load_dotenv(CURRENT_DIR / ".env")
 
 # ensure local imports work regardless of working directory
-CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR))
 
 # allow importing the eligibility engine
