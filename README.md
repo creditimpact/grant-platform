@@ -110,7 +110,7 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
    npm install
    node server/index.js
    ```
-   Environment variables should be placed in a `.env` file. See `.env.example` for required keys.
+   Create a `.env` file in the repository root (copy from `.env.example`) and set `MONGO_URI` along with other service URLs.
 
 2. Start the AI analyzer service
    ```bash
@@ -124,6 +124,7 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
    pip install -r requirements.txt
    python -m uvicorn main:app --port 5001
    ```
+   The AI agent requires its own `.env` file (see `ai-agent/.env.example`) with `MONGODB_URI` and, optionally, `OPENAI_API_KEY`.
 4. Start the eligibility engine
    ```bash
    cd eligibility-engine

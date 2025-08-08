@@ -11,10 +11,12 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Create a `.env` file in this directory and set your MongoDB connection string:
+Create a `.env` file in this directory (you can copy from `.env.example`) and set
+your MongoDB connection string and optional OpenAI API key:
 
 ```
 MONGODB_URI=mongodb://localhost:27017
+OPENAI_API_KEY=your_api_key_here
 ```
 
 The service uses [python-dotenv](https://github.com/theskumar/python-dotenv) to
