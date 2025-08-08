@@ -45,7 +45,13 @@ using a very small subset of Python. These expressions are evaluated with a
 custom AST-based interpreter that supports arithmetic, boolean logic and
 comparisons while restricting function calls to a tiny whitelist (`int` and
 `float`).  Any invalid or malicious expression is rejected, preventing arbitrary
-code execution and keeping template evaluation safe.
+code execution and keeping template evaluation safe. The evaluator now also
+sanitizes the context, rejecting variable names containing double underscores or
+values that are callable to block access to dangerous objects. In addition,
+limits on expression complexity (maximum AST nodes) and constant size (maximum
+string length and numeric magnitude) prevent resource exhaustion attacks. These
+limits can be tuned via optional arguments to ``safe_eval`` if stricter or more
+lenient behavior is desired.
 
 ## Testing Documents
 
