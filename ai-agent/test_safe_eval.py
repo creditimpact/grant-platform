@@ -13,6 +13,30 @@ def test_safe_eval_rejects_malicious():
         safe_eval("__import__('os').system('ls')", {})
 
 
+def test_safe_eval_rejects_bad_names():
+    with pytest.raises(ValueError):
+        safe_eval("x", {"bad__name": 1})
+
+
+def test_safe_eval_rejects_callables_in_context():
+    with pytest.raises(ValueError):
+        safe_eval("x", {"f": lambda: 1})
+
+
+def test_safe_eval_rejects_too_complex():
+    expr = " + ".join(["1"] * 60)
+    with pytest.raises(ValueError):
+        safe_eval(expr, {})
+
+
+def test_safe_eval_rejects_large_literals():
+    long_str = "a" * 1001
+    with pytest.raises(ValueError):
+        safe_eval(f"'{long_str}'", {})
+    with pytest.raises(ValueError):
+        safe_eval(str(10**10), {})
+
+
 def test_computed_field_uses_safe_eval():
     template = {
         "fields": {"a": "", "b": "", "sum": ""},

@@ -19,20 +19,44 @@ ZIP_STATE = {
 
 SAFE_FUNCTIONS = {"int": int, "float": float}
 
+MAX_AST_NODES = 100
+MAX_STRING_LENGTH = 1000
+MAX_NUMBER_ABS = 10**9
 
-def safe_eval(expr: str, names: Dict[str, Any]) -> Any:
+
+def safe_eval(
+    expr: str,
+    names: Dict[str, Any],
+    *,
+    max_nodes: int = MAX_AST_NODES,
+    max_string_length: int = MAX_STRING_LENGTH,
+    max_number: int = MAX_NUMBER_ABS,
+) -> Any:
     """Safely evaluate a limited Python expression.
 
     Only a small subset of Python is supported: arithmetic operations,
     boolean logic, comparisons and calls to whitelisted helper functions.
     Any attempt to use other syntax or names will raise ``ValueError``.
+    Expressions that exceed ``max_nodes`` AST nodes or contain overly
+    large constants are rejected to avoid resource exhaustion.
     """
 
     def _eval(node: ast.AST) -> Any:
         if isinstance(node, ast.Expression):
             return _eval(node.body)
         if isinstance(node, ast.Constant):
-            return node.value
+            val = node.value
+            if isinstance(val, str):
+                if len(val) > max_string_length:
+                    raise ValueError("String constant too long")
+                return val
+            if isinstance(val, (int, float)):
+                if abs(val) > max_number:
+                    raise ValueError("Numeric constant too large")
+                return val
+            if isinstance(val, (bool, type(None))):
+                return val
+            raise ValueError("Unsupported constant type")
         if isinstance(node, ast.Name):
             if node.id in context:
                 return context[node.id]
@@ -92,7 +116,20 @@ def safe_eval(expr: str, names: Dict[str, Any]) -> Any:
     except SyntaxError as exc:  # pragma: no cover - ast raises SyntaxError
         raise ValueError("Invalid expression") from exc
 
-    context = {**SAFE_FUNCTIONS, **names}
+    if sum(1 for _ in ast.walk(tree)) > max_nodes:
+        raise ValueError("Expression too complex")
+
+    sanitized: Dict[str, Any] = {}
+    for key, value in names.items():
+        if "__" in key:
+            raise ValueError("Invalid variable name")
+        if callable(value):
+            raise ValueError("Callable values are not allowed")
+        if key in SAFE_FUNCTIONS:
+            raise ValueError("Overriding safe functions is not allowed")
+        sanitized[key] = value
+
+    context = {**SAFE_FUNCTIONS, **sanitized}
     return _eval(tree.body)
 
 
@@ -126,7 +163,6 @@ def _fill_template(
         try:
             ctx = dict(data)
             ctx["current_year"] = datetime.utcnow().year
-            ctx.update(SAFE_FUNCTIONS)
             data[key] = safe_eval(expr, ctx)
             if reasoning is not None:
                 reasoning.append(f"{key} computed from expression")
@@ -155,7 +191,6 @@ def _fill_template(
         val = rule.get("value", True)
         try:
             ctx = dict(data)
-            ctx.update(SAFE_FUNCTIONS)
             if safe_eval(expr, ctx):
                 data[key] = val
         except Exception:
@@ -192,7 +227,6 @@ def _fill_template(
         if show_if:
             try:
                 ctx = dict(data)
-                ctx.update(SAFE_FUNCTIONS)
                 if not safe_eval(show_if, ctx):
                     continue
             except Exception:
@@ -201,7 +235,6 @@ def _fill_template(
         if required_if:
             try:
                 ctx = dict(data)
-                ctx.update(SAFE_FUNCTIONS)
                 required = bool(safe_eval(required_if, ctx))
             except Exception:
                 pass
