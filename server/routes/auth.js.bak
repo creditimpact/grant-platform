@@ -17,14 +17,6 @@ router.get('/test', (req, res) => {
   res.send('Auth route is active!');
 });
 
-// SECURITY FIX: provide CSRF token for initial auth requests
-router.get('/csrf-token', (req, res) => {
-  const csrfToken = generateCsrfToken();
-  res
-    .cookie('csrfToken', csrfToken, { secure: true, sameSite: 'Strict' })
-    .json({ csrfToken });
-});
-
 // @route   POST /api/auth/register
 // @desc    Register user and return token
 router.post(
@@ -182,9 +174,9 @@ router.post('/logout', csrfProtection, async (req, res) => {
     await Session.deleteOne({ token: refreshToken });
   }
   res
-    .cookie('accessToken', '', { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 0 }) // SECURITY FIX: match original cookie flags
-    .cookie('refreshToken', '', { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 0 }) // SECURITY FIX: match original cookie flags
-    .cookie('csrfToken', '', { secure: true, sameSite: 'Strict', maxAge: 0 }) // SECURITY FIX: match original cookie flags
+    .cookie('accessToken', '', { maxAge: 0 })
+    .cookie('refreshToken', '', { maxAge: 0 })
+    .cookie('csrfToken', '', { maxAge: 0 })
     .json({ message: 'logged out' });
 });
 
