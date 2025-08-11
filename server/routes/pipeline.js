@@ -9,6 +9,7 @@ const auth = require('../middleware/authMiddleware');
 const { createCase, updateCase, getCase } = require('../utils/pipelineStore');
 const logger = require('../utils/logger'); // SECURITY FIX: sanitized logging
 const { validate, schemas } = require('../middleware/validate'); // SECURITY FIX: schema validation
+const { scanFile, validateFile } = require('../utils/virusScanner');
 const { getLatestTemplate } = require('../utils/formTemplates');
 const { validateAgainstSchema } = require('../middleware/formValidation');
 
@@ -29,7 +30,9 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+});
 
 // Main submission endpoint
 router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit), async (req, res) => { // SECURITY FIX: schema validation
@@ -41,6 +44,10 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
 
   const caseId = await createCase(req.user.id);
   try {
+    for (const f of req.files) {
+      validateFile(f);
+      await scanFile(f.path);
+    }
     const docMeta = req.files.map((f) => ({
       originalname: f.originalname,
       path: f.path,
@@ -141,9 +148,11 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
 
     res.json({ caseId, eligibility, generatedForms: filledForms });
   } catch (err) {
+    for (const f of req.files || []) fs.unlink(f.path, () => {});
     logger.error('Pipeline processing failed', { error: err.message }); // SECURITY FIX: sanitized logging
     await updateCase(caseId, { status: 'error', error: err.message });
-    res.status(500).json({ message: 'Pipeline failed', error: err.message });
+    const status = err.status || (err.message === 'Virus detected' ? 400 : err.message === 'File too large' ? 413 : err.message === 'Unsupported file type' ? 400 : err.message === 'Virus scan failed' ? 500 : 500);
+    res.status(status).json({ message: err.message, error: err.message });
   }
 });
 
@@ -152,6 +161,18 @@ router.get('/status/:caseId', auth, async (req, res) => {
   const c = await getCase(req.user.id, req.params.caseId);
   if (!c) return res.status(404).json({ message: 'Case not found' });
   res.json({ status: c.status, eligibility: c.eligibility, documents: c.documents, generatedForms: c.generatedForms });
+});
+
+router.use((err, req, res, next) => {
+  if (err.message === 'File too large') {
+    logger.warn('pipeline upload rejected', { reason: 'size' });
+    return res.status(413).json({ message: 'File too large' });
+  }
+  if (err.message === 'Unsupported file type') {
+    logger.warn('pipeline upload rejected', { reason: 'type' });
+    return res.status(400).json({ message: 'Unsupported file type' });
+  }
+  next(err);
 });
 
 module.exports = router;

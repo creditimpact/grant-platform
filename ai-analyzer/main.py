@@ -61,12 +61,18 @@ MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 @app.post('/analyze')
 async def analyze(file: UploadFile = File(...)):
     if file.content_type not in ALLOWED_CONTENT_TYPES:
+        logger.warning("upload rejected", extra={"reason": "type", "content_type": file.content_type})
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
     content = await file.read()
     if len(content) > MAX_FILE_SIZE:
+        logger.warning("upload rejected", extra={"reason": "size", "size": len(content)})
         raise HTTPException(status_code=413, detail="File too large")
-    scan_for_viruses(content)
+    try:
+        scan_for_viruses(content)
+    except HTTPException as e:
+        logger.warning("upload rejected", extra={"reason": "virus", "detail": e.detail})
+        raise
     text = extract_text(content)
     fields, confidence = parse_fields(text)
 
