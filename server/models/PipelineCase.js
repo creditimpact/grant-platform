@@ -6,6 +6,16 @@ const pipelineSchema = new mongoose.Schema({
   normalized: { type: mongoose.Schema.Types.Mixed, default: {} },
   eligibility: { type: mongoose.Schema.Types.Mixed, default: null },
   documents: { type: [mongoose.Schema.Types.Mixed], default: [] },
+  generatedForms: {
+    type: [
+      {
+        formKey: String,
+        version: Number,
+        data: mongoose.Schema.Types.Mixed,
+      },
+    ],
+    default: [],
+  },
   createdAt: { type: Date, default: Date.now }
 });
 
