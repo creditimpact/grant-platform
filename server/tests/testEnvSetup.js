@@ -13,5 +13,5 @@ process.env.MONGO_PASS = 'p';
 process.env.MONGO_CA_FILE = dummy;
 process.env.TLS_KEY_PATH = dummy;
 process.env.TLS_CERT_PATH = dummy;
-process.env.PORT = '0';
+process.env.PORT = '1';
 process.env.SKIP_DB = 'true';

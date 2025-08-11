@@ -9,6 +9,8 @@ const auth = require('../middleware/authMiddleware');
 const { createCase, updateCase, getCase } = require('../utils/pipelineStore');
 const logger = require('../utils/logger'); // SECURITY FIX: sanitized logging
 const { validate, schemas } = require('../middleware/validate'); // SECURITY FIX: schema validation
+const { getLatestTemplate } = require('../utils/formTemplates');
+const { validateAgainstSchema } = require('../middleware/formValidation');
 
 const router = express.Router();
 
@@ -100,7 +102,7 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
     // ---- AI Agent form filling ----
     const agentBase = process.env.AI_AGENT_URL || 'https://localhost:5001';
     const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
-    const filled = {};
+    const filledForms = [];
     for (const formName of eligibility.requiredForms || []) {
       logger.info(`POST ${agentUrl}`, { form: formName }); // SECURITY FIX: sanitized logging
       const agentResp = await fetch(agentUrl, {
@@ -119,11 +121,19 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
       }
       const agentData = await agentResp.json();
       logger.info('AI agent response', agentData); // SECURITY FIX: sanitized logging
-      filled[formName] = agentData.filled_form || agentData;
+      const tmpl = await getLatestTemplate(formName);
+      const version = tmpl ? tmpl.version : 1;
+      const formData = agentData.filled_form || agentData;
+      const validationErrors = tmpl ? validateAgainstSchema(formData, tmpl.schema) : [];
+      if (validationErrors.length) {
+        await updateCase(caseId, { status: 'error', error: 'validation_failed' });
+        return res.status(400).json({ errors: validationErrors });
+      }
+      filledForms.push({ formKey: formName, version, data: formData });
     }
-    await updateCase(caseId, { status: 'forms_filled', documents: filled });
+    await updateCase(caseId, { status: 'forms_filled', generatedForms: filledForms });
 
-    res.json({ caseId, eligibility, documents: filled });
+    res.json({ caseId, eligibility, generatedForms: filledForms });
   } catch (err) {
     logger.error('Pipeline processing failed', { error: err.message }); // SECURITY FIX: sanitized logging
     await updateCase(caseId, { status: 'error', error: err.message });
@@ -135,7 +145,7 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
 router.get('/status/:caseId', auth, async (req, res) => {
   const c = await getCase(req.user.id, req.params.caseId);
   if (!c) return res.status(404).json({ message: 'Case not found' });
-  res.json({ status: c.status, eligibility: c.eligibility, documents: c.documents });
+  res.json({ status: c.status, eligibility: c.eligibility, documents: c.documents, generatedForms: c.generatedForms });
 });
 
 module.exports = router;

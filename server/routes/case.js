@@ -9,6 +9,8 @@ const { getCase, computeDocuments } = require('../utils/caseStore');
 const { normalizeQuestionnaire, denormalizeQuestionnaire } = require('../utils/validation');
 const logger = require('../utils/logger'); // SECURITY FIX: sanitized logging
 const { validate, schemas } = require('../middleware/validate'); // SECURITY FIX: schema validation
+const { getLatestTemplate } = require('../utils/formTemplates');
+const { validateAgainstSchema } = require('../middleware/formValidation');
 
 const router = express.Router();
 
@@ -210,7 +212,7 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
     // --- AI Agent form filling ---
     const agentBase = process.env.AI_AGENT_URL || 'https://localhost:5001';
     const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
-    const filled = {};
+    const filledForms = [];
     for (const formName of eligibility.requiredForms || []) {
       logger.info(`POST ${agentUrl}`, { form: formName }); // SECURITY FIX: sanitized logging
       const agentResp = await fetch(agentUrl, {
@@ -230,14 +232,21 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
       }
       const agentData = await agentResp.json();
       logger.info('AI agent response', agentData); // SECURITY FIX: sanitized logging
-      filled[formName] = agentData.filled_form || agentData;
+      const tmpl = await getLatestTemplate(formName);
+      const version = tmpl ? tmpl.version : 1;
+      const formData = agentData.filled_form || agentData;
+      const validationErrors = tmpl ? validateAgainstSchema(formData, tmpl.schema) : [];
+      if (validationErrors.length) {
+        return res.status(400).json({ errors: validationErrors });
+      }
+      filledForms.push({ formKey: formName, version, data: formData });
     }
 
     c.eligibility = eligibility;
-    c.generatedForms = filled;
+    c.generatedForms = filledForms;
     c.status = 'results';
     await c.save();
-    res.json({ eligibility, documents: filled });
+    res.json({ eligibility, generatedForms: filledForms });
   } catch (err) {
     logger.error('POST /eligibility-report failed', { error: err.message }); // SECURITY FIX: sanitized logging
     res

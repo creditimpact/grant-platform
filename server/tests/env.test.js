@@ -29,7 +29,7 @@ test('env validation parses values', () => {
     TLS_CERT_PATH: dummy,
     PORT: '1234',
   };
-  const result = spawnSync('node', ['-e', "const env=require('./config/env');console.log(env.PORT)"], { cwd: root, env });
+  const result = spawnSync(process.execPath, ['-e', "const env=require('./config/env');console.log(env.PORT)"], { cwd: root, env: { ...env, PATH: process.env.PATH } });
   assert.strictEqual(result.status, 0);
   assert(result.stdout.toString().includes('1234'));
 });
