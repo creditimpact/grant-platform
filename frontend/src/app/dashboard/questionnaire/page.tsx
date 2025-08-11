@@ -1,7 +1,7 @@
 'use client';
 /**
  * Questionnaire wizard for collecting grant information.
- * Saves answers to localStorage and moves user to the upload step.
+ * Saves answers to sessionStorage and moves user to the upload step.
  */
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -106,7 +106,7 @@ export default function Questionnaire() {
         }));
       } catch (err: any) {
         logApiError('/case/questionnaire', undefined, err);
-        const saved = localStorage.getItem('questionnaire');
+        const saved = sessionStorage.getItem('questionnaire');
         if (saved) setAnswers(JSON.parse(saved));
       }
     };
@@ -122,8 +122,8 @@ export default function Questionnaire() {
   const goBack = () => {
     if (step === 0) {
       if (typeof window !== 'undefined') {
-        localStorage.setItem('questionnaire', JSON.stringify(answers));
-        localStorage.removeItem('caseStage');
+        sessionStorage.setItem('questionnaire', JSON.stringify(answers));
+        sessionStorage.removeItem('caseStage');
       }
       router.push('/dashboard');
     } else {
@@ -132,7 +132,7 @@ export default function Questionnaire() {
   };
 
   const finish = async () => {
-    localStorage.setItem('questionnaire', JSON.stringify(answers));
+    sessionStorage.setItem('questionnaire', JSON.stringify(answers));
     try {
       const payload = {
         ...answers,
@@ -152,7 +152,7 @@ export default function Questionnaire() {
       };
       await api.post('/case/questionnaire', payload);
       console.log('Questionnaire submitted successfully', payload);
-      localStorage.setItem('caseStage', 'documents');
+      sessionStorage.setItem('caseStage', 'documents');
       router.push('/dashboard/documents');
     } catch (err: any) {
       logApiError('/case/questionnaire', answers, err);

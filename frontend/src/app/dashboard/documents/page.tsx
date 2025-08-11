@@ -64,7 +64,7 @@ export default function Documents() {
 
   const goBack = () => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('caseStage', 'questionnaire');
+      sessionStorage.setItem('caseStage', 'questionnaire');
     }
     router.push('/dashboard/questionnaire');
   };
@@ -74,7 +74,7 @@ export default function Documents() {
 
     const saved =
       typeof window !== 'undefined'
-        ? localStorage.getItem('questionnaire')
+        ? sessionStorage.getItem('questionnaire')
         : null;
     const raw = saved ? JSON.parse(saved) : {};
     const { data, missing, invalid } = normalizeQuestionnaire(raw);
@@ -93,12 +93,12 @@ export default function Documents() {
 
     setLoading(true);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('caseStage', 'analysis');
+      sessionStorage.setItem('caseStage', 'analysis');
     }
     try {
       await api.post('/eligibility-report', data);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('caseStage', 'results');
+        sessionStorage.setItem('caseStage', 'results');
       }
       router.push('/dashboard');
     } catch (err: any) {
@@ -115,7 +115,7 @@ export default function Documents() {
           .join('\n'),
       );
       if (typeof window !== 'undefined') {
-        localStorage.setItem('caseStage', 'documents');
+        sessionStorage.setItem('caseStage', 'documents');
       }
     } finally {
       setLoading(false);

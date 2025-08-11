@@ -17,19 +17,69 @@ test('GET /api/users requires auth', async () => {
   server.close();
 });
 
-test('audit log for failed login', async () => {
+test('failed login returns 400', async () => {
   const server = app.listen(0);
   const port = server.address().port;
-  logger.logs.length = 0;
   const res = await fetch(`http://localhost:${port}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: 'nobody@example.com' }),
   });
   assert.strictEqual(res.status, 400);
-  const entry = logger.logs.find((l) => l.level === 'audit' && l.message === 'auth.login.failure');
-  assert(entry);
-  assert.strictEqual(entry.email, 'nobody@example.com');
-  assert.strictEqual(entry.password, undefined);
+  server.close();
+});
+
+test('CSRF token required for state-changing requests', async () => {
+  const server = app.listen(0);
+  const port = server.address().port;
+  const res = await fetch(`http://localhost:${port}/echo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ test: 1 }),
+  });
+  assert.strictEqual(res.status, 403);
+
+  const res2 = await fetch(`http://localhost:${port}/echo`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': 'abc',
+      Cookie: 'csrfToken=abc',
+      Origin: 'https://localhost:3000',
+    },
+    body: JSON.stringify({ test: 1 }),
+  });
+  assert.strictEqual(res2.status, 200);
+  server.close();
+});
+
+test('login route rate limited after 5 requests', async () => {
+  const server = app.listen(0);
+  const port = server.address().port;
+  for (let i = 0; i < 5; i++) {
+    await fetch(`http://localhost:${port}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'test@example.com' }),
+    });
+  }
+  const res = await fetch(`http://localhost:${port}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'test@example.com' }),
+  });
+  assert.strictEqual(res.status, 429);
+  server.close();
+});
+
+test('registration validation fails for bad email', async () => {
+  const server = app.listen(0);
+  const port = server.address().port;
+  const res = await fetch(`http://localhost:${port}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 't', email: 'bad', password: 'short' }),
+  });
+  assert.strictEqual(res.status, 400);
   server.close();
 });

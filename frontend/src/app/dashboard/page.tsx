@@ -39,12 +39,12 @@ export default function Dashboard() {
 
   const stage = computeStage();
   const localStage =
-    typeof window !== 'undefined' ? localStorage.getItem('caseStage') : null;
+    typeof window !== 'undefined' ? sessionStorage.getItem('caseStage') : null;
   const displayStage =
     localStage === 'analysis' && stage !== 'results' ? 'analysis' : stage;
 
   if (stage === 'open' && typeof window !== 'undefined') {
-    localStorage.removeItem('caseStage');
+    sessionStorage.removeItem('caseStage');
   }
 
   if (stage === 'open') {
@@ -54,7 +54,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold">Welcome, {user?.email}</h1>
           <button
             onClick={() => {
-              localStorage.setItem('caseStage', 'questionnaire');
+              sessionStorage.setItem('caseStage', 'questionnaire');
               router.push('/dashboard/questionnaire');
             }}
             className="px-6 py-3 bg-blue-700 text-white rounded text-lg"

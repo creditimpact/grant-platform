@@ -9,6 +9,8 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const logger = require('./utils/logger');
+const rateLimit = require('./middleware/rateLimit');
+const { csrfProtection } = require('./middleware/csrf');
 
 // Load environment variables from .env
 dotenv.config();
@@ -29,26 +31,30 @@ app.use(
     },
   })
 );
-const rateLimits = {};
+
+app.use(rateLimit({ windowMs: 60 * 60 * 1000, max: 1000 }));
+app.use('/api', rateLimit({ windowMs: 60 * 1000, max: 60 }));
+
 app.use((req, res, next) => {
-  const ip = req.ip;
-  const now = Date.now();
-  const windowMs = 60 * 1000;
-  const limit = parseInt(process.env.RATE_LIMIT || '100', 10);
-  const entry = rateLimits[ip] || { count: 0, start: now };
-  if (now - entry.start > windowMs) {
-    entry.count = 0;
-    entry.start = now;
-  }
-  entry.count += 1;
-  rateLimits[ip] = entry;
-  if (entry.count > limit) {
-    return res.status(429).json({ message: 'Too many requests' });
+  res.setHeader('Content-Security-Policy', "default-src 'self'");
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect('https://' + req.headers.host + req.originalUrl);
   }
   next();
 });
+
+app.use(csrfProtection);
 // serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// simple echo endpoint for tests and health checks
+app.post('/echo', (req, res) => {
+  res.json(req.body || {});
+});
 
 // === Root & Health Routes ===
 app.get('/', (req, res) => {
