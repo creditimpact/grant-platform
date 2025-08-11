@@ -2,10 +2,10 @@ import os
 import logging
 from importlib import reload
 from fastapi.testclient import TestClient
+import env_setup  # ENV VALIDATION: seed env vars
 
 
 def get_client():
-    os.environ["INTERNAL_API_KEY"] = "test-key"
     import api as api_module
     reload(api_module)
     return TestClient(api_module.app)

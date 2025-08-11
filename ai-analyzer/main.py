@@ -6,12 +6,13 @@ import sys
 from pathlib import Path
 from ocr_utils import extract_text
 from nlp_parser import parse_fields
+from config import settings  # ENV VALIDATION
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))
 from common.logger import get_logger, audit_log
 
-API_KEY = os.getenv("INTERNAL_API_KEY")
+API_KEY = settings.INTERNAL_API_KEY
 
 logger = get_logger(__name__)
 
@@ -82,9 +83,9 @@ async def analyze(file: UploadFile = File(...)):
 if __name__ == "__main__":
     import uvicorn, ssl, os
 
-    cert = os.getenv("TLS_CERT_PATH")
-    key = os.getenv("TLS_KEY_PATH")
-    ca = os.getenv("TLS_CA_PATH")
+    cert = str(settings.TLS_CERT_PATH)
+    key = str(settings.TLS_KEY_PATH)
+    ca = str(settings.TLS_CA_PATH) if settings.TLS_CA_PATH else None
     kwargs: dict[str, object] = {}
     if cert and key:
         kwargs = {

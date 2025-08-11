@@ -2,6 +2,12 @@ import asyncio
 from typing import Any, Callable, Dict
 
 
+class HTTPException(Exception):
+    def __init__(self, status_code: int, detail: str):
+        self.status_code = status_code
+        self.detail = detail
+
+
 class UploadFile:
     def __init__(self, filename: str, content: bytes):
         self.filename = filename
@@ -30,6 +36,14 @@ def Form(default=None):
 
 def Body(default=None, *, example=None):
     return default
+
+
+def Header(default=None):
+    return default
+
+
+def Depends(func):
+    return func
 
 
 class FastAPI:

@@ -1,6 +1,6 @@
-process.env.SKIP_DB = 'true';
 const test = require('node:test');
 const assert = require('node:assert');
+require('./testEnvSetup'); // ENV VALIDATION
 const app = require('../index');
 
 test('GET /status returns ok', async () => {

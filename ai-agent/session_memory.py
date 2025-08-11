@@ -2,23 +2,21 @@
 from typing import Dict, Any, List
 from pymongo import MongoClient
 import os
+from config import settings  # ENV VALIDATION
 
 # Require explicit credentials and TLS for all connections
-MONGO_URI = os.getenv("MONGO_URI")
-MONGO_USER = os.getenv("MONGO_USER")
-MONGO_PASS = os.getenv("MONGO_PASS")
-MONGO_CA_FILE = os.getenv("MONGO_CA_FILE")
-
-if not all([MONGO_URI, MONGO_USER, MONGO_PASS]):
-    raise ValueError("MONGO_URI, MONGO_USER, and MONGO_PASS must be set")
+MONGO_URI = settings.MONGO_URI
+MONGO_USER = settings.MONGO_USER
+MONGO_PASS = settings.MONGO_PASS
+MONGO_CA_FILE = settings.MONGO_CA_FILE
 
 client = MongoClient(
     MONGO_URI,
     username=MONGO_USER,
     password=MONGO_PASS,
     tls=True,
-    tlsCAFile=MONGO_CA_FILE,
-    authSource=os.getenv("MONGO_AUTH_DB", "admin"),
+    tlsCAFile=str(MONGO_CA_FILE),
+    authSource=settings.MONGO_AUTH_DB,
     tlsAllowInvalidCertificates=False,
 )
 db = client["ai_agent"]

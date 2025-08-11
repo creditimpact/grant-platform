@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 CURRENT_DIR = Path(__file__).resolve().parent
 load_dotenv(CURRENT_DIR / ".env")
 
+# ENV VALIDATION: load settings before other imports
+from config import settings
+
 # ensure local imports work regardless of working directory
 sys.path.insert(0, str(CURRENT_DIR))
 # allow importing shared utilities
@@ -35,7 +38,7 @@ from session_memory import append_memory, get_missing_fields, save_draft_form, g
 from nlp_utils import llm_semantic_inference, llm_complete
 from grants_loader import load_grants
 
-API_KEY = os.getenv("INTERNAL_API_KEY")
+API_KEY = settings.INTERNAL_API_KEY
 
 logger = get_logger(__name__)
 
