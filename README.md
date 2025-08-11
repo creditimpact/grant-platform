@@ -232,8 +232,13 @@ Each microservice includes a small test suite with coverage reporting. Run them 
 cd server && npm test
 
 # Frontend unit tests and E2E (coverage in frontend/coverage)
-cd frontend && npm test
-cd frontend && npm run e2e
+cd frontend
+$env:NEXT_PUBLIC_API_BASE="http://localhost:5000"
+npm test
+# Or via script (cross-env sets NEXT_PUBLIC_API_BASE)
+npm test
+npm run e2e:install
+npm run e2e
 
 # Python services (coverage.xml output)
 cd ai-agent && pip install -r requirements.txt && coverage run -m pytest && coverage report
