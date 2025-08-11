@@ -1,0 +1,8 @@
+{
+  "title": "Node API Overview",
+  "panels": [
+    {"title": "Requests/sec", "type": "graph"},
+    {"title": "p95 latency", "type": "graph"},
+    {"title": "Error rate", "type": "graph"}
+  ]
+}

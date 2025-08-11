@@ -1,9 +1,13 @@
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
+from fastapi.responses import Response
 from engine import analyze_eligibility
 from grants_loader import load_grants
 import os
 import sys
+import time
+import uuid
 from pathlib import Path
+from prometheus_client import Histogram, CONTENT_TYPE_LATEST, generate_latest
 from common.logger import get_logger, audit_log
 from config import settings  # ENV VALIDATION
 
@@ -13,6 +17,49 @@ sys.path.insert(0, str(CURRENT_DIR.parent))
 API_KEY = settings.INTERNAL_API_KEY
 
 logger = get_logger(__name__)
+
+OBS_ENABLED = os.getenv("OBSERVABILITY_ENABLED") == "true"
+PROM_ENABLED = OBS_ENABLED and os.getenv("PROMETHEUS_METRICS_ENABLED") == "true"
+REQ_ID_ENABLED = os.getenv("REQUEST_ID_ENABLED") == "true"
+REQ_LOG_JSON = os.getenv("REQUEST_LOG_JSON") == "true"
+
+if PROM_ENABLED:
+    REQ_LATENCY = Histogram(
+        "http_request_duration_seconds",
+        "Request duration",
+        ["method", "path", "status"],
+    )
+
+
+async def observability_middleware(request: Request, call_next):
+    req_id = None
+    if REQ_ID_ENABLED or REQ_LOG_JSON:
+        req_id = request.headers.get("x-request-id") or str(uuid.uuid4())
+        request.state.request_id = req_id
+    start = time.time()
+    response = await call_next(request)
+    if req_id:
+        response.headers["X-Request-Id"] = req_id
+    if PROM_ENABLED:
+        REQ_LATENCY.labels(request.method, request.url.path, response.status_code).observe(
+            time.time() - start
+        )
+    if REQ_LOG_JSON:
+        logger.info(
+            "request",
+            extra={
+                "request_id": req_id,
+                "path": request.url.path,
+                "status": response.status_code,
+                "latency_ms": round((time.time() - start) * 1000),
+            },
+        )
+    return response
+
+
+if PROM_ENABLED:
+    def metrics():
+        return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 async def verify_api_key(request: Request, x_api_key: str = Header(None)):
@@ -24,6 +71,9 @@ async def verify_api_key(request: Request, x_api_key: str = Header(None)):
 
 
 app = FastAPI(title="Grant Eligibility Engine", dependencies=[Depends(verify_api_key)])
+app.middleware("http")(observability_middleware)
+if PROM_ENABLED:
+    app.get("/metrics")(metrics)
 
 
 @app.get("/")

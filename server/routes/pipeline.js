@@ -57,10 +57,12 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
       const form = new FormData();
       form.append('file', fs.createReadStream(file.path), file.originalname);
       logger.info(`POST ${analyzerUrl}`, { file: file.originalname }); // SECURITY FIX: sanitized logging
+      const analyzerHeaders = { ...form.getHeaders(), ...serviceHeaders };
+      if (req.id) analyzerHeaders['X-Request-Id'] = req.id;
       const resp = await fetch(analyzerUrl, {
         method: 'POST',
         body: form,
-        headers: { ...form.getHeaders(), ...serviceHeaders },
+        headers: analyzerHeaders,
         agent,
       });
       if (!resp.ok) {
@@ -83,9 +85,11 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
     const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'https://localhost:4001';
     const engineUrl = `${engineBase.replace(/\/$/, '')}/check`;
     logger.info(`POST ${engineUrl}`); // SECURITY FIX: sanitized logging
+    const engineHeaders = { 'Content-Type': 'application/json', ...serviceHeaders };
+    if (req.id) engineHeaders['X-Request-Id'] = req.id;
     const eligResp = await fetch(engineUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...serviceHeaders },
+      headers: engineHeaders,
       body: JSON.stringify(normalized),
       agent,
     });
@@ -105,9 +109,11 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
     const filledForms = [];
     for (const formName of eligibility.requiredForms || []) {
       logger.info(`POST ${agentUrl}`, { form: formName }); // SECURITY FIX: sanitized logging
+      const agentHeaders = { 'Content-Type': 'application/json', ...serviceHeaders };
+      if (req.id) agentHeaders['X-Request-Id'] = req.id;
       const agentResp = await fetch(agentUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...serviceHeaders },
+        headers: agentHeaders,
         body: JSON.stringify({ form_name: formName, user_payload: normalized }),
         agent,
       });

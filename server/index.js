@@ -13,6 +13,12 @@ const https = require('https');
 const logger = require('./utils/logger');
 const rateLimit = require('./middleware/rateLimit');
 const { csrfProtection } = require('./middleware/csrf');
+const requestId = require('./middleware/requestId');
+
+const { metricsMiddleware, register } = process.env.OBSERVABILITY_ENABLED === 'true' && process.env.PROMETHEUS_METRICS_ENABLED === 'true'
+  ? require('./observability/metrics')
+  : { metricsMiddleware: null, register: null };
+const tracing = require('./observability/tracing');
 
 // ENV VALIDATION: dotenv already loaded in env.js, but keep for safety
 dotenv.config();
@@ -20,12 +26,18 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
+tracing.init();
+
 // === Middlewares ===
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'https://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
+app.use(requestId);
+if (metricsMiddleware) {
+  app.use(metricsMiddleware);
+}
 app.use(
   morgan('combined', {
     stream: {
@@ -56,6 +68,20 @@ app.use(csrfProtection);
 app.post('/echo', (req, res) => {
   res.json(req.body || {});
 });
+
+if (metricsMiddleware) {
+  const auth = process.env.METRICS_BASIC_AUTH;
+  app.get('/metrics', (req, res) => {
+    if (auth) {
+      const header = req.headers['authorization'];
+      if (!header || header !== `Basic ${Buffer.from(auth).toString('base64')}`) {
+        return res.status(401).set('WWW-Authenticate', 'Basic realm="metrics"').end();
+      }
+    }
+    res.set('Content-Type', register.contentType);
+    res.end(register.metrics());
+  });
+}
 
 // === Root & Health Routes ===
 app.get('/', (req, res) => {
