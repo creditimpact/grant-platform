@@ -25,7 +25,7 @@ project-root/
   frontend/             Next.js application
 ```
 
-The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files up to 5MB each and scans them for viruses before analysis.
+The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files up to 5MB each and scans them for viruses before analysis. All upload endpoints require valid authentication and will reject unauthorized requests. The ClamAV binary used for scanning can be customized with the `CLAMSCAN_PATH` environment variable.
 
 ### Veteran Owned Business Grant
 
