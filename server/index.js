@@ -74,6 +74,8 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api', require('./routes/pipeline'));
 // Case management & document routes
 app.use('/api', require('./routes/case'));
+// Form template management
+app.use('/api', require('./routes/formTemplate'));
 
 // === Connect to DB and start server ===
 const PORT = env.PORT || 5000;
