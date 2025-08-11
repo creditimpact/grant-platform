@@ -1,7 +1,10 @@
 {
   "scripts": {
     "test": "node --test --experimental-test-coverage > coverage.txt && node scripts/check-coverage.js coverage.txt",
-    "verify:mongo": "node scripts/verify-mongo-tls.js"
+    "verify:mongo": "node scripts/verify-mongo-tls.js",
+    "profile:flame": "clinic flame -- node index.js",
+    "profile:doctor": "clinic doctor -- node index.js",
+    "profile:bubbleprof": "clinic bubbleprof -- node index.js"
   },
   "dependencies": {
     "bcryptjs": "3.0.2",
@@ -11,6 +14,14 @@
     "form-data": "4.0.4",
     "jsonwebtoken": "9.0.2",
     "multer": "2.0.2",
-    "node-fetch": "3.3.2"
+    "node-fetch": "3.3.2",
+    "prom-client": "15.0.0",
+    "pino": "8.16.0",
+    "uuid": "9.0.1",
+    "on-finished": "2.4.1",
+    "@opentelemetry/api": "1.7.0",
+    "@opentelemetry/sdk-node": "0.50.0",
+    "@opentelemetry/auto-instrumentations-node": "0.50.0",
+    "@opentelemetry/exporter-trace-otlp-http": "0.50.0"
   }
 }
