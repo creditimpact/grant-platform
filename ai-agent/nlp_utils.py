@@ -15,7 +15,8 @@ except Exception:  # pragma: no cover - openai optional for tests
     openai = None  # type: ignore
 
 load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+from config import settings  # ENV VALIDATION
+OPENAI_API_KEY = settings.OPENAI_API_KEY
 if openai and OPENAI_API_KEY:
     openai.api_key = OPENAI_API_KEY
 

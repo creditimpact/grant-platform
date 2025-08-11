@@ -2,10 +2,10 @@ import os
 from importlib import reload
 from fastapi.testclient import TestClient
 from fastapi import HTTPException
+import env_setup  # ENV VALIDATION: seed env vars
 
 
 def get_client(monkeypatch, scan_behavior=None):
-    os.environ["INTERNAL_API_KEY"] = "test-key"
     import main as main_module
     reload(main_module)
     # Stub out heavy functions

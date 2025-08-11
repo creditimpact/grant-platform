@@ -1,5 +1,7 @@
 // server/index.js
 
+// ENV VALIDATION: ensure env variables are validated before anything else
+const env = require('./config/env'); // ENV VALIDATION
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -12,7 +14,7 @@ const logger = require('./utils/logger');
 const rateLimit = require('./middleware/rateLimit');
 const { csrfProtection } = require('./middleware/csrf');
 
-// Load environment variables from .env
+// ENV VALIDATION: dotenv already loaded in env.js, but keep for safety
 dotenv.config();
 
 // Initialize Express app
@@ -74,7 +76,7 @@ app.use('/api', require('./routes/pipeline'));
 app.use('/api', require('./routes/case'));
 
 // === Connect to DB and start server ===
-const PORT = process.env.PORT || 5000;
+const PORT = env.PORT || 5000;
 
 function startServer() {
   const keyPath = process.env.TLS_KEY_PATH;

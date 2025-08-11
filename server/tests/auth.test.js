@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 
-process.env.SKIP_DB = 'true';
+require('./testEnvSetup'); // ENV VALIDATION: seed env vars
 process.env.NODE_ENV = 'test';
 
 const app = require('../index');

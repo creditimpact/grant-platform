@@ -6,6 +6,8 @@ import asyncio
 import pytest
 from pydantic import ValidationError
 
+import test_env_setup  # ENV VALIDATION: seed env vars
+
 sys.path.insert(0, str(Path(__file__).parent))
 from main import check, form_fill, chat
 from form_filler import fill_form as direct_fill_form

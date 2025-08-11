@@ -1,0 +1,63 @@
+# Environment Variables
+
+## Server (Node.js)
+| Variable | Purpose | Example | Required | Default |
+| --- | --- | --- | --- | --- |
+| JWT_SECRET | JWT signing secret | `supersecret` | yes | - |
+| INTERNAL_API_KEY | Internal API key shared with microservices | `changeme` | yes | - |
+| OPENAI_API_KEY | OpenAI API key | `sk-...` | yes | - |
+| FRONTEND_URL | Allowed frontend origin | `https://localhost:3000` | yes | - |
+| ELIGIBILITY_ENGINE_URL | Eligibility engine URL | `http://localhost:4001` | yes | - |
+| AI_ANALYZER_URL | Analyzer URL | `http://localhost:4002` | yes | - |
+| AI_AGENT_URL | Agent URL | `http://localhost:5001` | yes | - |
+| MONGO_URI | MongoDB connection string | `mongodb://mongo:27017/grants?authSource=admin&tls=true` | yes | - |
+| MONGO_USER | Mongo username | `user` | yes | - |
+| MONGO_PASS | Mongo password | `pass` | yes | - |
+| MONGO_CA_FILE | CA cert path | `./mongo-certs/ca.pem` | yes | - |
+| TLS_KEY_PATH | TLS key | `./tls/server-key.pem` | yes | - |
+| TLS_CERT_PATH | TLS cert | `./tls/server-cert.pem` | yes | - |
+| TLS_CA_PATH | TLS CA cert | `./tls/ca.pem` | optional | - |
+| CLIENT_CERT_PATH | mTLS client cert | `./tls/client-cert.pem` | optional | - |
+| CLIENT_KEY_PATH | mTLS client key | `./tls/client-key.pem` | optional | - |
+| CLIENT_CA_PATH | mTLS client CA | `./tls/client-ca.pem` | optional | - |
+| PORT | Server port | `5000` | yes | 5000 |
+| ENABLE_DEBUG | Enable debug logging | `false` | optional | false |
+| SKIP_DB | Skip Mongo connection | `false` | optional | false |
+
+## Frontend (Next.js)
+| Variable | Purpose | Example | Required | Default |
+| --- | --- | --- | --- | --- |
+| NEXT_PUBLIC_API_BASE | API base URL | `https://localhost:5000` | yes | - |
+| NODE_ENV | Build environment | `development` | yes | - |
+
+## AI Agent (Python)
+| Variable | Purpose | Example | Required | Default |
+| --- | --- | --- | --- | --- |
+| INTERNAL_API_KEY | Internal API key | `changeme` | yes | - |
+| OPENAI_API_KEY | OpenAI API key | `sk-...` | yes | - |
+| MONGO_URI | MongoDB URI | `mongodb://mongo:27017/grants` | yes | - |
+| MONGO_USER | Mongo username | `user` | yes | - |
+| MONGO_PASS | Mongo password | `pass` | yes | - |
+| MONGO_CA_FILE | CA cert path | `./mongo-certs/ca.pem` | yes | - |
+| MONGO_AUTH_DB | Auth DB | `admin` | optional | `admin` |
+| TLS_CERT_PATH | TLS cert | `./tls/agent-cert.pem` | yes | - |
+| TLS_KEY_PATH | TLS key | `./tls/agent-key.pem` | yes | - |
+| TLS_CA_PATH | TLS CA | `./tls/ca.pem` | optional | - |
+| ENABLE_DEBUG | Debug flag | `false` | optional | false |
+
+## AI Analyzer (Python)
+| Variable | Purpose | Example | Required | Default |
+| --- | --- | --- | --- | --- |
+| INTERNAL_API_KEY | Internal API key | `changeme` | yes | - |
+| TLS_CERT_PATH | TLS cert | `./tls/analyzer-cert.pem` | yes | - |
+| TLS_KEY_PATH | TLS key | `./tls/analyzer-key.pem` | yes | - |
+| TLS_CA_PATH | TLS CA | `./tls/ca.pem` | optional | - |
+
+## Eligibility Engine (Python)
+| Variable | Purpose | Example | Required | Default |
+| --- | --- | --- | --- | --- |
+| INTERNAL_API_KEY | Internal API key | `changeme` | yes | - |
+| TLS_CERT_PATH | TLS cert | `./tls/engine-cert.pem` | yes | - |
+| TLS_KEY_PATH | TLS key | `./tls/engine-key.pem` | yes | - |
+| TLS_CA_PATH | TLS CA | `./tls/ca.pem` | optional | - |
+

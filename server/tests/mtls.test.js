@@ -1,4 +1,3 @@
-process.env.SKIP_DB = 'true';
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -6,6 +5,7 @@ const { execSync } = require('child_process');
 const https = require('https');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 const createAgent = require('../utils/tlsAgent');
+require('./testEnvSetup'); // ENV VALIDATION
 
 test('mutual TLS allows authorized clients only', async () => {
   const tmp = fs.mkdtempSync('/tmp/mtls-');
