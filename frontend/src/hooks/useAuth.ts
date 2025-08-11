@@ -16,51 +16,26 @@ export const useAuth = create<AuthState>((set) => ({
 
   async login(email, password) {
     set({ loading: true });
-    const res = await api.post('/auth/login', { email, password });
-
-    const token = res.data.token;
-    if (typeof window !== 'undefined' && token) {
-      localStorage.setItem('token', token);
-    }
-
+    await api.post('/auth/login', { email, password });
     await useAuth.getState().check();
     set({ loading: false });
   },
 
   async register(data) {
     set({ loading: true });
-    const res = await api.post('/auth/register', data);
-
-    const token = res.data.token;
-    if (typeof window !== 'undefined' && token) {
-      localStorage.setItem('token', token);
-    }
-
+    await api.post('/auth/register', data);
     await useAuth.getState().check();
     set({ loading: false });
   },
 
   async logout() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-    }
+    await api.post('/auth/logout');
     set({ user: null });
   },
 
   async check() {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        set({ user: null });
-        return;
-      }
-
-      const res = await api.get('/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const res = await api.get('/auth/me');
       set({ user: res.data });
     } catch (err) {
       console.warn('Auth check failed:', err);

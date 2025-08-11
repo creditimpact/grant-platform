@@ -6,10 +6,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token && config.headers) {
-      (config.headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  if (typeof document !== 'undefined') {
+    const match = document.cookie.split('; ').find((row) => row.startsWith('csrfToken='));
+    if (match && config.headers) {
+      (config.headers as Record<string, string>)['X-CSRF-Token'] = match.split('=')[1];
     }
   }
   return config;
