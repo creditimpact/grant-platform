@@ -8,25 +8,6 @@ const schemas = {
     email: { required: true, type: 'string', pattern: /^[^@]+@[^@]+\.[^@]+$/ },
     password: { required: true, type: 'string', min: 6 },
   },
-  // SECURITY FIX: schemas for case and pipeline APIs
-  caseQuestionnaire: {
-    businessName: { required: true, type: 'string', min: 1, max: 200 },
-    email: { required: true, type: 'string', pattern: /^[^@]+@[^@]+\.[^@]+$/ },
-    phone: { required: true, type: 'string', min: 7, max: 20 },
-  },
-  fileUpload: {
-    key: { required: true, type: 'string', min: 1, max: 100 },
-  },
-  eligibilityReport: {
-    businessName: { required: true, type: 'string', min: 1, max: 200 },
-    email: { required: true, type: 'string', pattern: /^[^@]+@[^@]+\.[^@]+$/ },
-    phone: { required: true, type: 'string', min: 7, max: 20 },
-  },
-  pipelineSubmit: {
-    businessName: { required: true, type: 'string', min: 1, max: 200 },
-    email: { required: true, type: 'string', pattern: /^[^@]+@[^@]+\.[^@]+$/ },
-    phone: { required: true, type: 'string', min: 7, max: 20 },
-  },
 };
 
 function validate(schema) {

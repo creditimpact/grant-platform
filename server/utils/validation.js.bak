@@ -13,8 +13,6 @@ const numericFields = [
 const booleanFields = ['previousGrants', 'previous_refunds_claimed', 'sam_registration'];
 const allowedBusinessTypes = ['Sole', 'Partnership', 'LLC', 'Corporation'];
 
-const logger = require('./logger'); // SECURITY FIX: centralized sanitized logging
-
 // Frontend -> backend field mappings
 const fieldMap = {
   entityType: 'businessType',
@@ -146,8 +144,7 @@ function normalizeQuestionnaire(input = {}) {
     invalid.push('businessType');
   }
 
-  // SECURITY FIX: avoid logging raw normalized data in production
-  logger.info('normalizeQuestionnaire normalized data', data);
+  console.log('normalizeQuestionnaire normalized data', data);
   return { data, missing, invalid };
 }
 

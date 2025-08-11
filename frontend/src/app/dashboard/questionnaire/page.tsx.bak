@@ -151,9 +151,7 @@ export default function Questionnaire() {
         sam: answers.sam === 'yes',
       };
       await api.post('/case/questionnaire', payload);
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Questionnaire submitted successfully'); // SECURITY FIX: remove sensitive payload
-      }
+      console.log('Questionnaire submitted successfully', payload);
       sessionStorage.setItem('caseStage', 'documents');
       router.push('/dashboard/documents');
     } catch (err: any) {

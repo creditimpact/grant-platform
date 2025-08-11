@@ -11,7 +11,9 @@ function csrfProtection(req, res, next) {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
     return next();
   }
-  // SECURITY FIX: remove login/register/refresh exemptions
+  if (['/api/auth/login', '/api/auth/register', '/api/auth/refresh'].includes(req.path)) {
+    return next();
+  }
   const cookies = parseCookies(req.headers.cookie || '');
   const csrfCookie = cookies['csrfToken'];
   const csrfHeader = req.headers['x-csrf-token'];

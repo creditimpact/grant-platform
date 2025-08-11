@@ -1,15 +1,18 @@
+// SECURITY FIX: add recursive PII redaction and suppress info logs in production
 const logs = [];
-const SENSITIVE_FIELDS = ['password', 'token', 'apiKey'];
+const PII_PATTERNS = [/name/i, /email/i, /address/i, /phone/i, /ssn/i, /password/i, /token/i, /apikey/i];
 
-function redact(obj) {
-  if (!obj) return obj;
-  const clone = { ...obj };
-  SENSITIVE_FIELDS.forEach((key) => {
-    if (clone[key] !== undefined) {
-      clone[key] = '[REDACTED]';
+function mask(obj) {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map((v) => mask(v));
+  if (typeof obj === 'object') {
+    const out = {};
+    for (const [k, v] of Object.entries(obj)) {
+      out[k] = PII_PATTERNS.some((p) => p.test(k)) ? '[REDACTED]' : mask(v);
     }
-  });
-  return clone;
+    return out;
+  }
+  return obj;
 }
 
 function log(level, message, meta = {}) {
@@ -17,16 +20,17 @@ function log(level, message, meta = {}) {
     timestamp: new Date().toISOString(),
     level,
     message,
-    ...redact(meta),
+    ...mask(meta),
   };
   if (process.env.NODE_ENV === 'test') {
     logs.push(entry);
-  } else {
+  } else if (process.env.NODE_ENV === 'development' || level !== 'info') {
     console.log(JSON.stringify(entry));
   }
 }
 
 module.exports = {
+  // SECURITY FIX: expose helpers that only log in non-production environments
   info: (msg, meta) => log('info', msg, meta),
   warn: (msg, meta) => log('warn', msg, meta),
   error: (msg, meta) => log('error', msg, meta),
