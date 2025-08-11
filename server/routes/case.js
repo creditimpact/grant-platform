@@ -9,6 +9,7 @@ const { getCase, computeDocuments } = require('../utils/caseStore');
 const { normalizeQuestionnaire, denormalizeQuestionnaire } = require('../utils/validation');
 const logger = require('../utils/logger'); // SECURITY FIX: sanitized logging
 const { validate, schemas } = require('../middleware/validate'); // SECURITY FIX: schema validation
+const { scanFile, validateFile } = require('../utils/virusScanner');
 const { getLatestTemplate } = require('../utils/formTemplates');
 const { validateAgainstSchema } = require('../middleware/formValidation');
 
@@ -87,13 +88,17 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+});
 
 router.post('/files/upload', auth, upload.single('file'), validate(schemas.fileUpload), async (req, res) => { // SECURITY FIX: schema validation
   const { key } = req.body;
   logger.info('POST /files/upload', { user: req.user.id, key, file: req.file?.originalname }); // SECURITY FIX: sanitized logging
   if (!key || !req.file) return res.status(400).json({ message: 'Missing key or file' });
   try {
+    validateFile(req.file);
+    await scanFile(req.file.path);
     const c = await getCase(req.user.id);
     if (!c.documents || c.documents.length === 0) {
       c.documents = await computeDocuments(c.answers);
@@ -114,8 +119,10 @@ router.post('/files/upload', auth, upload.single('file'), validate(schemas.fileU
     await c.save();
     res.json({ message: 'uploaded', document: doc });
   } catch (err) {
+    if (req.file) fs.unlink(req.file.path, () => {});
     logger.error('POST /files/upload failed', { error: err.message }); // SECURITY FIX: sanitized logging
-    res.status(500).json({ message: 'Upload failed' });
+    const status = err.status || (err.message === 'Virus detected' ? 400 : err.message === 'File too large' ? 413 : err.message === 'Unsupported file type' ? 400 : err.message === 'Virus scan failed' ? 500 : 500);
+    res.status(status).json({ message: err.message });
   }
 });
 
@@ -259,6 +266,18 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
       .status(500)
       .json({ message: 'Eligibility computation failed', error: err.message });
   }
+});
+
+router.use((err, req, res, next) => {
+  if (err.message === 'File too large') {
+    logger.warn('file upload rejected', { reason: 'size' });
+    return res.status(413).json({ message: 'File too large' });
+  }
+  if (err.message === 'Unsupported file type') {
+    logger.warn('file upload rejected', { reason: 'type' });
+    return res.status(400).json({ message: 'Unsupported file type' });
+  }
+  next(err);
 });
 
 module.exports = router;
