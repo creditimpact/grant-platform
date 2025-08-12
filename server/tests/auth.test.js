@@ -116,3 +116,84 @@ test('registration validation fails for bad email', async () => {
   assert.strictEqual(res.status, 400);
   server.close();
 });
+
+// RBAC tests
+const jwt = require('jsonwebtoken');
+function stubFormTemplate() {
+  const FormTemplate = require('../models/FormTemplate');
+  FormTemplate.createVersion = async (key, template, schema) => ({
+    key,
+    version: 1,
+    template,
+    schema,
+  });
+  const utils = require('../utils/formTemplates');
+  utils.cacheTemplate = () => {};
+}
+
+test('admin can access protected form-template route', async () => {
+  const server = app.listen(0);
+  const port = server.address().port;
+  stubFormTemplate();
+  const csrf = await getCsrf(port);
+  const token = jwt.sign(
+    { userId: '1', email: 'a', role: 'admin' },
+    process.env.JWT_SECRET,
+    { expiresIn: '10m' }
+  );
+  const res = await fetch(`http://localhost:${port}/api/form-template`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrf.token,
+      Cookie: `${csrf.cookie}; accessToken=${token}`,
+      Origin: 'https://localhost:3000',
+    },
+    body: JSON.stringify({ key: 'sample', template: {}, schema: {} }),
+  });
+  assert.strictEqual(res.status, 201);
+  server.close();
+});
+
+test('non-admin user is forbidden from form-template route', async () => {
+  const server = app.listen(0);
+  const port = server.address().port;
+  stubFormTemplate();
+  const csrf = await getCsrf(port);
+  const token = jwt.sign(
+    { userId: '2', email: 'b', role: 'user' },
+    process.env.JWT_SECRET,
+    { expiresIn: '10m' }
+  );
+  const res = await fetch(`http://localhost:${port}/api/form-template`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrf.token,
+      Cookie: `${csrf.cookie}; accessToken=${token}`,
+      Origin: 'https://localhost:3000',
+    },
+    body: JSON.stringify({ key: 'sample', template: {}, schema: {} }),
+  });
+  assert.strictEqual(res.status, 403);
+  server.close();
+});
+
+test('request without token is rejected', async () => {
+  const server = app.listen(0);
+  const port = server.address().port;
+  stubFormTemplate();
+  const csrf = await getCsrf(port);
+  const res = await fetch(`http://localhost:${port}/api/form-template`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrf.token,
+      Cookie: csrf.cookie,
+      Origin: 'https://localhost:3000',
+    },
+    body: JSON.stringify({ key: 'sample', template: {}, schema: {} }),
+  });
+  assert.strictEqual(res.status, 401);
+  server.close();
+});

@@ -1,14 +1,10 @@
 const express = require('express');
 const auth = require('../middleware/authMiddleware');
+const requireRole = require('../middleware/requireRole');
 const FormTemplate = require('../models/FormTemplate');
 const { getTemplate, getLatestTemplate, cacheTemplate } = require('../utils/formTemplates');
 
 const router = express.Router();
-
-function requireAdmin(req, res, next) {
-  if (req.user && req.user.role === 'admin') return next();
-  return res.status(403).json({ message: 'forbidden' });
-}
 
 router.get('/form-template/:key/:version', auth, async (req, res) => {
   const tmpl = await getTemplate(req.params.key, Number(req.params.version));
@@ -22,7 +18,7 @@ router.get('/form-template/:key', auth, async (req, res) => {
   res.json(tmpl);
 });
 
-router.post('/form-template', auth, requireAdmin, async (req, res) => {
+router.post('/form-template', auth, requireRole('admin'), async (req, res) => {
   const { key, template, schema } = req.body || {};
   if (!key || typeof template !== 'object' || typeof schema !== 'object') {
     return res.status(400).json({ message: 'invalid_payload' });

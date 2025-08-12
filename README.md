@@ -74,6 +74,10 @@ curl -k -H "Authorization: Bearer <token>" https://localhost:5000/api/users
 
 A missing or invalid token results in **401 Unauthorized**.
 
+JWT payloads also contain a user's `role` (`user` or `admin`). The backend exposes a
+`requireRole('admin')` middleware used by admin-only endpoints such as
+`POST /api/form-template`.
+
 
 ### Case Management API
 
