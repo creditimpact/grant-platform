@@ -1,11 +1,13 @@
 const jwt = require('jsonwebtoken');
 const parseCookies = require('../utils/cookies');
+const logger = require('../utils/logger');
 
 const auth = async (req, res, next) => {
   const cookies = parseCookies(req.headers.cookie || '');
   const token = cookies['accessToken'];
 
   if (!token) {
+    logger.warn('auth_missing_token', { ip: req.ip });
     return res.status(401).json({ message: 'No token, authorization denied' });
   }
 
@@ -18,7 +20,7 @@ const auth = async (req, res, next) => {
     };
     next();
   } catch (err) {
-    console.error('JWT verify failed:', err.message);
+    logger.warn('auth_token_invalid', { ip: req.ip, error: err.message });
     return res.status(401).json({ message: 'Token is not valid' });
   }
 };

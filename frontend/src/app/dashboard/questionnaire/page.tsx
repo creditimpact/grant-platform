@@ -9,20 +9,14 @@ import Protected from '@/components/Protected';
 import FormInput from '@/components/FormInput';
 import api from '@/lib/api';
 import Stepper from '@/components/Stepper';
+import { safeError, safeLog } from '@/utils/logger';
 
 const logApiError = (endpoint: string, payload: unknown, err: any) => {
-  if (process.env.NODE_ENV !== 'production') {
-    const status = err?.response?.status;
-    const data = err?.response?.data ?? err?.message;
-    console.error(`API Error on ${endpoint}`, {
-      endpoint,
-      status,
-      response: data,
-      sentPayload: payload,
-    });
-    if (data?.missing) {
-      console.error('Missing fields:', data.missing);
-    }
+  const status = err?.response?.status;
+  const data = err?.response?.data ?? err?.message;
+  safeError(`API Error on ${endpoint}`, { status, response: data });
+  if (data?.missing) {
+    safeError('Missing fields', data.missing);
   }
 };
 
@@ -152,7 +146,7 @@ export default function Questionnaire() {
       };
       await api.post('/case/questionnaire', payload);
       if (process.env.NODE_ENV !== 'production') {
-        console.log('Questionnaire submitted successfully'); // SECURITY FIX: remove sensitive payload
+        safeLog('Questionnaire submitted successfully');
       }
       sessionStorage.setItem('caseStage', 'documents');
       router.push('/dashboard/documents');

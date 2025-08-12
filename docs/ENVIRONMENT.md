@@ -19,11 +19,13 @@ restarting the consuming service. API keys continue to support the
 `*_NEXT_API_KEY` convention for seamless rotation where both old and new keys are
 valid during the transition period.
 
+All Vault connections must use **HTTPS**; the platform will refuse to start if
+`VAULT_ADDR` is configured with `http://`.
+
 ## Server (Node.js)
 | Variable | Purpose | Example | Required | Default |
 | --- | --- | --- | --- | --- |
 | JWT_SECRET | JWT signing secret | `supersecret` | yes | - |
-| SERVER_API_KEY | API key other services use to call the server | `changeme` | yes | - |
 | AI_AGENT_API_KEY | API key for requests to AI Agent | `changeme` | yes | - |
 | AI_AGENT_NEXT_API_KEY | Next key for AI Agent during rotation | - | optional | - |
 | AI_ANALYZER_API_KEY | API key for requests to AI Analyzer | `changeme` | yes | - |

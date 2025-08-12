@@ -3,6 +3,7 @@ const path = require('path');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 const createAgent = require('./tlsAgent');
 const Case = require('../models/Case');
+const logger = require('./logger');
 
 function loadGrantConfig() {
   const configPath = path.join(__dirname, '../../eligibility-engine/grants_config.json');
@@ -136,7 +137,7 @@ async function computeDocuments(answers = {}) {
         });
     }
   } catch (err) {
-    console.error('computeDocuments failed:', err.message);
+    logger.error('compute_documents_failed', { error: err.message });
   }
 
   return docs;
