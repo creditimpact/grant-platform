@@ -7,21 +7,22 @@
     "profile:bubbleprof": "clinic bubbleprof -- node index.js"
   },
   "dependencies": {
+    "@opentelemetry/api": "1.7.0",
+    "@opentelemetry/auto-instrumentations-node": "0.50.0",
+    "@opentelemetry/exporter-trace-otlp-http": "0.50.0",
+    "@opentelemetry/sdk-node": "0.50.0",
     "bcryptjs": "3.0.2",
     "cors": "2.8.5",
-    "dotenv": "17.2.1",
-    "express": "4.18.2",
+    "dotenv": "^17.2.1",
+    "express": "^4.21.2",
     "form-data": "4.0.4",
     "jsonwebtoken": "9.0.2",
     "multer": "2.0.2",
     "node-fetch": "3.3.2",
-    "prom-client": "15.0.0",
-    "pino": "8.16.0",
-    "uuid": "9.0.1",
+    "node-vault": "^0.10.5",
     "on-finished": "2.4.1",
-    "@opentelemetry/api": "1.7.0",
-    "@opentelemetry/sdk-node": "0.50.0",
-    "@opentelemetry/auto-instrumentations-node": "0.50.0",
-    "@opentelemetry/exporter-trace-otlp-http": "0.50.0"
+    "pino": "8.16.0",
+    "prom-client": "15.0.0",
+    "uuid": "9.0.1"
   }
 }
