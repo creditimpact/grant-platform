@@ -15,6 +15,6 @@ vars = {
     "TLS_KEY_PATH": str(dummy),
 }
 for k, v in vars.items():
-    os.environ.setdefault(k, v)
+    os.environ[k] = v
 import sys
 sys.modules.pop("config", None)

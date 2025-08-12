@@ -11,16 +11,22 @@ CURRENT_DIR = Path(__file__).resolve().parent
 
 # ENV VALIDATION: load settings before other imports
 
-# ensure local imports work regardless of working directory
-sys.path.insert(0, str(CURRENT_DIR))
-# allow importing shared utilities
-sys.path.insert(0, str(CURRENT_DIR.parent))
-from common.logger import get_logger, audit_log
-
-# allow importing the eligibility engine
+# ensure local imports work regardless of working directory.  ``CURRENT_DIR``
+# must take precedence so that ``config`` resolves to the ai-agent module and
+# not to similarly named modules from sibling services such as the
+# eligibility engine.  We therefore insert paths in reverse order so that the
+# final ``sys.path`` starts with ``CURRENT_DIR``.
 BASE_DIR = CURRENT_DIR.parent
 ENGINE_DIR = BASE_DIR / "eligibility-engine"
+
+# allow importing the eligibility engine (lowest precedence)
 sys.path.insert(0, str(ENGINE_DIR))
+# allow importing shared utilities
+sys.path.insert(0, str(BASE_DIR))
+# ensure ai-agent modules (like config) are searched first
+sys.path.insert(0, str(CURRENT_DIR))
+
+from common.logger import get_logger, audit_log
 
 from engine import analyze_eligibility  # type: ignore
 from document_utils import extract_fields
