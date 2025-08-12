@@ -1,7 +1,10 @@
 // ENV VALIDATION: helper to seed required env vars for tests
 const dummy = __filename;
 process.env.JWT_SECRET = 'test';
-process.env.INTERNAL_API_KEY = 'test';
+process.env.SERVER_API_KEY = 'test';
+process.env.AI_AGENT_API_KEY = 'test';
+process.env.AI_ANALYZER_API_KEY = 'test';
+process.env.ELIGIBILITY_ENGINE_API_KEY = 'test';
 process.env.OPENAI_API_KEY = 'test';
 process.env.FRONTEND_URL = 'https://localhost:3000';
 process.env.ELIGIBILITY_ENGINE_URL = 'https://localhost';

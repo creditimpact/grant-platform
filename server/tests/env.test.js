@@ -15,7 +15,10 @@ test('env validation parses values', () => {
   const dummy = path.join(__filename);
   const env = {
     JWT_SECRET: 'a',
-    INTERNAL_API_KEY: 'b',
+    SERVER_API_KEY: 'b',
+    AI_AGENT_API_KEY: 'c1',
+    AI_ANALYZER_API_KEY: 'c2',
+    ELIGIBILITY_ENGINE_API_KEY: 'c3',
     OPENAI_API_KEY: 'c',
     FRONTEND_URL: 'https://example.com',
     ELIGIBILITY_ENGINE_URL: 'https://example.com',
@@ -38,7 +41,10 @@ test('env validation rejects non-https service URLs', () => {
   const dummy = path.join(__filename);
   const env = {
     JWT_SECRET: 'a',
-    INTERNAL_API_KEY: 'b',
+    SERVER_API_KEY: 'b',
+    AI_AGENT_API_KEY: 'c1',
+    AI_ANALYZER_API_KEY: 'c2',
+    ELIGIBILITY_ENGINE_API_KEY: 'c3',
     OPENAI_API_KEY: 'c',
     FRONTEND_URL: 'http://example.com',
     ELIGIBILITY_ENGINE_URL: 'https://example.com',

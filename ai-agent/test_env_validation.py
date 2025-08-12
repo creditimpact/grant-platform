@@ -7,7 +7,7 @@ def minimal_env(tmp_path):
     dummy = tmp_path / "a.pem"
     dummy.write_text("test")
     env = {
-        "INTERNAL_API_KEY": "k",
+        "AI_AGENT_API_KEY": "k",
         "OPENAI_API_KEY": "o",
         "MONGO_URI": "mongodb://localhost:27017", 
         "MONGO_USER": "u",
@@ -21,8 +21,17 @@ def minimal_env(tmp_path):
 
 def test_missing_env_raises(monkeypatch, tmp_path):
     env = minimal_env(tmp_path)
-    env.pop("INTERNAL_API_KEY")
-    for k in ["INTERNAL_API_KEY", "OPENAI_API_KEY", "MONGO_URI", "MONGO_USER", "MONGO_PASS", "MONGO_CA_FILE", "TLS_CERT_PATH", "TLS_KEY_PATH"]:
+    env.pop("AI_AGENT_API_KEY")
+    for k in [
+        "AI_AGENT_API_KEY",
+        "OPENAI_API_KEY",
+        "MONGO_URI",
+        "MONGO_USER",
+        "MONGO_PASS",
+        "MONGO_CA_FILE",
+        "TLS_CERT_PATH",
+        "TLS_KEY_PATH",
+    ]:
         monkeypatch.delenv(k, raising=False)
     for k, v in env.items():
         monkeypatch.setenv(k, v)

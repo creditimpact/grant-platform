@@ -15,8 +15,11 @@ except Exception:  # pragma: no cover - openai optional for tests
     openai = None  # type: ignore
 
 load_dotenv()
-from config import settings  # ENV VALIDATION
-OPENAI_API_KEY = settings.OPENAI_API_KEY
+try:
+    from .config import settings  # type: ignore
+except ImportError:  # pragma: no cover - script execution
+    from config import settings  # type: ignore
+OPENAI_API_KEY = getattr(settings, "OPENAI_API_KEY", None)
 if openai and OPENAI_API_KEY:
     openai.api_key = OPENAI_API_KEY
 

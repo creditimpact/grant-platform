@@ -1,10 +1,20 @@
 # Environment Variables
 
+For internal authentication each service defines a dedicated `*_API_KEY` along with an
+optional `*_NEXT_API_KEY` used during key rotation. When both are provided, requests
+with either key are accepted.
+
 ## Server (Node.js)
 | Variable | Purpose | Example | Required | Default |
 | --- | --- | --- | --- | --- |
 | JWT_SECRET | JWT signing secret | `supersecret` | yes | - |
-| INTERNAL_API_KEY | Internal API key shared with microservices | `changeme` | yes | - |
+| SERVER_API_KEY | API key other services use to call the server | `changeme` | yes | - |
+| AI_AGENT_API_KEY | API key for requests to AI Agent | `changeme` | yes | - |
+| AI_AGENT_NEXT_API_KEY | Next key for AI Agent during rotation | - | optional | - |
+| AI_ANALYZER_API_KEY | API key for requests to AI Analyzer | `changeme` | yes | - |
+| AI_ANALYZER_NEXT_API_KEY | Next key for AI Analyzer during rotation | - | optional | - |
+| ELIGIBILITY_ENGINE_API_KEY | API key for requests to Eligibility Engine | `changeme` | yes | - |
+| ELIGIBILITY_ENGINE_NEXT_API_KEY | Next key for Eligibility Engine during rotation | - | optional | - |
 | OPENAI_API_KEY | OpenAI API key | `sk-...` | yes | - |
 | FRONTEND_URL | Allowed frontend origin | `https://localhost:3000` | yes | - |
 | ELIGIBILITY_ENGINE_URL | Eligibility engine URL | `https://localhost:4001` | yes | - |
@@ -33,7 +43,8 @@
 ## AI Agent (Python)
 | Variable | Purpose | Example | Required | Default |
 | --- | --- | --- | --- | --- |
-| INTERNAL_API_KEY | Internal API key | `changeme` | yes | - |
+| AI_AGENT_API_KEY | API key for this service | `changeme` | yes | - |
+| AI_AGENT_NEXT_API_KEY | Next API key during rotation | - | optional | - |
 | OPENAI_API_KEY | OpenAI API key | `sk-...` | yes | - |
 | MONGO_URI | MongoDB URI | `mongodb://mongo:27017/grants` | yes | - |
 | MONGO_USER | Mongo username | `user` | yes | - |
@@ -48,7 +59,8 @@
 ## AI Analyzer (Python)
 | Variable | Purpose | Example | Required | Default |
 | --- | --- | --- | --- | --- |
-| INTERNAL_API_KEY | Internal API key | `changeme` | yes | - |
+| AI_ANALYZER_API_KEY | API key for this service | `changeme` | yes | - |
+| AI_ANALYZER_NEXT_API_KEY | Next API key during rotation | - | optional | - |
 | TLS_CERT_PATH | TLS cert | `./tls/analyzer-cert.pem` | yes | - |
 | TLS_KEY_PATH | TLS key | `./tls/analyzer-key.pem` | yes | - |
 | TLS_CA_PATH | TLS CA | `./tls/ca.pem` | optional | - |
@@ -56,7 +68,8 @@
 ## Eligibility Engine (Python)
 | Variable | Purpose | Example | Required | Default |
 | --- | --- | --- | --- | --- |
-| INTERNAL_API_KEY | Internal API key | `changeme` | yes | - |
+| ELIGIBILITY_ENGINE_API_KEY | API key for this service | `changeme` | yes | - |
+| ELIGIBILITY_ENGINE_NEXT_API_KEY | Next API key during rotation | - | optional | - |
 | TLS_CERT_PATH | TLS cert | `./tls/engine-cert.pem` | yes | - |
 | TLS_KEY_PATH | TLS key | `./tls/engine-key.pem` | yes | - |
 | TLS_CA_PATH | TLS CA | `./tls/ca.pem` | optional | - |

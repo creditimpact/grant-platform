@@ -15,7 +15,7 @@ const { validateAgainstSchema } = require('../middleware/formValidation');
 
 const router = express.Router();
 
-const serviceHeaders = { 'X-API-Key': process.env.INTERNAL_API_KEY };
+const { getServiceHeaders } = require('../utils/serviceHeaders');
 const agent = createAgent();
 
 const storage = multer.diskStorage({
@@ -64,7 +64,10 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
       const form = new FormData();
       form.append('file', fs.createReadStream(file.path), file.originalname);
       logger.info(`POST ${analyzerUrl}`, { file: file.originalname }); // SECURITY FIX: sanitized logging
-      const analyzerHeaders = { ...form.getHeaders(), ...serviceHeaders };
+      const analyzerHeaders = {
+        ...form.getHeaders(),
+        ...getServiceHeaders('AI_ANALYZER'),
+      };
       if (req.id) analyzerHeaders['X-Request-Id'] = req.id;
       const resp = await fetch(analyzerUrl, {
         method: 'POST',
@@ -92,7 +95,10 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
     const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'https://localhost:4001';
     const engineUrl = `${engineBase.replace(/\/$/, '')}/check`;
     logger.info(`POST ${engineUrl}`); // SECURITY FIX: sanitized logging
-    const engineHeaders = { 'Content-Type': 'application/json', ...serviceHeaders };
+    const engineHeaders = {
+      'Content-Type': 'application/json',
+      ...getServiceHeaders('ELIGIBILITY_ENGINE'),
+    };
     if (req.id) engineHeaders['X-Request-Id'] = req.id;
     const eligResp = await fetch(engineUrl, {
       method: 'POST',
@@ -116,7 +122,10 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
     const filledForms = [];
     for (const formName of eligibility.requiredForms || []) {
       logger.info(`POST ${agentUrl}`, { form: formName }); // SECURITY FIX: sanitized logging
-      const agentHeaders = { 'Content-Type': 'application/json', ...serviceHeaders };
+      const agentHeaders = {
+        'Content-Type': 'application/json',
+        ...getServiceHeaders('AI_AGENT'),
+      };
       if (req.id) agentHeaders['X-Request-Id'] = req.id;
       const agentResp = await fetch(agentUrl, {
         method: 'POST',

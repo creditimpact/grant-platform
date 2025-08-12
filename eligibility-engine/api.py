@@ -9,12 +9,17 @@ import uuid
 from pathlib import Path
 from prometheus_client import Histogram, CONTENT_TYPE_LATEST, generate_latest
 from common.logger import get_logger, audit_log
-from config import settings  # ENV VALIDATION
+try:
+    from .config import settings  # type: ignore
+except ImportError:  # pragma: no cover
+    from config import settings  # type: ignore
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))
 
-API_KEY = settings.INTERNAL_API_KEY
+
+def get_api_keys() -> list[str]:
+    return [k for k in [settings.ELIGIBILITY_ENGINE_API_KEY, settings.ELIGIBILITY_ENGINE_NEXT_API_KEY] if k]
 
 logger = get_logger(__name__)
 
@@ -64,7 +69,7 @@ if PROM_ENABLED:
 
 async def verify_api_key(request: Request, x_api_key: str = Header(None)):
     ip = request.client.host if request.client else "unknown"
-    if not API_KEY or x_api_key != API_KEY:
+    if x_api_key not in get_api_keys():
         audit_log(logger, "auth_failure", ip=ip, api_key=x_api_key)
         raise HTTPException(status_code=401, detail="Unauthorized")
     audit_log(logger, "auth_success", ip=ip)
