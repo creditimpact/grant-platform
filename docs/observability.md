@@ -16,7 +16,7 @@ without the correct credentials receive **401 Unauthorized**.
 
 ```bash
 export METRICS_BASIC_AUTH=metrics:secret
-curl -u metrics:secret http://localhost:5000/metrics
+curl -u metrics:secret https://localhost:5000/metrics
 ```
 
 When enabled, scrape `/metrics` on each service for Prometheus metrics. Traces are sent to the OTLP endpoint.
