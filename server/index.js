@@ -5,7 +5,6 @@ const env = require('./config/env'); // ENV VALIDATION
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const dotenv = require('dotenv');
 const connectDB = require('./utils/db');
 const path = require('path');
 const fs = require('fs');
@@ -21,8 +20,6 @@ const { metricsMiddleware, register } = process.env.OBSERVABILITY_ENABLED === 't
   : { metricsMiddleware: null, register: null };
 const tracing = require('./observability/tracing');
 
-// ENV VALIDATION: dotenv already loaded in env.js, but keep for safety
-dotenv.config();
 
 // Initialize Express app
 const app = express();

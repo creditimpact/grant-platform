@@ -7,23 +7,29 @@ try:
 except ImportError:  # pragma: no cover
     from config import settings  # type: ignore
 
-# Require explicit credentials and TLS for all connections
-MONGO_URI = settings.MONGO_URI
-MONGO_USER = settings.MONGO_USER
-MONGO_PASS = settings.MONGO_PASS
-MONGO_CA_FILE = settings.MONGO_CA_FILE
+# Require explicit credentials and TLS for all connections.
+# When running tests without database credentials, the client is not created.
+MONGO_URI = getattr(settings, "MONGO_URI", None)
+MONGO_USER = getattr(settings, "MONGO_USER", None)
+MONGO_PASS = getattr(settings, "MONGO_PASS", None)
+MONGO_CA_FILE = getattr(settings, "MONGO_CA_FILE", None)
 
-client = MongoClient(
-    MONGO_URI,
-    username=MONGO_USER,
-    password=MONGO_PASS,
-    tls=True,
-    tlsCAFile=str(MONGO_CA_FILE),
-    authSource=settings.MONGO_AUTH_DB,
-    tlsAllowInvalidCertificates=False,
-)
-db = client["ai_agent"]
-collection = db["session_memory"]
+if MONGO_URI:
+    client = MongoClient(
+        MONGO_URI,
+        username=MONGO_USER,
+        password=MONGO_PASS,
+        tls=True,
+        tlsCAFile=str(MONGO_CA_FILE) if MONGO_CA_FILE else None,
+        authSource=getattr(settings, "MONGO_AUTH_DB", "admin"),
+        tlsAllowInvalidCertificates=False,
+    )
+    db = client["ai_agent"]
+    collection = db["session_memory"]
+else:  # pragma: no cover - db disabled in tests
+    client = None
+    db = None
+    collection = None
 
 
 def load_memory(session_id: str) -> List[Dict[str, Any]]:

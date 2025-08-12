@@ -1,9 +1,10 @@
 // ENV VALIDATION: centralized environment validation without external deps
 const fs = require('fs');
 const { URL } = require('url');
-const dotenv = require('dotenv');
+const { loadVaultSecrets } = require('./vaultClient');
 
-dotenv.config();
+// Load secrets from Vault before validating
+loadVaultSecrets();
 
 function requireString(name) {
   const val = process.env[name];

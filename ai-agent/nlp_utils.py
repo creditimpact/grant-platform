@@ -4,17 +4,9 @@ from datetime import datetime
 from typing import Dict, Tuple, Any, List
 
 try:
-    from dotenv import load_dotenv
-except Exception:  # pragma: no cover - package may be missing
-    def load_dotenv(*args, **kwargs):
-        return False
-
-try:
     import openai  # type: ignore
 except Exception:  # pragma: no cover - openai optional for tests
     openai = None  # type: ignore
-
-load_dotenv()
 try:
     from .config import settings  # type: ignore
 except ImportError:  # pragma: no cover - script execution

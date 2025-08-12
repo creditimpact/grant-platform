@@ -5,11 +5,9 @@ from pathlib import Path
 import json
 import sys
 import os
-from dotenv import load_dotenv
 
 # Resolve project directories and load environment variables
 CURRENT_DIR = Path(__file__).resolve().parent
-load_dotenv(CURRENT_DIR / ".env")
 
 # ENV VALIDATION: load settings before other imports
 
@@ -140,7 +138,7 @@ async def check(
     return results
 
 
-@app.post("/form-fill")
+@app.post("/form-fill", dependencies=[Depends(verify_api_key)])
 async def form_fill(
     request_model: FormFillRequest = Body(
         ...,
@@ -167,7 +165,7 @@ async def form_fill(
     return {"filled_form": filled}
 
 
-@app.post("/preview-form")
+@app.post("/preview-form", dependencies=[Depends(verify_api_key)])
 async def preview_form(body: dict, file: UploadFile | None = None):
     """Preview a form with reasoning before final submission."""
     grant_key = body.get("grant")
@@ -184,7 +182,7 @@ async def preview_form(body: dict, file: UploadFile | None = None):
     return {"filled_form": filled, "reasoning": reasoning, "files": filled.get("files", {})}
 
 
-@app.post("/chat")
+@app.post("/chat", dependencies=[Depends(verify_api_key)])
 async def chat(message: dict):
     """Conversational endpoint backed by the LLM."""
     mode = message.get("mode")
