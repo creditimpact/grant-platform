@@ -1,8 +1,23 @@
 # Environment Variables
 
-For internal authentication each service defines a dedicated `*_API_KEY` along with an
-optional `*_NEXT_API_KEY` used during key rotation. When both are provided, requests
-with either key are accepted.
+Secrets for all backend services are stored in Hashicorp Vault. Each service expects
+`VAULT_ADDR` and a service specific `VAULT_SECRET_PATH` to be defined. `VAULT_TOKEN`
+may be supplied for local development but should come from the runtime environment in
+production. The keys listed below reside inside the Vault paths and are not read from
+`.env` files.
+
+## Vault Configuration
+| Variable | Purpose | Required |
+| --- | --- | --- |
+| VAULT_ADDR | Vault server URL | yes |
+| VAULT_SECRET_PATH | KV v2 path containing service secrets | yes |
+| VAULT_TOKEN | Token used for authentication | optional (use runtime secrets) |
+
+### Secret rotation
+Secrets can be rotated by updating the values stored at `VAULT_SECRET_PATH` and
+restarting the consuming service. API keys continue to support the
+`*_NEXT_API_KEY` convention for seamless rotation where both old and new keys are
+valid during the transition period.
 
 ## Server (Node.js)
 | Variable | Purpose | Example | Required | Default |

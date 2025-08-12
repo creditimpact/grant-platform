@@ -47,18 +47,18 @@ def Depends(func):
 
 
 class FastAPI:
-    def __init__(self, title: str | None = None):
+    def __init__(self, title: str | None = None, **kwargs):
         self.routes: Dict[str, Callable] = {}
 
-    def post(self, path: str):
+    def post(self, path: str, **kwargs):
         def decorator(func: Callable):
             self.routes[path] = func
             return func
 
         return decorator
 
-    def get(self, path: str):
-        return self.post(path)
+    def get(self, path: str, **kwargs):
+        return self.post(path, **kwargs)
 
 
 class Response:

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-require('dotenv').config(); // טען את קובץ ה־.env (אם זה לא נטען כבר ב־index.js)
 
 const connectDB = async () => {
   try {

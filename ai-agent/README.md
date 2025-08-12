@@ -11,20 +11,10 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Create a `.env` file in this directory (you can copy from `.env.example`) and set
-credentials for an authenticated, TLS-enabled MongoDB connection along with an
-optional OpenAI API key:
-
-```
-MONGO_URI=mongodb://mongo:27017/ai_agent?authSource=admin&tls=true
-MONGO_USER=agentUser
-MONGO_PASS=strongPassword
-MONGO_CA_FILE=/path/to/ca.pem
-OPENAI_API_KEY=your_api_key_here
-```
-
-The service uses [python-dotenv](https://github.com/theskumar/python-dotenv) to
-load this file automatically.
+Secrets are loaded from Vault. Set `VAULT_ADDR`, `VAULT_TOKEN` (for local
+testing) and `VAULT_SECRET_PATH` to point at a KV v2 location containing values
+such as `MONGO_URI`, `MONGO_USER`, `MONGO_PASS`, `MONGO_CA_FILE` and
+`OPENAI_API_KEY`.
 
 ## Endpoints
 

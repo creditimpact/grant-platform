@@ -1,6 +1,9 @@
 # ENV VALIDATION: centralized env settings for ai-agent
-from pathlib import Path
 from pydantic import BaseSettings, AnyUrl, FilePath
+from common.vault import load_vault_secrets
+
+# Load secrets from Vault before settings are evaluated
+load_vault_secrets()
 
 class Settings(BaseSettings):
     AI_AGENT_API_KEY: str
@@ -17,7 +20,6 @@ class Settings(BaseSettings):
     ENABLE_DEBUG: bool = False
 
     class Config:
-        env_file = Path(__file__).resolve().parent / ".env"
         case_sensitive = True
 
 settings = Settings()
