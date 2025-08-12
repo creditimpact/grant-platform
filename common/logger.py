@@ -79,7 +79,8 @@ def get_logger(name: str) -> logging.Logger:
         if os.getenv("ENVIRONMENT") == "production" and level == "INFO":
             level = "WARNING"
         logger.setLevel(level)
-        logger.propagate = False
+        # Allow log records to propagate so tests can capture them via caplog
+        logger.propagate = True
     return logger
 
 def audit_log(logger: logging.Logger, action: str, **details: Any) -> None:

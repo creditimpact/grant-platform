@@ -9,6 +9,9 @@ import test_env_setup  # ENV VALIDATION: seed env vars
 def get_client():
     import main as main_module
     reload(main_module)
+    # Ensure the reloaded module picks up the test API key
+    main_module.settings.AI_AGENT_API_KEY = os.environ["AI_AGENT_API_KEY"]
+    main_module.settings.AI_AGENT_NEXT_API_KEY = None
     return TestClient(main_module.app)
 
 

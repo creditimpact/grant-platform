@@ -154,6 +154,18 @@ def _fill_template(
     reasoning: list[str] | None = None,
 ) -> Dict[str, Any]:
     fields = template.get("fields", {})
+    # Some templates provide fields as lists (e.g. complex government forms).
+    # In that case we simply recurse into any nested dictionaries but otherwise
+    # leave the structure untouched.
+    if isinstance(fields, list):
+        processed = []
+        for item in fields:
+            if isinstance(item, dict):
+                processed.append(_fill_template(item, data, reasoning))
+            else:
+                processed.append(item)
+        template["fields"] = processed
+        fields = {}
     optional = template.get("optional_fields", {})
     computed = template.get("computed_fields", {})
     conditional = template.get("conditional_fields", {})
@@ -199,11 +211,26 @@ def _fill_template(
     merged: Dict[str, Any] = {}
     attachments: Dict[str, str] = {}
     sources: Dict[str, str] = {}
+    FIELD_KEYS = {
+        "default",
+        "required",
+        "type",
+        "depends_on",
+        "prompt",
+        "show_if",
+        "required_if",
+        "example",
+        "expected_file",
+    }
     for k, spec in fields.items():
+        if isinstance(spec, dict) and not (FIELD_KEYS & spec.keys()):
+            merged[k] = _fill_template(spec, data, reasoning)
+            continue
         if isinstance(spec, dict):
             default = spec.get("default", "")
             required = spec.get("required", True)
             ftype = spec.get("type", "text")
+            ftype = {"string": "text", "enum": "dropdown", "boolean": "checkbox"}.get(ftype, ftype)
             depends = spec.get("depends_on")
             prompt = spec.get("prompt")
             show_if = spec.get("show_if")
@@ -240,13 +267,17 @@ def _fill_template(
                 pass
 
         value = data.get(k)
-        if k in data:
-            if reasoning is not None:
-                reasoning.append(f"{k} provided by user")
+        if k in data and reasoning is not None:
+            reasoning.append(f"{k} provided by user")
         if isinstance(value, str):
             _, value = normalize_text_field(k, value)
         if value is None:
-            value = optional.get(k, default if not required else "")
+            if k in optional:
+                value = optional[k]
+            else:
+                value = default
+                if value is None and required:
+                    value = ""
 
         if ftype in {"text", "textarea"} and not value:
             if prompt:
@@ -312,6 +343,18 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
     path = FORM_DIR / f"{form_key}.json"
     with path.open("r", encoding="utf-8") as f:
         template = json.load(f)
+    # Some templates wrap the actual form definition under a top-level "form"
+    # key.  Normalise to a structure with "fields" at the root so the rest of
+    # the logic can operate consistently.
+    if "form" in template and "fields" not in template:
+        template = template["form"]
+    if isinstance(template.get("fields"), list):
+        flist = template["fields"]
+        template["fields"] = {
+            item["name"]: {k: v for k, v in item.items() if k != "name"}
+            for item in flist
+            if isinstance(item, dict) and "name" in item
+        }
     reasoning: list[str] = []
     filled = _fill_template(template, data, reasoning)
     if reasoning:

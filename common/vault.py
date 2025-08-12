@@ -33,7 +33,10 @@ def load_vault_secrets():
 
     secret_response = client.secrets.kv.v2.read_secret_version(path=secret_path)
     data = secret_response["data"]["data"]
-    # update environment so existing configuration loaders can use it
+    # update environment so existing configuration loaders can use it.  Vault
+    # secrets should take precedence over any existing environment variable so
+    # that rotating secrets in Vault is reflected immediately in the running
+    # application and in the tests.
     for k, v in data.items():
-        os.environ.setdefault(k, str(v))
+        os.environ[k] = str(v)
     return data

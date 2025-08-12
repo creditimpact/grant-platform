@@ -7,6 +7,10 @@ class HTTPException(Exception):
         self.status_code = status_code
         self.detail = detail
 
+import asyncio
+from typing import Any, Dict, Callable
+from types import SimpleNamespace
+
 
 class UploadFile:
     def __init__(self, filename: str, content: bytes):
@@ -21,6 +25,8 @@ class Request:
     def __init__(self, json_data: Any = None, headers: Dict[str, str] | None = None):
         self._json = json_data or {}
         self.headers = headers or {}
+        self.client = SimpleNamespace(host="test")
+        self.query_params: Dict[str, Any] = {}
 
     async def json(self) -> Any:
         return self._json
@@ -49,6 +55,7 @@ def Depends(func):
 class FastAPI:
     def __init__(self, title: str | None = None, **kwargs):
         self.routes: Dict[str, Callable] = {}
+        self.dependencies = [d for d in kwargs.get("dependencies", [])]
 
     def post(self, path: str, **kwargs):
         def decorator(func: Callable):
@@ -81,6 +88,38 @@ class TestClient:
         if files:
             _name, (filename, file_obj, _type) = next(iter(files.items()))
             file = UploadFile(filename, file_obj.read())
-        coro = self.app.routes[path](request, file=file, data=data)
-        result = asyncio.run(coro)
-        return Response(result)
+        try:
+            for dep in getattr(self.app, "dependencies", []):
+                if asyncio.iscoroutinefunction(dep):
+                    asyncio.run(dep(request, request.headers.get("X-API-Key")))
+                else:
+                    dep(request, request.headers.get("X-API-Key"))
+            coro = self.app.routes[path](request, file=file, data=data)
+            result = asyncio.run(coro)
+            return Response(result)
+        except HTTPException as exc:
+            resp = Response({"detail": exc.detail})
+            resp.status_code = exc.status_code
+            return resp
+
+    def get(self, path: str, headers: Dict[str, str] | None = None):
+        request = Request(headers=headers)
+        handler = self.app.routes[path]
+        try:
+            for dep in getattr(self.app, "dependencies", []):
+                if asyncio.iscoroutinefunction(dep):
+                    asyncio.run(dep(request, request.headers.get("X-API-Key")))
+                else:
+                    dep(request, request.headers.get("X-API-Key"))
+            if asyncio.iscoroutinefunction(handler):
+                result = asyncio.run(handler(request))
+            else:
+                try:
+                    result = handler(request)
+                except TypeError:
+                    result = handler()
+            return Response(result)
+        except HTTPException as exc:
+            resp = Response({"detail": exc.detail})
+            resp.status_code = exc.status_code
+            return resp
