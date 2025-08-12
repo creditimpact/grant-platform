@@ -60,11 +60,17 @@ AI_AGENT_URL=https://ai-agent:5001
 
 ## Authentication
 
-Internal Python services (AI Agent, AI Analyzer, Eligibility Engine) require an `X-API-Key` header that matches `INTERNAL_API_KEY`. Example:
+Internal Python services (AI Agent, AI Analyzer, Eligibility Engine) require an `X-API-Key`
+header that matches the target service's API key (e.g. `AI_AGENT_API_KEY`). During key
+rotation the `*_NEXT_API_KEY` value is also accepted. Example:
 
 ```bash
 curl -k -H "X-API-Key: your_key" https://localhost:5001/status
 ```
+
+To rotate a key, deploy the new value via the `*_NEXT_API_KEY` variable on the target
+service and its callers. Requests are accepted with either key. Once callers are
+updated to use the new key, promote it to `*_API_KEY` and remove the old value.
 
 Requests without a key return **401 Unauthorized**. The Express server protects routes under `/api` using JWT bearer tokens:
 

@@ -2,7 +2,10 @@
 from typing import Dict, Any, List
 from pymongo import MongoClient
 import os
-from config import settings  # ENV VALIDATION
+try:
+    from .config import settings  # type: ignore
+except ImportError:  # pragma: no cover
+    from config import settings  # type: ignore
 
 # Require explicit credentials and TLS for all connections
 MONGO_URI = settings.MONGO_URI

@@ -9,7 +9,8 @@ and parses simple business fields. The `/analyze` endpoint accepts `application/
 Uploads are protected with several layers of security:
 
 * **API key authentication** – requests must include an `X-API-Key` header that matches
-  the `INTERNAL_API_KEY` environment variable. Unauthorized requests return `401`.
+  the `AI_ANALYZER_API_KEY` environment variable (or `AI_ANALYZER_NEXT_API_KEY` during
+  rotation). Unauthorized requests return `401`.
 * **File size limit** – files larger than **5MB** are rejected with a `413` error.
 * **Virus scanning** – uploaded files are scanned with `clamscan` (path configurable via `CLAMSCAN_PATH`). Infected files
   result in a `400` response. If the scanner is unavailable the service responds

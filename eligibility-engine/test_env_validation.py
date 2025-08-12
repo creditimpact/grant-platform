@@ -2,14 +2,14 @@
 import importlib
 import pytest
 
-REQUIRED = ["INTERNAL_API_KEY", "TLS_CERT_PATH", "TLS_KEY_PATH"]
+REQUIRED = ["ELIGIBILITY_ENGINE_API_KEY", "TLS_CERT_PATH", "TLS_KEY_PATH"]
 
 
 def minimal_env(tmp_path):
     f = tmp_path / "a.pem"
     f.write_text("x")
     return {
-        "INTERNAL_API_KEY": "k",
+        "ELIGIBILITY_ENGINE_API_KEY": "k",
         "TLS_CERT_PATH": str(f),
         "TLS_KEY_PATH": str(f),
     }
@@ -20,7 +20,7 @@ def test_missing_env(monkeypatch, tmp_path):
     for key in REQUIRED:
         monkeypatch.delenv(key, raising=False)
     for k, v in env.items():
-        if k != "INTERNAL_API_KEY":
+        if k != "ELIGIBILITY_ENGINE_API_KEY":
             monkeypatch.setenv(k, v)
     with pytest.raises(Exception):
         importlib.reload(importlib.import_module('config'))
