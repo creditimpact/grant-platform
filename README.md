@@ -140,15 +140,11 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
    npm install
    node server/index.js
    ```
-   Create a `.env` file in the repository root (copy from `.env.example`) and set
-   credentials for a TLS-enabled MongoDB connection along with other service URLs:
-
-   ```
-   MONGO_URI=mongodb://mongo:27017/grants?authSource=admin&tls=true
-   MONGO_USER=serverUser
-   MONGO_PASS=strongPassword
-   MONGO_CA_FILE=/path/to/ca.pem
-   ```
+   Secrets are now retrieved from Hashicorp Vault. Populate Vault with the
+   required keys and set `VAULT_ADDR`, `VAULT_TOKEN` (for local testing) and
+   `VAULT_SECRET_PATH` pointing at the secret mount for the server.
+   Non‑secret configuration such as service URLs can still be supplied via
+   regular environment variables.
 
 2. Start the AI analyzer service
    ```bash
@@ -162,9 +158,9 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
    pip install -r requirements.txt
    python -m uvicorn main:app --port 5001
    ```
-   The AI agent requires its own `.env` file (see `ai-agent/.env.example`) with
-   authenticated TLS settings for MongoDB (`MONGO_URI`, `MONGO_USER`,
-   `MONGO_PASS`, and `MONGO_CA_FILE`) and, optionally, `OPENAI_API_KEY`.
+   The AI agent reads all sensitive values from Vault as well. Configure the
+   agent's `VAULT_SECRET_PATH` to point at its secret namespace containing API
+   keys and database credentials.
 4. Start the eligibility engine
    ```bash
    cd eligibility-engine

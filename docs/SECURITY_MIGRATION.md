@@ -2,6 +2,13 @@
 
 This document summarizes the steps required to migrate existing deployments to the hardened security model implemented in this repository.
 
+## Secrets Management
+1. Provision a Hashicorp Vault cluster and create KV v2 mounts for each service.
+2. Store all API keys, JWT secrets, database credentials and TLS paths within the
+   appropriate `VAULT_SECRET_PATH`.
+3. Configure services with `VAULT_ADDR` and the path for their secrets. Tokens
+   should be supplied via the deployment environment (not in source control).
+
 ## JWT to Cookies
 1. Deploy new backend that issues `accessToken` (10 min) and `refreshToken` (7 days) cookies marked `HttpOnly`, `Secure`, and `SameSite=Strict`.
 2. Frontend requests must be sent with `credentials: 'include'`.
