@@ -21,9 +21,11 @@ const connectDB = async () => {
       tls: true,
       tlsCAFile: process.env.MONGO_CA_FILE,
     });
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    const logger = require('../utils/logger');
+    logger.info('mongo_connected', { host: conn.connection.host });
   } catch (error) {
-    console.error(`❌ MongoDB Connection Error: ${error.message}`);
+    const logger = require('../utils/logger');
+    logger.error('mongo_error', { error: error.message });
     process.exit(1); // עצור את התהליך אם החיבור נכשל
   }
 };

@@ -1,14 +1,33 @@
 import logging
 import json
 import os
+import re
+import hashlib
 from typing import Any, Dict
 
-SENSITIVE_FIELDS = {"password", "token", "api_key", "ssn"}
+SENSITIVE_FIELDS = {"password", "token", "api_key", "ssn", "email", "name", "address", "ip", "phone"}
+EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+
+def _anonymize_ip(ip: str) -> str:
+    return hashlib.sha256(ip.encode()).hexdigest()[:8]
+
+def _redact_value(key: str, value: Any) -> Any:
+    if key in SENSITIVE_FIELDS:
+        if key == "ip" and isinstance(value, str):
+            return _anonymize_ip(value)
+        return "[REDACTED]"
+    if isinstance(value, str):
+        if IP_RE.search(value):
+            return _anonymize_ip(value)
+        if EMAIL_RE.search(value):
+            return "[REDACTED]"
+    return _redact(value)
 
 def _redact(value: Any) -> Any:
     """Recursively redact sensitive fields from dictionaries."""
     if isinstance(value, dict):
-        return {k: ("[REDACTED]" if k in SENSITIVE_FIELDS else _redact(v)) for k, v in value.items()}
+        return {k: _redact_value(k, v) for k, v in value.items()}
     if isinstance(value, list):
         return [_redact(v) for v in value]
     return value
@@ -56,7 +75,10 @@ def get_logger(name: str) -> logging.Logger:
         handler = logging.StreamHandler()
         handler.setFormatter(JsonFormatter())
         logger.addHandler(handler)
-        logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
+        level = os.getenv("LOG_LEVEL", "INFO")
+        if os.getenv("ENVIRONMENT") == "production" and level == "INFO":
+            level = "WARNING"
+        logger.setLevel(level)
         logger.propagate = False
     return logger
 

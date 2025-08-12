@@ -1,8 +1,9 @@
 const fs = require('fs');
+const logger = require('../utils/logger');
 const text = fs.readFileSync(process.argv[2], 'utf8');
 const match = text.match(/# all files\s*\|\s*(\d+\.\d+)\s*\|\s*(\d+\.\d+)\s*\|\s*(\d+\.\d+)\s*\|/);
 if (!match) {
-  console.error('Coverage summary not found');
+  logger.error('coverage_summary_missing');
   process.exit(1);
 }
 const lines = parseFloat(match[1]);
@@ -10,8 +11,8 @@ const branches = parseFloat(match[2]);
 const funcs = parseFloat(match[3]);
 const threshold = 50; // coverage threshold
 if (lines < threshold || branches < threshold || funcs < threshold) {
-  console.error(`Coverage below threshold: lines ${lines}, branches ${branches}, funcs ${funcs}`);
+  logger.error('coverage_below_threshold', { lines, branches, funcs });
   process.exit(1);
 }
-console.log(`Coverage check passed: lines ${lines}, branches ${branches}, funcs ${funcs}`);
+logger.info('coverage_check_passed', { lines, branches, funcs });
 

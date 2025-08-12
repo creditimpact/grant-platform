@@ -26,7 +26,7 @@ router.get('/case/questionnaire', auth, async (req, res) => {
 });
 
 router.post('/case/questionnaire', auth, validate(schemas.caseQuestionnaire), async (req, res) => { // SECURITY FIX: schema validation
-  logger.info('POST /case/questionnaire', { user: req.user.id, body: req.body }); // SECURITY FIX: sanitized logging
+  logger.info('POST /case/questionnaire', { user: req.user.id, fields: Object.keys(req.body || {}) }); // SECURITY FIX: sanitized logging
   try {
     const { data, missing, invalid } = normalizeQuestionnaire(req.body);
     if (missing.length || invalid.length) {
@@ -39,7 +39,7 @@ router.post('/case/questionnaire', auth, validate(schemas.caseQuestionnaire), as
       }
       return res.status(400).json({ message, missing, invalid });
     }
-    logger.info('questionnaire validation passed', { normalized: data }); // SECURITY FIX: sanitized logging
+    logger.info('questionnaire validation passed', { fields: Object.keys(data || {}) }); // SECURITY FIX: sanitized logging
     const c = await getCase(req.user.id);
     c.answers = { ...c.answers, ...data };
     c.documents = await computeDocuments(c.answers);
@@ -145,7 +145,7 @@ router.get('/eligibility-report', auth, async (req, res) => {
 });
 
 router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), async (req, res) => { // SECURITY FIX: schema validation
-  logger.info('POST /eligibility-report', { user: req.user.id, body: req.body }); // SECURITY FIX: sanitized logging
+  logger.info('POST /eligibility-report', { user: req.user.id, fields: Object.keys(req.body || {}) }); // SECURITY FIX: sanitized logging
 
   const c = await getCase(req.user.id, false);
   if (!c) return res.status(400).json({ message: 'No case found' });
@@ -162,7 +162,7 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
       }
       return res.status(400).json({ message, missing, invalid });
     }
-    logger.info('eligibility-report validation passed', { normalized: data }); // SECURITY FIX: sanitized logging
+    logger.info('eligibility-report validation passed', { fields: Object.keys(data || {}) }); // SECURITY FIX: sanitized logging
 
     c.answers = { ...c.answers, ...data };
 
@@ -187,18 +187,17 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
         });
         if (!resp.ok) {
           const text = await resp.text();
-          logger.error('AI analyzer error', { status: resp.status, details: text }); // SECURITY FIX: sanitized logging
+          logger.error('AI analyzer error', { status: resp.status, details: text.substring(0, 100) }); // SECURITY FIX: sanitized logging
           return res
             .status(502)
             .json({ message: `AI analyzer error ${resp.status}`, details: text });
         }
         const fields = await resp.json();
-        logger.info('AI analyzer response', fields); // SECURITY FIX: sanitized logging
+        logger.info('AI analyzer response', { fields: Object.keys(fields || {}) }); // SECURITY FIX: sanitized logging
         extracted = { ...extracted, ...fields };
       }
     }
     const normalized = { ...c.answers, ...extracted };
-    logger.info('Normalized data', normalized); // SECURITY FIX: sanitized logging
 
     const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'https://localhost:4001';
     const engineUrl = `${engineBase.replace(/\/$/, '')}/check`;
@@ -215,7 +214,7 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
     });
     if (!eligResp.ok) {
       const text = await eligResp.text();
-      logger.error('Eligibility engine error', { status: eligResp.status, details: text }); // SECURITY FIX: sanitized logging
+      logger.error('Eligibility engine error', { status: eligResp.status, details: text.substring(0, 100) }); // SECURITY FIX: sanitized logging
       return res
         .status(502)
         .json({
@@ -224,7 +223,7 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
         });
     }
     const eligibility = await eligResp.json();
-    logger.info('Eligibility engine response', eligibility); // SECURITY FIX: sanitized logging
+    logger.info('Eligibility engine response', { fields: Object.keys(eligibility || {}) }); // SECURITY FIX: sanitized logging
 
     // --- AI Agent form filling ---
     const agentBase = process.env.AI_AGENT_URL || 'https://localhost:5001';
@@ -244,7 +243,7 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
       });
       if (!agentResp.ok) {
         const text = await agentResp.text();
-        logger.error('AI agent form-fill error', { status: agentResp.status, details: text }); // SECURITY FIX: sanitized logging
+        logger.error('AI agent form-fill error', { status: agentResp.status, details: text.substring(0, 100) }); // SECURITY FIX: sanitized logging
         return res
           .status(502)
           .json({
@@ -253,7 +252,7 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
           });
       }
       const agentData = await agentResp.json();
-      logger.info('AI agent response', agentData); // SECURITY FIX: sanitized logging
+      logger.info('AI agent response', { fields: Object.keys(agentData || {}) }); // SECURITY FIX: sanitized logging
       const tmpl = await getLatestTemplate(formName);
       const version = tmpl ? tmpl.version : 1;
       const formData = agentData.filled_form || agentData;
