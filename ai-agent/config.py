@@ -3,7 +3,8 @@ from pathlib import Path
 from pydantic import BaseSettings, AnyUrl, FilePath
 
 class Settings(BaseSettings):
-    INTERNAL_API_KEY: str
+    AI_AGENT_API_KEY: str
+    AI_AGENT_NEXT_API_KEY: str | None = None
     OPENAI_API_KEY: str
     MONGO_URI: AnyUrl
     MONGO_USER: str

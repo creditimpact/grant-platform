@@ -12,7 +12,6 @@ CURRENT_DIR = Path(__file__).resolve().parent
 load_dotenv(CURRENT_DIR / ".env")
 
 # ENV VALIDATION: load settings before other imports
-from config import settings
 
 # ensure local imports work regardless of working directory
 sys.path.insert(0, str(CURRENT_DIR))
@@ -38,15 +37,22 @@ from session_memory import append_memory, get_missing_fields, save_draft_form, g
 from nlp_utils import llm_semantic_inference, llm_complete
 from grants_loader import load_grants
 
-API_KEY = settings.INTERNAL_API_KEY
+try:
+    from .config import settings  # type: ignore
+except ImportError:  # pragma: no cover - script execution
+    from config import settings  # type: ignore
+
+
+def get_api_keys() -> list[str]:
+    return [k for k in [settings.AI_AGENT_API_KEY, settings.AI_AGENT_NEXT_API_KEY] if k]
 
 logger = get_logger(__name__)
 
 
 async def verify_api_key(request: Request, x_api_key: str = Header(None)):
-    """Ensure requests include the expected API key."""
+    """Ensure requests include one of the valid API keys."""
     ip = request.client.host if request.client else "unknown"
-    if not API_KEY or x_api_key != API_KEY:
+    if x_api_key not in get_api_keys():
         audit_log(logger, "auth_failure", ip=ip, api_key=x_api_key)
         raise HTTPException(status_code=401, detail="Unauthorized")
     audit_log(logger, "auth_success", ip=ip)

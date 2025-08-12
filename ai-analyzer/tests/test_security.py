@@ -1,6 +1,6 @@
 import os
 from importlib import reload
-from fastapi.testclient import TestClient
+from fastapi import TestClient
 from fastapi import HTTPException
 import env_setup  # ENV VALIDATION: seed env vars
 

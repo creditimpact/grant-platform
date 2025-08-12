@@ -57,7 +57,10 @@ function getBool(name, def = false) {
 
 // Required secrets
 requireString('JWT_SECRET');
-requireString('INTERNAL_API_KEY');
+requireString('SERVER_API_KEY');
+requireString('AI_AGENT_API_KEY');
+requireString('AI_ANALYZER_API_KEY');
+requireString('ELIGIBILITY_ENGINE_API_KEY');
 requireString('OPENAI_API_KEY');
 
 // URLs
