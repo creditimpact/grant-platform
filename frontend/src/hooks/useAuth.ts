@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import api from '@/lib/api'; // ← Axios instance עם baseURL מוגדר
+import { safeWarn } from '@/utils/logger';
 
 interface AuthState {
   user: any;
@@ -40,7 +41,7 @@ export const useAuth = create<AuthState>((set) => ({
       const res = await api.get('/auth/me');
       set({ user: res.data });
     } catch (err) {
-      console.warn('Auth check failed:', err);
+      safeWarn('Auth check failed', err);
       set({ user: null });
     }
   },

@@ -12,11 +12,6 @@ const parseCookies = require('../utils/cookies');
 
 const router = express.Router();
 
-// Quick test route to verify router is active
-router.get('/test', (req, res) => {
-  res.send('Auth route is active!');
-});
-
 // SECURITY FIX: provide CSRF token for initial auth requests
 router.get('/csrf-token', (req, res) => {
   const csrfToken = generateCsrfToken();

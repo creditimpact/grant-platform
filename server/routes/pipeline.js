@@ -3,7 +3,7 @@ const multer = require('multer');
 const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
-const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
+const fetchFn = global.pipelineFetch || (global.fetch ? global.fetch.bind(global) : (...args) => import('node-fetch').then(({ default: f }) => f(...args)));
 const createAgent = require('../utils/tlsAgent');
 const auth = require('../middleware/authMiddleware');
 const { createCase, updateCase, getCase } = require('../utils/pipelineStore');
@@ -69,7 +69,7 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
         ...getServiceHeaders('AI_ANALYZER'),
       };
       if (req.id) analyzerHeaders['X-Request-Id'] = req.id;
-      const resp = await fetch(analyzerUrl, {
+      const resp = await fetchFn(analyzerUrl, {
         method: 'POST',
         body: form,
         headers: analyzerHeaders,
@@ -99,7 +99,7 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
       ...getServiceHeaders('ELIGIBILITY_ENGINE'),
     };
     if (req.id) engineHeaders['X-Request-Id'] = req.id;
-    const eligResp = await fetch(engineUrl, {
+    const eligResp = await fetchFn(engineUrl, {
       method: 'POST',
       headers: engineHeaders,
       body: JSON.stringify(normalized),
@@ -126,7 +126,7 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
         ...getServiceHeaders('AI_AGENT'),
       };
       if (req.id) agentHeaders['X-Request-Id'] = req.id;
-      const agentResp = await fetch(agentUrl, {
+      const agentResp = await fetchFn(agentUrl, {
         method: 'POST',
         headers: agentHeaders,
         body: JSON.stringify({ form_name: formName, user_payload: normalized }),

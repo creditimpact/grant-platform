@@ -1,7 +1,6 @@
 // ENV VALIDATION: helper to seed required env vars for tests
 const dummy = __filename;
 process.env.JWT_SECRET = 'test';
-process.env.SERVER_API_KEY = 'test';
 process.env.AI_AGENT_API_KEY = 'test';
 process.env.AI_ANALYZER_API_KEY = 'test';
 process.env.ELIGIBILITY_ENGINE_API_KEY = 'test';

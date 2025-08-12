@@ -1,3 +1,5 @@
+const logger = require('../utils/logger');
+
 let sdk;
 function init() {
   if (process.env.OTEL_ENABLED === 'true') {
@@ -21,7 +23,7 @@ function init() {
       });
       sdk.start();
     } catch (e) {
-      console.error('OTEL init failed', e);
+      logger.error('otel_init_failed', { error: e.message });
     }
   }
 }

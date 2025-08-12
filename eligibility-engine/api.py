@@ -104,7 +104,8 @@ async def check_eligibility(request: Request):
         logger.info("eligibility_check", extra={"fields": list(data.keys())})
         return result
     except Exception as e:
-        return {"error": str(e)}
+        logger.error("eligibility_check_failed", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail="internal error")
 
 
 @app.get("/grants")
