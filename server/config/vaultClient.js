@@ -1,12 +1,13 @@
 import dotenv from 'dotenv';
 import Vault from 'node-vault';
+import http from 'http';
 import https from 'https';
 import { URL } from 'url';
 
 // טוען את משתני הסביבה מקובץ .env
 dotenv.config();
 
-// יצירת לקוח Vault עם הגדרות מהסביבה
+// יצירת לקוח Vault
 const vault = Vault({
   apiVersion: 'v1',
   endpoint: process.env.VAULT_ADDR || 'http://127.0.0.1:8200',
@@ -14,9 +15,8 @@ const vault = Vault({
 });
 
 /**
- * טוען סודות מ-Vault באמצעות קריאה ישירה ב-HTTPS.
- * מבצע בדיקה ש-VAULT_ADDR משתמש בפרוטוקול HTTPS בלבד.
- * מטען את הסודות ל-process.env ומטפל בשגיאות בצורה סינכרונית.
+ * טוען סודות מ-Vault
+ * תומך גם ב-http (לסביבת פיתוח) וגם ב-https (לפרודקשן)
  */
 function loadVaultSecrets() {
   const addr = process.env.VAULT_ADDR;
@@ -29,15 +29,17 @@ function loadVaultSecrets() {
 
   const url = new URL(`/v1/${secretPath}`, addr);
 
-  if (url.protocol !== 'https:') {
-    throw new Error('VAULT_ADDR must use https protocol');
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new Error('VAULT_ADDR must use http or https protocol');
   }
+
+  const client = url.protocol === 'https:' ? https : http;
 
   let error;
   const sab = new SharedArrayBuffer(4);
   const view = new Int32Array(sab);
 
-  const req = https.request(
+  const req = client.request(
     url,
     { headers: { 'X-Vault-Token': token } },
     (res) => {
@@ -51,6 +53,7 @@ function loadVaultSecrets() {
             const json = JSON.parse(body);
             const data = json.data?.data ?? json.data ?? {};
             Object.assign(process.env, data);
+            console.log(`✅ Loaded secrets from Vault path: ${secretPath}`);
           } catch (e) {
             error = new Error(`Invalid Vault response: ${e.message}`);
           }
