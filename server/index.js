@@ -56,8 +56,11 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
-  if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
-    return res.redirect('https://' + req.headers.host + req.originalUrl);
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+    logger.warn('insecure_request', { host: req.headers.host, url: req.originalUrl });
+    if (process.env.NODE_ENV === 'production') {
+      return res.redirect('https://' + req.headers.host + req.originalUrl);
+    }
   }
   next();
 });

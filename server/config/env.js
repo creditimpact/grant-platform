@@ -21,6 +21,17 @@ function requireURL(name) {
   }
 }
 
+function requireHTTPSURL(name) {
+  const val = requireString(name);
+  try {
+    const url = new URL(val);
+    if (url.protocol !== 'https:') throw new Error();
+    return val;
+  } catch {
+    throw new Error(`Invalid HTTPS URL for environment variable ${name}`);
+  }
+}
+
 function requirePath(name) {
   const val = requireString(name);
   if (!fs.existsSync(val)) {
@@ -50,10 +61,10 @@ requireString('INTERNAL_API_KEY');
 requireString('OPENAI_API_KEY');
 
 // URLs
-requireURL('FRONTEND_URL');
-requireURL('ELIGIBILITY_ENGINE_URL');
-requireURL('AI_ANALYZER_URL');
-requireURL('AI_AGENT_URL');
+requireHTTPSURL('FRONTEND_URL');
+requireHTTPSURL('ELIGIBILITY_ENGINE_URL');
+requireHTTPSURL('AI_ANALYZER_URL');
+requireHTTPSURL('AI_AGENT_URL');
 
 // MongoDB
 requireURL('MONGO_URI');
