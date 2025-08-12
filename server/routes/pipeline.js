@@ -77,18 +77,17 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
       });
       if (!resp.ok) {
         const text = await resp.text();
-        logger.error('AI analyzer error', { status: resp.status, details: text }); // SECURITY FIX: sanitized logging
+        logger.error('AI analyzer error', { status: resp.status, details: text.substring(0, 100) }); // SECURITY FIX: sanitized logging
         await updateCase(caseId, { status: 'error', error: text });
         return res
           .status(502)
           .json({ message: `AI analyzer error ${resp.status}`, details: text });
       }
       const fields = await resp.json();
-      logger.info('AI analyzer response', fields); // SECURITY FIX: sanitized logging
+      logger.info('AI analyzer response', { fields: Object.keys(fields || {}) }); // SECURITY FIX: sanitized logging
       extracted = { ...extracted, ...fields };
     }
     const normalized = { ...req.body, ...extracted };
-    logger.info('Normalized data', normalized); // SECURITY FIX: sanitized logging
     await updateCase(caseId, { status: 'analyzed', normalized });
 
     // ---- Eligibility Engine ----
@@ -108,12 +107,12 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
     });
     if (!eligResp.ok) {
       const text = await eligResp.text();
-      logger.error('Eligibility engine error', { status: eligResp.status, details: text }); // SECURITY FIX: sanitized logging
+      logger.error('Eligibility engine error', { status: eligResp.status, details: text.substring(0, 100) }); // SECURITY FIX: sanitized logging
       await updateCase(caseId, { status: 'error', error: text });
       return res.status(502).json({ message: `Eligibility engine error ${eligResp.status}`, details: text });
     }
     const eligibility = await eligResp.json();
-    logger.info('Eligibility engine response', eligibility); // SECURITY FIX: sanitized logging
+    logger.info('Eligibility engine response', { fields: Object.keys(eligibility || {}) }); // SECURITY FIX: sanitized logging
     await updateCase(caseId, { status: 'checked', eligibility });
 
     // ---- AI Agent form filling ----
@@ -135,14 +134,14 @@ router.post('/submit-case', auth, upload.any(), validate(schemas.pipelineSubmit)
       });
       if (!agentResp.ok) {
         const text = await agentResp.text();
-        logger.error('AI agent form-fill error', { status: agentResp.status, details: text }); // SECURITY FIX: sanitized logging
+        logger.error('AI agent form-fill error', { status: agentResp.status, details: text.substring(0, 100) }); // SECURITY FIX: sanitized logging
         await updateCase(caseId, { status: 'error', error: text });
         return res
           .status(502)
           .json({ message: `AI agent form-fill error ${agentResp.status}`, details: text });
       }
       const agentData = await agentResp.json();
-      logger.info('AI agent response', agentData); // SECURITY FIX: sanitized logging
+      logger.info('AI agent response', { fields: Object.keys(agentData || {}) }); // SECURITY FIX: sanitized logging
       const tmpl = await getLatestTemplate(formName);
       const version = tmpl ? tmpl.version : 1;
       const formData = agentData.filled_form || agentData;

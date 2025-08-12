@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const logger = require('../utils/logger');
 
 (async () => {
   try {
@@ -13,10 +14,10 @@ const mongoose = require('mongoose');
     if (!tlsEnabled) {
       throw new Error('TLS not enabled');
     }
-    console.log('✅ MongoDB connection verified with TLS');
+    logger.info('mongo_tls_verified');
     await conn.disconnect();
   } catch (err) {
-    console.error('❌ MongoDB verification failed:', err.message);
+    logger.error('mongo_tls_verify_failed', { error: err.message });
     process.exit(1);
   }
 })();

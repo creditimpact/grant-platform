@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const FormTemplate = require('../models/FormTemplate');
 const Case = require('../models/Case');
+const logger = require('../utils/logger');
 
 async function run() {
   const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/grant';
@@ -30,10 +31,10 @@ async function run() {
     await c.save();
   }
   await mongoose.disconnect();
-  console.log('migration complete');
+  logger.info('migration_complete');
 }
 
 run().catch((err) => {
-  console.error(err);
+  logger.error('migration_failed', { error: err.message });
   process.exit(1);
 });

@@ -26,9 +26,11 @@ const connectDB = async () => {
     };
     const conn = await mongoose.connect(mongoURI, options);
 
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    const logger = require('./logger');
+    logger.info('mongo_connected', { host: conn.connection.host });
   } catch (error) {
-    console.error(`❌ MongoDB Error: ${error.message}`);
+    const logger = require('./logger');
+    logger.error('mongo_error', { error: error.message });
     process.exit(1);
   }
 };

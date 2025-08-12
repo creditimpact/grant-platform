@@ -1,13 +1,12 @@
 from pathlib import Path
 import json
 from typing import List, Dict, Any
-import logging
+from common.logger import get_logger
 
 from grants_loader import load_grants
 from rules_utils import check_rules, check_rule_groups, estimate_award
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def analyze_eligibility(
@@ -102,4 +101,4 @@ if __name__ == "__main__":
     else:
         payload = {}
     for result in analyze_eligibility(payload, explain=True):
-        print(result)
+        logger.debug("sample_result", extra={"fields": list(result.keys())})
