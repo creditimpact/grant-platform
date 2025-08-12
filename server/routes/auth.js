@@ -45,9 +45,11 @@ router.post(
       const user = new User({ name, email, password });
       await user.save();
 
-      const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-        expiresIn: '10m',
-      });
+      const accessToken = jwt.sign(
+        { userId: user._id, email: user.email, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '10m' }
+      );
       const refreshToken = crypto.randomBytes(40).toString('hex');
       await Session.create({ userId: user._id, token: refreshToken });
       const csrfToken = generateCsrfToken();
@@ -100,9 +102,11 @@ router.post(
         return res.status(400).json({ message: 'Invalid credentials' });
       }
 
-      const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-        expiresIn: '10m',
-      });
+      const accessToken = jwt.sign(
+        { userId: user._id, email: user.email, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '10m' }
+      );
       const refreshToken = crypto.randomBytes(40).toString('hex');
       await Session.create({ userId: user._id, token: refreshToken });
       const csrfToken = generateCsrfToken();
@@ -147,9 +151,15 @@ router.post('/refresh', async (req, res) => {
     await Session.deleteOne({ token: refreshToken });
     const newRefresh = crypto.randomBytes(40).toString('hex');
     await Session.create({ userId: session.userId, token: newRefresh });
-    const accessToken = jwt.sign({ userId: session.userId }, process.env.JWT_SECRET, {
-      expiresIn: '10m',
-    });
+    const user = await User.findById(session.userId);
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid refresh token' });
+    }
+    const accessToken = jwt.sign(
+      { userId: user._id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '10m' }
+    );
     const csrfToken = generateCsrfToken();
     res
       .cookie('accessToken', accessToken, {
