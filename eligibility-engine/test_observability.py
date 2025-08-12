@@ -2,6 +2,7 @@ import os
 from importlib import reload
 import api
 from fastapi.testclient import TestClient
+import env_setup  # ENV VALIDATION: seed env vars
 
 
 def reload_app():
@@ -13,7 +14,7 @@ def test_metrics_disabled():
     os.environ.pop('OBSERVABILITY_ENABLED', None)
     os.environ.pop('PROMETHEUS_METRICS_ENABLED', None)
     client = reload_app()
-    res = client.get('/metrics')
+    res = client.get('/metrics', headers={'X-API-Key': 'test-key'})
     assert res.status_code == 404
 
 
@@ -22,6 +23,8 @@ def test_metrics_enabled():
     os.environ['PROMETHEUS_METRICS_ENABLED'] = 'true'
     client = reload_app()
     res = client.get('/metrics')
+    assert res.status_code == 401
+    res = client.get('/metrics', headers={'X-API-Key': 'test-key'})
     assert res.status_code == 200
 
 

@@ -44,9 +44,10 @@ test('failed login returns 400', async () => {
   server.close();
 });
 
-test('CSRF token required for state-changing requests', async () => {
+test('CSRF and auth required for state-changing requests', async () => {
   const server = app.listen(0);
   const port = server.address().port;
+  // missing CSRF
   const res = await fetch(`http://localhost:${port}/echo`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -54,17 +55,38 @@ test('CSRF token required for state-changing requests', async () => {
   });
   assert.strictEqual(res.status, 403);
 
+  // with CSRF but no auth
+  const csrf = await getCsrf(port);
   const res2 = await fetch(`http://localhost:${port}/echo`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-csrf-token': 'abc',
-      Cookie: 'csrfToken=abc',
+      'x-csrf-token': csrf.token,
+      Cookie: csrf.cookie,
       Origin: 'https://localhost:3000',
     },
     body: JSON.stringify({ test: 1 }),
   });
-  assert.strictEqual(res2.status, 200);
+  assert.strictEqual(res2.status, 401);
+
+  // with CSRF and auth
+  const jwt = require('jsonwebtoken');
+  const token = jwt.sign(
+    { userId: '1', email: 'a', role: 'user' },
+    process.env.JWT_SECRET,
+    { expiresIn: '10m' }
+  );
+  const res3 = await fetch(`http://localhost:${port}/echo`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrf.token,
+      Cookie: `${csrf.cookie}; accessToken=${token}`,
+      Origin: 'https://localhost:3000',
+    },
+    body: JSON.stringify({ test: 1 }),
+  });
+  assert.strictEqual(res3.status, 200);
   server.close();
 });
 

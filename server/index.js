@@ -14,6 +14,7 @@ const logger = require('./utils/logger');
 const rateLimit = require('./middleware/rateLimit');
 const { csrfProtection } = require('./middleware/csrf');
 const requestId = require('./middleware/requestId');
+const authMiddleware = require('./middleware/authMiddleware');
 
 const { metricsMiddleware, register } = process.env.OBSERVABILITY_ENABLED === 'true' && process.env.PROMETHEUS_METRICS_ENABLED === 'true'
   ? require('./observability/metrics')
@@ -64,19 +65,21 @@ app.use((req, res, next) => {
 app.use(csrfProtection);
 // SECURITY FIX: removed public static serving of uploads
 
-// simple echo endpoint for tests and health checks
-app.post('/echo', (req, res) => {
+// simple echo endpoint for tests and health checks (auth required)
+app.post('/echo', authMiddleware, (req, res) => {
   res.json(req.body || {});
 });
 
 if (metricsMiddleware) {
-  const auth = process.env.METRICS_BASIC_AUTH;
+  const creds = process.env.METRICS_BASIC_AUTH || '';
+  const expected = creds ? Buffer.from(creds).toString('base64') : null;
   app.get('/metrics', (req, res) => {
-    if (auth) {
-      const header = req.headers['authorization'];
-      if (!header || header !== `Basic ${Buffer.from(auth).toString('base64')}`) {
-        return res.status(401).set('WWW-Authenticate', 'Basic realm="metrics"').end();
-      }
+    const header = req.headers['authorization'] || '';
+    if (!expected || header !== `Basic ${expected}`) {
+      return res
+        .status(401)
+        .set('WWW-Authenticate', 'Basic realm="metrics"')
+        .end();
     }
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());

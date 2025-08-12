@@ -74,6 +74,9 @@ curl -k -H "Authorization: Bearer <token>" https://localhost:5000/api/users
 
 A missing or invalid token results in **401 Unauthorized**.
 
+The utility `/echo` endpoint is likewise protected and requires a valid JWT. Prometheus metrics at `/metrics` are secured with
+HTTP Basic auth; set `METRICS_BASIC_AUTH=user:pass` and scrape with `curl -u user:pass http://localhost:5000/metrics`.
+
 JWT payloads also contain a user's `role` (`user` or `admin`). The backend exposes a
 `requireRole('admin')` middleware used by admin-only endpoints such as
 `POST /api/form-template`.
