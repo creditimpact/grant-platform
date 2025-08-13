@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const { execSync } = require('child_process');
 const https = require('https');
-const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
+const fetch = (...args) => global.fetch(...args);
 const createAgent = require('../utils/tlsAgent');
 require('./testEnvSetup'); // ENV VALIDATION
 

@@ -1,5 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Request
-import os
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Request
 import tempfile
 import subprocess
 import sys
@@ -10,21 +9,16 @@ from config import settings  # type: ignore
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))
-from common.logger import get_logger, audit_log
+from common.logger import get_logger
+from common.request_id import request_id_middleware
+from common.settings import load_security_settings
+from common.security import require_api_key
 
-
-def get_api_keys() -> list[str]:
-    return [k for k in [settings.AI_ANALYZER_API_KEY, settings.AI_ANALYZER_NEXT_API_KEY] if k]
+security_settings, security_ready = load_security_settings()
+_valid_keys = [k for k in [security_settings.AI_ANALYZER_API_KEY, security_settings.AI_ANALYZER_NEXT_API_KEY] if k]
+require_internal_key = require_api_key(_valid_keys, "ai-analyzer")
 
 logger = get_logger(__name__)
-
-
-async def verify_api_key(request: Request, x_api_key: str = Header(None)):
-    ip = request.client.host if request.client else "unknown"
-    if x_api_key not in get_api_keys():
-        audit_log(logger, "auth_failure", ip=ip, api_key=x_api_key)
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    audit_log(logger, "auth_success", ip=ip)
 
 
 def scan_for_viruses(data: bytes) -> None:
@@ -42,18 +36,32 @@ def scan_for_viruses(data: bytes) -> None:
         raise HTTPException(status_code=500, detail="Virus scanner not available")
 
 
-app = FastAPI(dependencies=[Depends(verify_api_key)])
+app = FastAPI(dependencies=[Depends(require_internal_key)])
+try:
+    app.middleware("http")(request_id_middleware)
+except AttributeError:
+    pass
+
+
+@app.get("/healthz")
+def healthz() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.get("/readyz")
+def readyz() -> dict[str, str]:
+    if not (security_ready and _valid_keys):
+        raise HTTPException(status_code=503, detail="not ready")
+    return {"status": "ok"}
 
 
 @app.get("/")
 def root() -> dict[str, str]:
-    """Health check route."""
     return {"status": "ok"}
 
 
 @app.get("/status")
 def status() -> dict[str, str]:
-    """Alias health check."""
     return {"status": "ok"}
 
 ALLOWED_CONTENT_TYPES = {"application/pdf", "image/png", "image/jpeg"}

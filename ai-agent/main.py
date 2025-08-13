@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Body, UploadFile, File, Form, Depends, Header, HTTPException
+from fastapi import FastAPI, Request, Body, UploadFile, File, Form, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Any
 from pathlib import Path
@@ -26,7 +26,10 @@ sys.path.insert(0, str(BASE_DIR))
 # ensure ai-agent modules (like config) are searched first
 sys.path.insert(0, str(CURRENT_DIR))
 
-from common.logger import get_logger, audit_log
+from common.logger import get_logger
+from common.request_id import request_id_middleware
+from common.settings import load_security_settings
+from common.security import require_api_key
 
 from engine import analyze_eligibility  # type: ignore
 from document_utils import extract_fields
@@ -43,20 +46,12 @@ from grants_loader import load_grants
 
 from config import settings  # type: ignore
 
+security_settings, security_ready = load_security_settings()
+_valid_keys = [k for k in [security_settings.AGENT_API_KEY, security_settings.AGENT_NEXT_API_KEY] if k]
+require_internal_key = require_api_key(_valid_keys, "ai-agent")
 
-def get_api_keys() -> list[str]:
-    return [k for k in [settings.AI_AGENT_API_KEY, settings.AI_AGENT_NEXT_API_KEY] if k]
 
 logger = get_logger(__name__)
-
-
-async def verify_api_key(request: Request, x_api_key: str = Header(None)):
-    """Ensure requests include one of the valid API keys."""
-    ip = request.client.host if request.client else "unknown"
-    if x_api_key not in get_api_keys():
-        audit_log(logger, "auth_failure", ip=ip, api_key=x_api_key)
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    audit_log(logger, "auth_success", ip=ip)
 
 
 class FormFillRequest(BaseModel):
@@ -67,7 +62,23 @@ class FormFillRequest(BaseModel):
     session_id: str | None = None
 
 
-app = FastAPI(title="AI Agent Service", dependencies=[Depends(verify_api_key)])
+app = FastAPI(title="AI Agent Service", dependencies=[Depends(require_internal_key)])
+try:
+    app.middleware("http")(request_id_middleware)
+except AttributeError:
+    pass
+
+
+@app.get("/healthz")
+def healthz() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.get("/readyz")
+def readyz() -> dict[str, str]:
+    if not (security_ready and _valid_keys):
+        raise HTTPException(status_code=503, detail="not ready")
+    return {"status": "ok"}
 
 
 @app.get("/")
@@ -141,7 +152,7 @@ async def check(
     return results
 
 
-@app.post("/form-fill", dependencies=[Depends(verify_api_key)])
+@app.post("/form-fill")
 async def form_fill(
     request_model: FormFillRequest = Body(
         ...,
@@ -168,7 +179,7 @@ async def form_fill(
     return {"filled_form": filled}
 
 
-@app.post("/preview-form", dependencies=[Depends(verify_api_key)])
+@app.post("/preview-form")
 async def preview_form(body: dict, file: UploadFile | None = None):
     """Preview a form with reasoning before final submission."""
     grant_key = body.get("grant")
@@ -185,7 +196,7 @@ async def preview_form(body: dict, file: UploadFile | None = None):
     return {"filled_form": filled, "reasoning": reasoning, "files": filled.get("files", {})}
 
 
-@app.post("/chat", dependencies=[Depends(verify_api_key)])
+@app.post("/chat")
 async def chat(message: dict):
     """Conversational endpoint backed by the LLM."""
     mode = message.get("mode")
@@ -242,7 +253,7 @@ async def chat(message: dict):
 ENABLE_DEBUG = os.getenv("ENABLE_DEBUG", "false").lower() == "true"
 
 
-@app.get("/llm-debug/{session_id}", dependencies=[Depends(verify_api_key)])
+@app.get("/llm-debug/{session_id}")
 async def llm_debug(session_id: str):
     """Return a summary of agent actions for debugging."""
     if not ENABLE_DEBUG:
