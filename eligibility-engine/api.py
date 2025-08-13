@@ -11,6 +11,7 @@ from common.logger import get_logger
 from common.request_id import request_id_middleware
 from common.settings import load_security_settings
 from common.security import require_api_key
+from common.limiting import rate_limiter
 from config import settings  # type: ignore
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -49,7 +50,7 @@ if PROM_ENABLED:
         return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
-app = FastAPI(title="Grant Eligibility Engine", dependencies=[Depends(require_internal_key)])
+app = FastAPI(title="Grant Eligibility Engine", dependencies=[Depends(require_internal_key), rate_limiter("eligibility-engine")])
 try:
     app.middleware("http")(request_id_middleware)
 except AttributeError:

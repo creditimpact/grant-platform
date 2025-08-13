@@ -26,7 +26,7 @@ const https = require('https');
 
 // ===== Middleware & Utilities =====
 const logger = require('./utils/logger');
-const rateLimit = require('./middleware/rateLimit');
+const createRateLimiter = require('./middleware/rateLimit');
 const { csrfProtection } = require('./middleware/csrf');
 const requestId = require('./middleware/requestId');
 const internalAuth = require('./middleware/internalAuth');
@@ -62,9 +62,12 @@ app.use(morgan('combined', {
   },
 }));
 
+if (process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', 1);
+}
+
 // ===== Rate Limiting =====
-app.use(rateLimit({ windowMs: 60 * 60 * 1000, max: 1000 }));
-app.use('/api', rateLimit({ windowMs: 60 * 1000, max: 60 }));
+app.use(createRateLimiter());
 
 // ===== Security Headers =====
 app.use((req, res, next) => {

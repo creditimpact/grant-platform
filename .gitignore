@@ -1,4 +1,6 @@
 node_modules
+!node_modules/express-rate-limit
+!node_modules/express-rate-limit/**
 .env
 uploads
 server/uploads
