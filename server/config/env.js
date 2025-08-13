@@ -1,8 +1,10 @@
-// ENV VALIDATION: centralized environment validation without external deps
+// Load environment variables from .env early
+require('dotenv').config();
+
 const fs = require('fs');
 const { URL } = require('url');
 
-// טוען סודות מ-Vault רק אם אנחנו בפרודקשן
+// Load secrets from Vault only in production
 if (process.env.NODE_ENV === 'production') {
   const { loadVaultSecrets } = require('./vaultClient');
   loadVaultSecrets();
@@ -10,6 +12,7 @@ if (process.env.NODE_ENV === 'production') {
   console.log('🔹 Development mode detected – loading secrets from .env instead of Vault');
 }
 
+// === Validation Utilities ===
 function requireString(name) {
   const val = process.env[name];
   if (!val) throw new Error(`Missing required environment variable ${name}`);
@@ -57,40 +60,44 @@ function requireInt(name) {
 function getBool(name, def = false) {
   const val = process.env[name];
   if (val === undefined) return def;
-  return ["1", "true", "yes"].includes(val.toLowerCase());
+  return ['1', 'true', 'yes'].includes(val.toLowerCase());
 }
 
-// Required secrets
+// === Required Secrets ===
 requireString('JWT_SECRET');
 requireString('AI_AGENT_API_KEY');
 requireString('AI_ANALYZER_API_KEY');
 requireString('ELIGIBILITY_ENGINE_API_KEY');
 requireString('OPENAI_API_KEY');
 
-// URLs
-requireHTTPSURL('FRONTEND_URL');
-requireHTTPSURL('ELIGIBILITY_ENGINE_URL');
-requireHTTPSURL('AI_ANALYZER_URL');
-requireHTTPSURL('AI_AGENT_URL');
+// === URLs ===
+// In production, enforce HTTPS; in development, allow HTTP
+const urlValidator = process.env.NODE_ENV === 'production' ? requireHTTPSURL : requireURL;
+urlValidator('FRONTEND_URL');
+urlValidator('ELIGIBILITY_ENGINE_URL');
+urlValidator('AI_ANALYZER_URL');
+urlValidator('AI_AGENT_URL');
 
-// MongoDB
+// === MongoDB ===
 requireURL('MONGO_URI');
-requireString('MONGO_USER');
-requireString('MONGO_PASS');
-requirePath('MONGO_CA_FILE');
+if (process.env.NODE_ENV === 'production') {
+  requireString('MONGO_USER');
+  requireString('MONGO_PASS');
+  requirePath('MONGO_CA_FILE');
+}
 
-// TLS
-requirePath('TLS_KEY_PATH');
-requirePath('TLS_CERT_PATH');
-if (process.env.TLS_CA_PATH) requirePath('TLS_CA_PATH');
-if (process.env.CLIENT_CERT_PATH) requirePath('CLIENT_CERT_PATH');
-if (process.env.CLIENT_KEY_PATH) requirePath('CLIENT_KEY_PATH');
-if (process.env.CLIENT_CA_PATH) requirePath('CLIENT_CA_PATH');
+// === TLS (Production only) ===
+if (process.env.NODE_ENV === 'production') {
+  requirePath('TLS_KEY_PATH');
+  requirePath('TLS_CERT_PATH');
+  if (process.env.TLS_CA_PATH) requirePath('TLS_CA_PATH');
+  if (process.env.CLIENT_CERT_PATH) requirePath('CLIENT_CERT_PATH');
+  if (process.env.CLIENT_KEY_PATH) requirePath('CLIENT_KEY_PATH');
+  if (process.env.CLIENT_CA_PATH) requirePath('CLIENT_CA_PATH');
+}
 
-// PORT
+// === Misc ===
 const PORT = requireInt('PORT');
-
-// Booleans
 const ENABLE_DEBUG = getBool('ENABLE_DEBUG');
 const SKIP_DB = getBool('SKIP_DB');
 

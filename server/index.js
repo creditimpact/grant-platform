@@ -1,7 +1,7 @@
 // server/index.js
 
 // ===== Load & Validate ENV =====
-const env = require('./config/env'); // טוען את .env ומוודא ערכים
+const env = require('./config/env'); // Loads .env and validates values
 console.log('=== Loaded ENV Variables ===');
 console.log({
   PORT: env.PORT,
@@ -15,6 +15,7 @@ console.log({
 });
 console.log('=============================');
 
+// ===== Core Dependencies =====
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -22,12 +23,15 @@ const connectDB = require('./utils/db');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
+
+// ===== Middleware & Utilities =====
 const logger = require('./utils/logger');
 const rateLimit = require('./middleware/rateLimit');
 const { csrfProtection } = require('./middleware/csrf');
 const requestId = require('./middleware/requestId');
 const authMiddleware = require('./middleware/authMiddleware');
 
+// ===== Observability =====
 const { metricsMiddleware, register } =
   process.env.OBSERVABILITY_ENABLED === 'true' &&
   process.env.PROMETHEUS_METRICS_ENABLED === 'true'
@@ -40,48 +44,45 @@ const tracing = require('./observability/tracing');
 const app = express();
 tracing.init();
 
-// ===== Middlewares =====
+// ===== Global Middlewares =====
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://localhost:3000',
-  credentials: true
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
 }));
 app.use(express.json());
 app.use(requestId);
 
-if (metricsMiddleware) {
-  app.use(metricsMiddleware);
-}
+if (metricsMiddleware) app.use(metricsMiddleware);
 
-app.use(
-  morgan('combined', {
-    stream: {
-      write: (message) => logger.info('http', { message: message.trim() }),
-    },
-  })
-);
+app.use(morgan('combined', {
+  stream: {
+    write: (message) => logger.info('http', { message: message.trim() }),
+  },
+}));
 
+// ===== Rate Limiting =====
 app.use(rateLimit({ windowMs: 60 * 60 * 1000, max: 1000 }));
 app.use('/api', rateLimit({ windowMs: 60 * 1000, max: 60 }));
 
-// Security Headers
+// ===== Security Headers =====
 app.use((req, res, next) => {
   res.setHeader('Content-Security-Policy', "default-src 'self'");
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
-  if (req.headers['x-forwarded-proto'] !== 'https') {
+
+  if (req.headers['x-forwarded-proto'] !== 'https' && process.env.NODE_ENV === 'production') {
     logger.warn('insecure_request', { host: req.headers.host, url: req.originalUrl });
-    if (process.env.NODE_ENV === 'production') {
-      return res.redirect('https://' + req.headers.host + req.originalUrl);
-    }
+    return res.redirect('https://' + req.headers.host + req.originalUrl);
   }
+
   next();
 });
 
 app.use(csrfProtection);
 
-// ===== Routes =====
+// ===== Core Routes =====
 app.post('/echo', authMiddleware, (req, res) => {
   res.json(req.body || {});
 });
@@ -89,6 +90,7 @@ app.post('/echo', authMiddleware, (req, res) => {
 if (metricsMiddleware) {
   const creds = process.env.METRICS_BASIC_AUTH || '';
   const expected = creds ? Buffer.from(creds).toString('base64') : null;
+
   app.get('/metrics', (req, res) => {
     const header = req.headers['authorization'] || '';
     if (!expected || header !== `Basic ${expected}`) {
@@ -101,6 +103,7 @@ if (metricsMiddleware) {
   });
 }
 
+// ===== Health Check =====
 app.get('/', (req, res) => {
   res.send('🚀 Grant Platform API is running!');
 });
@@ -109,6 +112,7 @@ app.get('/status', (req, res) => {
   res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' });
 });
 
+// ===== API Routes =====
 app.use('/api/auth', require('./routes/auth'));
 logger.info('Auth routes registered');
 app.use('/api/users', require('./routes/users'));
@@ -131,10 +135,14 @@ function startServer() {
       requestCert: true,
       rejectUnauthorized: true,
     };
-    https.createServer(options, app)
-      .listen(PORT, () => logger.info(`HTTPS server running on port ${PORT}`));
+
+    https.createServer(options, app).listen(PORT, () => {
+      logger.info(`🔐 HTTPS server running on port ${PORT}`);
+    });
   } else {
-    app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+    app.listen(PORT, () => {
+      logger.info(`🚀 Server running on port ${PORT}`);
+    });
   }
 }
 
@@ -142,7 +150,7 @@ if (process.env.SKIP_DB !== 'true') {
   connectDB()
     .then(startServer)
     .catch((err) => {
-      logger.error('Failed to connect to MongoDB', { error: err.message });
+      logger.error('❌ Failed to connect to MongoDB', { error: err.message });
       process.exit(1);
     });
 }
