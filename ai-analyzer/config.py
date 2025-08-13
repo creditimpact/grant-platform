@@ -1,6 +1,8 @@
 # ENV VALIDATION: centralized env settings for ai-analyzer
 import os
-from pydantic import BaseSettings, FilePath
+from pathlib import Path
+from typing import Optional
+from pydantic import BaseSettings
 
 if os.environ.get("NODE_ENV") != "production":
     print("🔹 Development mode – loading .env manually")
@@ -18,13 +20,17 @@ else:
     load_vault_secrets()
 
 class Settings(BaseSettings):
+    NODE_ENV: str = "development"
     AI_ANALYZER_API_KEY: str
     AI_ANALYZER_NEXT_API_KEY: str | None = None
-    TLS_CERT_PATH: FilePath
-    TLS_KEY_PATH: FilePath
-    TLS_CA_PATH: FilePath | None = None
+    TLS_CERT_PATH: Optional[Path] = None
+    TLS_KEY_PATH: Optional[Path] = None
+    TLS_CA_PATH: Optional[Path] = None
 
     class Config:
         case_sensitive = True
 
 settings = Settings()
+if settings.NODE_ENV == "production":
+    assert settings.TLS_CERT_PATH and settings.TLS_CERT_PATH.exists(), "Missing TLS_CERT_PATH"
+    assert settings.TLS_KEY_PATH and settings.TLS_KEY_PATH.exists(), "Missing TLS_KEY_PATH"
