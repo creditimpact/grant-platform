@@ -41,10 +41,7 @@ from session_memory import append_memory, get_missing_fields, save_draft_form, g
 from nlp_utils import llm_semantic_inference, llm_complete
 from grants_loader import load_grants
 
-try:
-    from .config import settings  # type: ignore
-except ImportError:  # pragma: no cover - script execution
-    from config import settings  # type: ignore
+from config import settings  # type: ignore
 
 
 def get_api_keys() -> list[str]:

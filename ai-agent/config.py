@@ -19,7 +19,7 @@ NODE_ENV = os.getenv("NODE_ENV", "development")
 if NODE_ENV != "production":
     env_file = Path(__file__).resolve().parent / ".env"
     if env_file.exists():
-        for line in env_file.read_text().splitlines():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
