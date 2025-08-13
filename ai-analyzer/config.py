@@ -1,12 +1,18 @@
 # ENV VALIDATION: centralized env settings for ai-analyzer
-from dotenv import load_dotenv
 import os
 from pydantic import BaseSettings, FilePath
 
-load_dotenv()
-
 if os.environ.get("NODE_ENV") != "production":
-    print("🔹 Development mode – skipping Vault and TLS")
+    print("🔹 Development mode – loading .env manually")
+    try:
+        with open(".env") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    key, value = line.split("=", 1)
+                    os.environ[key.strip()] = value.strip()
+    except FileNotFoundError:
+        print("⚠️ .env file not found – continuing with existing environment variables")
 else:
     from common.vault import load_vault_secrets
     load_vault_secrets()
