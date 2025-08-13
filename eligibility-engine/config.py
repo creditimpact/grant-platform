@@ -1,6 +1,10 @@
 # ENV VALIDATION: centralized env settings for eligibility-engine
 from pydantic import BaseSettings, FilePath
+from dotenv import load_dotenv
 from common.vault import load_vault_secrets
+
+# Load .env file first
+load_dotenv()
 
 # Load secrets from Vault before settings are evaluated
 load_vault_secrets()
