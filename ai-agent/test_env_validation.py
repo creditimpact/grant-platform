@@ -31,10 +31,12 @@ def test_missing_env_raises(monkeypatch, tmp_path):
         "MONGO_CA_FILE",
         "TLS_CERT_PATH",
         "TLS_KEY_PATH",
+        "NODE_ENV",
     ]:
         monkeypatch.delenv(k, raising=False)
     for k, v in env.items():
         monkeypatch.setenv(k, v)
+    monkeypatch.setenv("NODE_ENV", "production")
     with pytest.raises(Exception):
         importlib.reload(importlib.import_module('config'))
 
