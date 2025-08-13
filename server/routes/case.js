@@ -177,9 +177,8 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
         logger.info(`POST ${analyzerUrl}`, { document: d.key }); // SECURITY FIX: sanitized logging
         const analyzerHeaders = {
           ...form.getHeaders(),
-          ...getServiceHeaders('AI_ANALYZER'),
+          ...getServiceHeaders('AI_ANALYZER', req),
         };
-        if (req.id) analyzerHeaders['X-Request-Id'] = req.id;
         const resp = await fetch(analyzerUrl, {
           method: 'POST',
           body: form,
@@ -204,9 +203,8 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
     logger.info(`POST ${engineUrl}`); // SECURITY FIX: sanitized logging
     const engineHeaders = {
       'Content-Type': 'application/json',
-      ...getServiceHeaders('ELIGIBILITY_ENGINE'),
+      ...getServiceHeaders('ELIGIBILITY_ENGINE', req),
     };
-    if (req.id) engineHeaders['X-Request-Id'] = req.id;
     const eligResp = await fetch(engineUrl, {
       method: 'POST',
       headers: engineHeaders,
@@ -233,9 +231,8 @@ router.post('/eligibility-report', auth, validate(schemas.eligibilityReport), as
       logger.info(`POST ${agentUrl}`, { form: formName }); // SECURITY FIX: sanitized logging
       const agentHeaders = {
         'Content-Type': 'application/json',
-        ...getServiceHeaders('AI_AGENT'),
+        ...getServiceHeaders('AI_AGENT', req),
       };
-      if (req.id) agentHeaders['X-Request-Id'] = req.id;
       const agentResp = await fetch(agentUrl, {
         method: 'POST',
         headers: agentHeaders,

@@ -25,6 +25,9 @@ services:
       - AI_ANALYZER_URL=${AI_ANALYZER_URL}
       - ELIGIBILITY_ENGINE_URL=${ELIGIBILITY_ENGINE_URL}
       - AI_AGENT_URL=${AI_AGENT_URL}
+      - AGENT_API_KEY=${AGENT_API_KEY}
+      - ELIGIBILITY_ENGINE_API_KEY=${ELIGIBILITY_ENGINE_API_KEY}
+      - AI_ANALYZER_API_KEY=${AI_ANALYZER_API_KEY}
     depends_on:
       - mongo
       - ai-agent
@@ -36,6 +39,10 @@ services:
     build: ./eligibility-engine
     ports:
       - '4001:4001'
+    environment:
+      - AGENT_API_KEY=${AGENT_API_KEY}
+      - ELIGIBILITY_ENGINE_API_KEY=${ELIGIBILITY_ENGINE_API_KEY}
+      - AI_ANALYZER_API_KEY=${AI_ANALYZER_API_KEY}
 
   ai-agent:
     build:
@@ -50,6 +57,9 @@ services:
       - MONGO_USER=${AI_AGENT_MONGO_USER}
       - MONGO_PASS=${AI_AGENT_MONGO_PASS}
       - MONGO_CA_FILE=/etc/mongo/ca.pem
+      - AGENT_API_KEY=${AGENT_API_KEY}
+      - ELIGIBILITY_ENGINE_API_KEY=${ELIGIBILITY_ENGINE_API_KEY}
+      - AI_ANALYZER_API_KEY=${AI_ANALYZER_API_KEY}
     volumes:
       - ./mongo-certs/ca.pem:/etc/mongo/ca.pem:ro
 
@@ -57,6 +67,10 @@ services:
     build: ./ai-analyzer
     ports:
       - '8000:8000'
+    environment:
+      - AGENT_API_KEY=${AGENT_API_KEY}
+      - ELIGIBILITY_ENGINE_API_KEY=${ELIGIBILITY_ENGINE_API_KEY}
+      - AI_ANALYZER_API_KEY=${AI_ANALYZER_API_KEY}
 
   frontend:
     build: ./frontend
