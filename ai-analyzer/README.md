@@ -16,6 +16,22 @@ Uploads are protected with several layers of security:
   result in a `400` response. If the scanner is unavailable the service responds
   with a `500` error.
 
+## Local Development Setup
+
+```bash
+echo "" > dummy-cert
+echo "" > dummy-key
+cat > .env <<'EOF'
+NODE_ENV=development
+AI_ANALYZER_API_KEY=dev-analyzer-key
+TLS_CERT_PATH=dummy-cert
+TLS_KEY_PATH=dummy-key
+EOF
+
+$env:PYTHONPATH=".."
+python -m uvicorn main:app --port 8000
+```
+
 ## Running tests
 
 Install the dependencies and run the test suite:

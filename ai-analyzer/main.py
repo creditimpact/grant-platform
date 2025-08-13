@@ -6,10 +6,7 @@ import sys
 from pathlib import Path
 from ocr_utils import extract_text
 from nlp_parser import parse_fields
-try:
-    from .config import settings  # type: ignore
-except ImportError:  # pragma: no cover
-    from config import settings  # type: ignore
+from config import settings  # type: ignore
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))
