@@ -7,10 +7,7 @@ try:
     import openai  # type: ignore
 except Exception:  # pragma: no cover - openai optional for tests
     openai = None  # type: ignore
-try:
-    from .config import settings  # type: ignore
-except ImportError:  # pragma: no cover - script execution
-    from config import settings  # type: ignore
+from config import settings  # type: ignore
 OPENAI_API_KEY = getattr(settings, "OPENAI_API_KEY", None)
 if openai and OPENAI_API_KEY:
     openai.api_key = OPENAI_API_KEY

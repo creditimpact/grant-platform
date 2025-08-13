@@ -9,10 +9,7 @@ import uuid
 from pathlib import Path
 from prometheus_client import Histogram, CONTENT_TYPE_LATEST, generate_latest
 from common.logger import get_logger, audit_log
-try:
-    from .config import settings  # type: ignore
-except ImportError:  # pragma: no cover
-    from config import settings  # type: ignore
+from config import settings  # type: ignore
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))

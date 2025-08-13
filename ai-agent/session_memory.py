@@ -2,10 +2,7 @@
 from typing import Dict, Any, List
 from pymongo import MongoClient
 import os
-try:
-    from .config import settings  # type: ignore
-except ImportError:  # pragma: no cover
-    from config import settings  # type: ignore
+from config import settings  # type: ignore
 
 # Require explicit credentials and TLS for all connections.
 # When running tests without database credentials, the client is not created.
