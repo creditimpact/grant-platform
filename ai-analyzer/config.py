@@ -1,9 +1,15 @@
 # ENV VALIDATION: centralized env settings for ai-analyzer
+from dotenv import load_dotenv
+import os
 from pydantic import BaseSettings, FilePath
-from common.vault import load_vault_secrets
 
-# Load secrets from Vault before settings are evaluated
-load_vault_secrets()
+load_dotenv()
+
+if os.environ.get("NODE_ENV") != "production":
+    print("🔹 Development mode – skipping Vault and TLS")
+else:
+    from common.vault import load_vault_secrets
+    load_vault_secrets()
 
 class Settings(BaseSettings):
     AI_ANALYZER_API_KEY: str
