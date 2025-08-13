@@ -84,6 +84,8 @@ if (process.env.NODE_ENV === 'production') {
   requireString('MONGO_USER');
   requireString('MONGO_PASS');
   requirePath('MONGO_CA_FILE');
+} else {
+  console.log('🔹 Skipping MongoDB credentials & CA file check in development');
 }
 
 // === TLS (Production only) ===
