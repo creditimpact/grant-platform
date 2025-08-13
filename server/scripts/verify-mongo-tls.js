@@ -3,6 +3,11 @@ const logger = require('../utils/logger');
 
 (async () => {
   try {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🔹 Skipping MongoDB TLS verification in development');
+      process.exit(0);
+    }
+
     const conn = await mongoose.connect(process.env.MONGO_URI, {
       user: process.env.MONGO_USER,
       pass: process.env.MONGO_PASS,

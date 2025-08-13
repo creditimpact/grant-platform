@@ -11,6 +11,31 @@ test('env validation fails when required vars missing', () => {
   assert.notEqual(result.status, 0);
 });
 
+test('env validation requires mongo credentials in production', () => {
+  const dummy = path.join(__filename);
+  const env = {
+    NODE_ENV: 'production',
+    JWT_SECRET: 'a',
+    AI_AGENT_API_KEY: 'c1',
+    AI_ANALYZER_API_KEY: 'c2',
+    ELIGIBILITY_ENGINE_API_KEY: 'c3',
+    OPENAI_API_KEY: 'c',
+    FRONTEND_URL: 'https://example.com',
+    ELIGIBILITY_ENGINE_URL: 'https://example.com',
+    AI_ANALYZER_URL: 'https://example.com',
+    AI_AGENT_URL: 'https://example.com',
+    MONGO_URI: 'mongodb://localhost:27017',
+    TLS_KEY_PATH: dummy,
+    TLS_CERT_PATH: dummy,
+    PORT: '1234',
+  };
+  const result = spawnSync('node', ['-e', "require('./config/env')"], {
+    cwd: root,
+    env: { ...env, PATH: process.env.PATH },
+  });
+  assert.notEqual(result.status, 0);
+});
+
 test('env validation parses values', () => {
   const dummy = path.join(__filename);
   const env = {
@@ -24,9 +49,6 @@ test('env validation parses values', () => {
     AI_ANALYZER_URL: 'https://example.com',
     AI_AGENT_URL: 'https://example.com',
     MONGO_URI: 'mongodb://localhost:27017',
-    MONGO_USER: 'u',
-    MONGO_PASS: 'p',
-    MONGO_CA_FILE: dummy,
     TLS_KEY_PATH: dummy,
     TLS_CERT_PATH: dummy,
     PORT: '1234',
@@ -49,9 +71,6 @@ test('env validation rejects non-https service URLs', () => {
     AI_ANALYZER_URL: 'https://example.com',
     AI_AGENT_URL: 'https://example.com',
     MONGO_URI: 'mongodb://localhost:27017',
-    MONGO_USER: 'u',
-    MONGO_PASS: 'p',
-    MONGO_CA_FILE: dummy,
     TLS_KEY_PATH: dummy,
     TLS_CERT_PATH: dummy,
     PORT: '1234',
