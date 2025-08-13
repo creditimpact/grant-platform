@@ -5,6 +5,7 @@ from pathlib import Path
 dummy = Path(__file__).resolve()
 vars = {
     "AI_AGENT_API_KEY": "test-key",
+    "AGENT_API_KEY": "test-key",
     "ELIGIBILITY_ENGINE_API_KEY": "test-key",
     "OPENAI_API_KEY": "test-openai",
     "MONGO_URI": "mongodb://localhost:27017", 
@@ -13,6 +14,8 @@ vars = {
     "MONGO_CA_FILE": str(dummy),
     "TLS_CERT_PATH": str(dummy),
     "TLS_KEY_PATH": str(dummy),
+    "SECURITY_ENFORCEMENT_LEVEL": "dev",
+    "DISABLE_VAULT": "true",
 }
 for k, v in vars.items():
     os.environ[k] = v

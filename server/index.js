@@ -29,6 +29,7 @@ const logger = require('./utils/logger');
 const rateLimit = require('./middleware/rateLimit');
 const { csrfProtection } = require('./middleware/csrf');
 const requestId = require('./middleware/requestId');
+const internalAuth = require('./middleware/internalAuth');
 const authMiddleware = require('./middleware/authMiddleware');
 
 // ===== Observability =====
@@ -51,6 +52,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(requestId);
+app.use(internalAuth);
 
 if (metricsMiddleware) app.use(metricsMiddleware);
 
@@ -104,8 +106,19 @@ if (metricsMiddleware) {
 }
 
 // ===== Health Check =====
-app.get('/', (req, res) => {
-  res.send('🚀 Grant Platform API is running!');
+const securityReady = [
+  process.env.AGENT_API_KEY,
+  process.env.ELIGIBILITY_ENGINE_API_KEY,
+  process.env.AI_ANALYZER_API_KEY,
+].every(Boolean);
+
+app.get('/healthz', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+app.get('/readyz', (req, res) => {
+  if (!securityReady) return res.status(503).json({ status: 'not_ready' });
+  res.json({ status: 'ok' });
 });
 
 app.get('/status', (req, res) => {

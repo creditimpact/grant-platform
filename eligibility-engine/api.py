@@ -1,29 +1,30 @@
-from fastapi import FastAPI, Request, HTTPException, Depends, Header
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import Response
 from engine import analyze_eligibility
 from grants_loader import load_grants
 import os
 import sys
 import time
-import uuid
 from pathlib import Path
 from prometheus_client import Histogram, CONTENT_TYPE_LATEST, generate_latest
-from common.logger import get_logger, audit_log
+from common.logger import get_logger
+from common.request_id import request_id_middleware
+from common.settings import load_security_settings
+from common.security import require_api_key
 from config import settings  # type: ignore
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))
 
 
-def get_api_keys() -> list[str]:
-    return [k for k in [settings.ELIGIBILITY_ENGINE_API_KEY, settings.ELIGIBILITY_ENGINE_NEXT_API_KEY] if k]
+security_settings, security_ready = load_security_settings()
+_valid_keys = [k for k in [security_settings.ELIGIBILITY_ENGINE_API_KEY, security_settings.ELIGIBILITY_ENGINE_NEXT_API_KEY] if k]
+require_internal_key = require_api_key(_valid_keys, "eligibility-engine")
 
 logger = get_logger(__name__)
 
 OBS_ENABLED = os.getenv("OBSERVABILITY_ENABLED") == "true"
 PROM_ENABLED = OBS_ENABLED and os.getenv("PROMETHEUS_METRICS_ENABLED") == "true"
-REQ_ID_ENABLED = os.getenv("REQUEST_ID_ENABLED") == "true"
-REQ_LOG_JSON = os.getenv("REQUEST_LOG_JSON") == "true"
 
 if PROM_ENABLED:
     REQ_LATENCY = Histogram(
@@ -34,27 +35,11 @@ if PROM_ENABLED:
 
 
 async def observability_middleware(request: Request, call_next):
-    req_id = None
-    if REQ_ID_ENABLED or REQ_LOG_JSON:
-        req_id = request.headers.get("x-request-id") or str(uuid.uuid4())
-        request.state.request_id = req_id
     start = time.time()
     response = await call_next(request)
-    if req_id:
-        response.headers["X-Request-Id"] = req_id
     if PROM_ENABLED:
         REQ_LATENCY.labels(request.method, request.url.path, response.status_code).observe(
             time.time() - start
-        )
-    if REQ_LOG_JSON:
-        logger.info(
-            "request",
-            extra={
-                "request_id": req_id,
-                "path": request.url.path,
-                "status": response.status_code,
-                "latency_ms": round((time.time() - start) * 1000),
-            },
         )
     return response
 
@@ -64,16 +49,24 @@ if PROM_ENABLED:
         return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
-async def verify_api_key(request: Request, x_api_key: str = Header(None)):
-    ip = request.client.host if request.client else "unknown"
-    if x_api_key not in get_api_keys():
-        audit_log(logger, "auth_failure", ip=ip, api_key=x_api_key)
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    audit_log(logger, "auth_success", ip=ip)
-
-
-app = FastAPI(title="Grant Eligibility Engine", dependencies=[Depends(verify_api_key)])
+app = FastAPI(title="Grant Eligibility Engine", dependencies=[Depends(require_internal_key)])
+try:
+    app.middleware("http")(request_id_middleware)
+except AttributeError:
+    pass
 app.middleware("http")(observability_middleware)
+ 
+
+@app.get("/healthz")
+def healthz() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.get("/readyz")
+def readyz() -> dict[str, str]:
+    if not (security_ready and _valid_keys):
+        raise HTTPException(status_code=503, detail="not ready")
+    return {"status": "ok"}
 if PROM_ENABLED:
     app.get("/metrics")(metrics)
 

@@ -84,6 +84,8 @@ class TestClient:
     def post(self, path: str, json: Dict | None = None, files: Dict | None = None, data: Dict | None = None):
         headers = {"content-type": "application/json"} if json else {"content-type": "multipart/form-data"}
         request = Request(json_data=json, headers=headers)
+        request.path = path
+        request.method = "POST"
         file = None
         if files:
             _name, (filename, file_obj, _type) = next(iter(files.items()))
@@ -104,6 +106,8 @@ class TestClient:
 
     def get(self, path: str, headers: Dict[str, str] | None = None):
         request = Request(headers=headers)
+        request.path = path
+        request.method = "GET"
         handler = self.app.routes[path]
         try:
             for dep in getattr(self.app, "dependencies", []):
