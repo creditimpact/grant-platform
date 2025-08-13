@@ -1,7 +1,20 @@
 // server/index.js
 
-// ENV VALIDATION: ensure env variables are validated before anything else
-const env = require('./config/env'); // ENV VALIDATION
+// ===== Load & Validate ENV =====
+const env = require('./config/env'); // טוען את .env ומוודא ערכים
+console.log('=== Loaded ENV Variables ===');
+console.log({
+  PORT: env.PORT,
+  NODE_ENV: process.env.NODE_ENV,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  MONGO_URI: process.env.MONGO_URI ? '[LOADED]' : '[MISSING]',
+  JWT_SECRET: process.env.JWT_SECRET ? '[LOADED]' : '[MISSING]',
+  VAULT_ADDR: process.env.VAULT_ADDR,
+  VAULT_TOKEN: process.env.VAULT_TOKEN ? '[SET]' : '[MISSING]',
+  VAULT_SECRET_PATH: process.env.VAULT_SECRET_PATH,
+});
+console.log('=============================');
+
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -15,27 +28,30 @@ const { csrfProtection } = require('./middleware/csrf');
 const requestId = require('./middleware/requestId');
 const authMiddleware = require('./middleware/authMiddleware');
 
-const { metricsMiddleware, register } = process.env.OBSERVABILITY_ENABLED === 'true' && process.env.PROMETHEUS_METRICS_ENABLED === 'true'
-  ? require('./observability/metrics')
-  : { metricsMiddleware: null, register: null };
+const { metricsMiddleware, register } =
+  process.env.OBSERVABILITY_ENABLED === 'true' &&
+  process.env.PROMETHEUS_METRICS_ENABLED === 'true'
+    ? require('./observability/metrics')
+    : { metricsMiddleware: null, register: null };
+
 const tracing = require('./observability/tracing');
 
-
-// Initialize Express app
+// ===== Initialize Express =====
 const app = express();
-
 tracing.init();
 
-// === Middlewares ===
+// ===== Middlewares =====
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'https://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
 app.use(requestId);
+
 if (metricsMiddleware) {
   app.use(metricsMiddleware);
 }
+
 app.use(
   morgan('combined', {
     stream: {
@@ -47,6 +63,7 @@ app.use(
 app.use(rateLimit({ windowMs: 60 * 60 * 1000, max: 1000 }));
 app.use('/api', rateLimit({ windowMs: 60 * 1000, max: 60 }));
 
+// Security Headers
 app.use((req, res, next) => {
   res.setHeader('Content-Security-Policy', "default-src 'self'");
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
@@ -63,9 +80,8 @@ app.use((req, res, next) => {
 });
 
 app.use(csrfProtection);
-// SECURITY FIX: removed public static serving of uploads
 
-// simple echo endpoint for tests and health checks (auth required)
+// ===== Routes =====
 app.post('/echo', authMiddleware, (req, res) => {
   res.json(req.body || {});
 });
@@ -76,8 +92,7 @@ if (metricsMiddleware) {
   app.get('/metrics', (req, res) => {
     const header = req.headers['authorization'] || '';
     if (!expected || header !== `Basic ${expected}`) {
-      return res
-        .status(401)
+      return res.status(401)
         .set('WWW-Authenticate', 'Basic realm="metrics"')
         .end();
     }
@@ -86,7 +101,6 @@ if (metricsMiddleware) {
   });
 }
 
-// === Root & Health Routes ===
 app.get('/', (req, res) => {
   res.send('🚀 Grant Platform API is running!');
 });
@@ -95,18 +109,14 @@ app.get('/status', (req, res) => {
   res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' });
 });
 
-// === API Routes ===
 app.use('/api/auth', require('./routes/auth'));
 logger.info('Auth routes registered');
 app.use('/api/users', require('./routes/users'));
-// Unified grant submission pipeline
 app.use('/api', require('./routes/pipeline'));
-// Case management & document routes
 app.use('/api', require('./routes/case'));
-// Form template management
 app.use('/api', require('./routes/formTemplate'));
 
-// === Connect to DB and start server ===
+// ===== Start Server =====
 const PORT = env.PORT || 5000;
 
 function startServer() {
@@ -121,8 +131,7 @@ function startServer() {
       requestCert: true,
       rejectUnauthorized: true,
     };
-    https
-      .createServer(options, app)
+    https.createServer(options, app)
       .listen(PORT, () => logger.info(`HTTPS server running on port ${PORT}`));
   } else {
     app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
@@ -134,7 +143,7 @@ if (process.env.SKIP_DB !== 'true') {
     .then(startServer)
     .catch((err) => {
       logger.error('Failed to connect to MongoDB', { error: err.message });
-      process.exit(1); // Exit process if DB fails
+      process.exit(1);
     });
 }
 
