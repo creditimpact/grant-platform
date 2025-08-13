@@ -1,45 +1,82 @@
-// SECURITY FIX: use Redis-backed store with in-memory fallback
+const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
+const ipaddr = require('ipaddr.js');
 const logger = require('../utils/logger');
-let Redis;
-try {
-  Redis = require('ioredis'); // SECURITY FIX: optional Redis dependency
-} catch {
-  Redis = null;
-}
-const redis = Redis && process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : null;
-const hits = new Map();
 
-function rateLimit({ windowMs, max, message }) {
-  return async (req, res, next) => {
-    const key = `rl:${req.ip}:${req.path}`;
-    try {
-      let count;
-      if (redis) {
-        count = await redis.incr(key);
-        if (count === 1) {
-          await redis.pexpire(key, windowMs);
-        }
-      } else {
-        const now = Date.now();
-        let entry = hits.get(key);
-        if (!entry || now - entry.start > windowMs) {
-          entry = { count: 0, start: now };
-        }
-        entry.count += 1;
-        entry.start = entry.start || now;
-        hits.set(key, entry);
-        count = entry.count;
-      }
-      if (count > max) {
-        logger.warn('rate-limit', { ip: req.ip, path: req.path }); // SECURITY FIX: log abuse attempts
-        return res.status(429).json({ message: message || 'Too many requests' });
-      }
-      next();
-    } catch (err) {
-      logger.error('rate-limit failure', { error: err.message }); // SECURITY FIX: capture Redis errors
-      next();
+function hash(val) {
+  return crypto.createHash('sha256').update(val).digest('hex').slice(0, 8);
+}
+
+function parseWhitelist(list) {
+  return (list || '')
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
+function ipInCidr(ip, cidr) {
+  try {
+    const addr = ipaddr.parse(ip);
+    if (cidr.includes('/')) {
+      const [range, bits] = cidr.split('/');
+      const subnet = ipaddr.parse(range);
+      return addr.match(subnet, parseInt(bits, 10));
     }
-  };
+    return addr.toString() === ipaddr.parse(cidr).toString();
+  } catch {
+    return false;
+  }
 }
 
-module.exports = rateLimit;
+module.exports = function createRateLimiter() {
+  if (process.env.ENABLE_RATE_LIMIT === 'false') {
+    return (req, res, next) => next();
+  }
+  const windowSec = parseInt(process.env.RATE_LIMIT_WINDOW_SEC || '60', 10);
+  const limit = parseInt(process.env.RATE_LIMIT_PER_MINUTE || '100', 10);
+  const whitelist = parseWhitelist(process.env.RATE_LIMIT_WHITELIST);
+  const exempt = new Set(['/healthz', '/readyz', '/metrics']);
+
+  return rateLimit({
+    windowMs: windowSec * 1000,
+    limit,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      const key = req.headers['x-api-key'];
+      if (key) return 'api:' + hash(key);
+      const auth = req.headers['authorization'];
+      if (auth && auth.startsWith('Bearer ')) return 'jwt:' + hash(auth.slice(7));
+      return 'ip:' + (req.ip || '');
+    },
+    skip: (req) => {
+      if (exempt.has(req.path)) return true;
+      const id = req.headers['x-service-name'];
+      if (id && whitelist.includes(id)) return true;
+      const ip = req.ip;
+      return whitelist.some((w) => ipInCidr(ip, w));
+    },
+    handler: (req, res, next, opts) => {
+      const retry = Math.ceil(opts.windowMs / 1000);
+      res.set('Retry-After', String(retry));
+      res.status(429).json({ error: 'rate_limited', retry_after: retry });
+      const keyHeader = req.headers['x-api-key'];
+      const auth = req.headers['authorization'];
+      const identity_type = keyHeader
+        ? 'api_key'
+        : auth && auth.startsWith('Bearer ')
+        ? 'jwt'
+        : 'ip';
+      logger.warn('rate_limited', {
+        request_id: req.id,
+        service: 'server',
+        path: req.path,
+        method: req.method,
+        remote_ip: req.ip,
+        identity_type,
+        limit,
+        window_sec: windowSec,
+      });
+    },
+  });
+};

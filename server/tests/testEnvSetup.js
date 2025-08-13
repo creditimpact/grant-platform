@@ -15,6 +15,7 @@ process.env.TLS_KEY_PATH = dummy;
 process.env.TLS_CERT_PATH = dummy;
 process.env.PORT = '1';
 process.env.SKIP_DB = 'true';
+process.env.ENABLE_RATE_LIMIT = 'false';
 
 const originalFetch = global.fetch;
 global.rawFetch = originalFetch;
