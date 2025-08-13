@@ -9,6 +9,7 @@ vars = {
     "TLS_KEY_PATH": str(dummy),
     "SECURITY_ENFORCEMENT_LEVEL": "dev",
     "DISABLE_VAULT": "true",
+    "ENABLE_RATE_LIMIT": "false",
 }
 for k,v in vars.items():
     os.environ.setdefault(k, v)

@@ -13,6 +13,7 @@ from common.logger import get_logger
 from common.request_id import request_id_middleware
 from common.settings import load_security_settings
 from common.security import require_api_key
+from common.limiting import rate_limiter
 
 security_settings, security_ready = load_security_settings()
 _valid_keys = [k for k in [security_settings.AI_ANALYZER_API_KEY, security_settings.AI_ANALYZER_NEXT_API_KEY] if k]
@@ -36,7 +37,7 @@ def scan_for_viruses(data: bytes) -> None:
         raise HTTPException(status_code=500, detail="Virus scanner not available")
 
 
-app = FastAPI(dependencies=[Depends(require_internal_key)])
+app = FastAPI(dependencies=[Depends(require_internal_key), rate_limiter("ai-analyzer")])
 try:
     app.middleware("http")(request_id_middleware)
 except AttributeError:
