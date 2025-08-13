@@ -1,10 +1,14 @@
 // ENV VALIDATION: centralized environment validation without external deps
 const fs = require('fs');
 const { URL } = require('url');
-const { loadVaultSecrets } = require('./vaultClient');
 
-// Load secrets from Vault before validating
-loadVaultSecrets();
+// טוען סודות מ-Vault רק אם אנחנו בפרודקשן
+if (process.env.NODE_ENV === 'production') {
+  const { loadVaultSecrets } = require('./vaultClient');
+  loadVaultSecrets();
+} else {
+  console.log('🔹 Development mode detected – loading secrets from .env instead of Vault');
+}
 
 function requireString(name) {
   const val = process.env[name];
