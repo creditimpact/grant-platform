@@ -7,17 +7,16 @@ module.exports = function requestId(req, res, next) {
   req.id = id;
   res.locals.requestId = id;
   res.setHeader('X-Request-Id', id);
-  if (process.env.REQUEST_LOG_JSON === 'true') {
-    const start = process.hrtime.bigint();
-    onFinished(res, () => {
-      const diff = Number(process.hrtime.bigint() - start) / 1e6;
-      logger.info('request', {
-        reqId: id,
-        route: req.originalUrl,
-        status: res.statusCode,
-        latencyMs: Number(diff.toFixed(3)),
-      });
+  const start = process.hrtime.bigint();
+  onFinished(res, () => {
+    const diff = Number(process.hrtime.bigint() - start) / 1e6;
+    logger.info('request', {
+      requestId: id,
+      method: req.method,
+      route: req.originalUrl,
+      status: res.statusCode,
+      latencyMs: Number(diff.toFixed(3)),
     });
-  }
+  });
   next();
 };

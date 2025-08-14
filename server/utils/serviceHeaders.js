@@ -1,3 +1,5 @@
+const { randomUUID } = require('crypto');
+
 function getServiceKey(service) {
   const map = { AI_AGENT: 'AGENT', ELIGIBILITY_ENGINE: 'ELIGIBILITY_ENGINE', AI_ANALYZER: 'AI_ANALYZER' };
   const prefix = map[service] || service;
@@ -6,9 +8,8 @@ function getServiceKey(service) {
 
 function getServiceHeaders(service, req) {
   const key = getServiceKey(service);
-  const headers = { 'X-API-Key': key };
-  if (req && req.id) headers['X-Request-Id'] = req.id;
-  return headers;
+  const requestId = (req && req.id) || randomUUID();
+  return { 'X-API-Key': key, 'X-Request-Id': requestId };
 }
 
 module.exports = { getServiceKey, getServiceHeaders };

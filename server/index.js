@@ -46,10 +46,22 @@ const app = express();
 tracing.init();
 
 // ===== Global Middlewares =====
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+const allowedOrigins =
+  process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+    : [process.env.FRONTEND_URL, process.env.ADMIN_URL].filter(Boolean);
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Request-Id'],
   credentials: true,
-}));
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(requestId);
 app.use(internalAuth);
@@ -120,8 +132,36 @@ app.get('/healthz', (req, res) => {
 });
 
 app.get('/readyz', (req, res) => {
-  if (!securityReady) return res.status(503).json({ status: 'not_ready' });
-  res.json({ status: 'ok' });
+  const checks = {};
+
+  checks.security = securityReady ? 'ok' : 'missing_keys';
+
+  if (process.env.SKIP_DB === 'true') {
+    checks.mongo = 'skipped';
+  } else {
+    const state = require('mongoose').connection.readyState;
+    checks.mongo = state === 1 ? 'ok' : 'disconnected';
+  }
+
+  if (
+    process.env.DISABLE_VAULT === 'true' ||
+    process.env.NODE_ENV !== 'production'
+  ) {
+    checks.vault = 'skipped';
+  } else {
+    const hasVault =
+      process.env.VAULT_ADDR &&
+      process.env.VAULT_TOKEN &&
+      process.env.VAULT_SECRET_PATH;
+    checks.vault = hasVault ? 'ok' : 'missing';
+  }
+
+  const ready = Object.values(checks).every(
+    (v) => v === 'ok' || v === 'skipped'
+  );
+  const status = ready ? 'ready' : 'not_ready';
+  const code = ready ? 200 : 503;
+  res.status(code).json({ status, checks });
 });
 
 app.get('/status', (req, res) => {

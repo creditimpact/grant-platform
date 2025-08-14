@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Request, Body, UploadFile, File, Form, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Any
 from pathlib import Path
@@ -69,6 +71,21 @@ try:
 except AttributeError:
     pass
 
+origins_env = os.getenv("ALLOWED_ORIGINS")
+if origins_env:
+    origins = [o.strip() for o in origins_env.split(",") if o.strip()]
+else:
+    origins = [os.getenv("FRONTEND_URL"), os.getenv("ADMIN_URL")]
+    origins = [o for o in origins if o]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key", "X-Request-Id"],
+)
+
 
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
@@ -76,10 +93,30 @@ def healthz() -> dict[str, str]:
 
 
 @app.get("/readyz")
-def readyz() -> dict[str, str]:
-    if not (security_ready and _valid_keys):
-        raise HTTPException(status_code=503, detail="not ready")
-    return {"status": "ok"}
+def readyz() -> JSONResponse:
+    checks: dict[str, str] = {}
+    security_ok = security_ready and bool(_valid_keys)
+    checks["security"] = "ok" if security_ok else "missing_keys"
+
+    if os.getenv("SKIP_DB") == "true":
+        checks["mongo"] = "skipped"
+    else:
+        from session_memory import client
+        try:
+            ok = bool(client and client.admin.command("ping"))
+        except Exception:
+            ok = False
+        checks["mongo"] = "ok" if ok else "failed"
+
+    if security_settings.SECURITY_ENFORCEMENT_LEVEL == "prod" and not security_settings.DISABLE_VAULT:
+        checks["vault"] = "ok" if security_ready else "unavailable"
+    else:
+        checks["vault"] = "skipped"
+
+    ready = all(v in {"ok", "skipped"} for v in checks.values())
+    status = "ready" if ready else "not_ready"
+    code = 200 if ready else 503
+    return JSONResponse(status_code=code, content={"status": status, "checks": checks})
 
 
 @app.get("/")
