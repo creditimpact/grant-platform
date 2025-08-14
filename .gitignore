@@ -12,3 +12,6 @@ coverage/
 /frontend/.next
 /frontend/node_modules
 __pycache__/
+# Ignore all env files for dev
+.env.development
+*/.env.development
