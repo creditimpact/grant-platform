@@ -2,6 +2,7 @@
 
 // ===== Load & Validate ENV =====
 const env = require('./config/env'); // Loads .env and validates values
+console.log('DEBUG: Environment variables loaded');
 console.log('=== Loaded ENV Variables ===');
 console.log({
   PORT: env.PORT,
@@ -196,6 +197,7 @@ function startServer() {
       logger.info(`🔐 HTTPS server running on port ${PORT}`);
     });
   } else {
+    console.log('DEBUG: Before app.listen');
     app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
     });
@@ -203,8 +205,12 @@ function startServer() {
 }
 
 if (process.env.SKIP_DB !== 'true') {
+  console.log('DEBUG: Before Mongo connection');
   connectDB()
-    .then(startServer)
+    .then(() => {
+      console.log('DEBUG: After Mongo connection');
+      startServer();
+    })
     .catch((err) => {
       logger.error('❌ Failed to connect to MongoDB', { error: err.message });
       process.exit(1);
