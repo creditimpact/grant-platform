@@ -14,21 +14,16 @@ PARENT = Path(__file__).resolve().parent.parent
 if str(PARENT) not in sys.path:
     sys.path.insert(0, str(PARENT))
 
+# Determine which env file to load. Order of resolution:
+# 1. ENV_FILE if set
+# 2. .env.<NODE_ENV> (defaults to .env.development)
+#    .env.development is checked into source control and should contain
+#    defaults for local development.
+# Production additionally loads secrets from Vault.
 NODE_ENV = os.getenv("NODE_ENV", "development")
-
-if NODE_ENV != "production":
-    env_file = Path(__file__).resolve().parent / ".env"
-    if env_file.exists():
-        for line in env_file.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            key, _, value = line.partition("=")
-            key = key.strip()
-            value = value.strip()
-            if value:
-                os.environ.setdefault(key, value)
-else:
+ENV_FILE = os.getenv("ENV_FILE")
+ENV_PATH = ENV_FILE or Path(__file__).resolve().parent / f".env.{NODE_ENV}"
+if NODE_ENV == "production":
     from common.vault import load_vault_secrets
 
     load_vault_secrets()
@@ -48,6 +43,8 @@ class Settings(BaseSettings):
     ENABLE_DEBUG: bool = False
 
     class Config:
+        env_file = ENV_PATH
+        env_file_encoding = "utf-8"
         case_sensitive = True
 
 settings = Settings()

@@ -1,5 +1,17 @@
-// Load environment variables from .env early
-require('dotenv').config();
+// Load environment variables from an env file early based on NODE_ENV.
+// Order of resolution:
+// 1. ENV_FILE if explicitly provided
+// 2. .env.<NODE_ENV> (defaults to .env.development)
+//    .env.development is checked in and should contain local defaults
+// 3. Production secrets are loaded from Vault after dotenv
+const path = require('path');
+const nodeEnv = process.env.NODE_ENV || 'development';
+const envFile = process.env.ENV_FILE || path.resolve(__dirname, '..', `.env.${nodeEnv}`);
+require('dotenv').config({ path: envFile });
+// Support legacy AGENT_API_KEY expected by security middleware
+if (process.env.AI_AGENT_API_KEY && !process.env.AGENT_API_KEY) {
+  process.env.AGENT_API_KEY = process.env.AI_AGENT_API_KEY;
+}
 
 const fs = require('fs');
 const { URL } = require('url');
@@ -65,7 +77,7 @@ function getBool(name, def = false) {
 
 // === Required Secrets ===
 requireString('JWT_SECRET');
-requireString('AGENT_API_KEY');
+requireString('AI_AGENT_API_KEY');
 requireString('AI_ANALYZER_API_KEY');
 requireString('ELIGIBILITY_ENGINE_API_KEY');
 requireString('OPENAI_API_KEY');

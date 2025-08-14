@@ -15,7 +15,7 @@ def test_rate_limit_basic():
     os.environ["ENABLE_RATE_LIMIT"] = "true"
     os.environ["RATE_LIMIT_PER_MINUTE"] = "2"
     os.environ["RATE_LIMIT_WINDOW_SEC"] = "60"
-    os.environ["AGENT_API_KEY"] = "k1"
+    os.environ["AI_AGENT_API_KEY"] = "k1"
     limiting._hits.clear()
     client = get_client()
     headers = {"X-API-Key": "k1"}
@@ -38,8 +38,8 @@ def test_identity_prefers_api_key():
     os.environ["ENABLE_RATE_LIMIT"] = "true"
     os.environ["RATE_LIMIT_PER_MINUTE"] = "1"
     os.environ["RATE_LIMIT_WINDOW_SEC"] = "60"
-    os.environ["AGENT_API_KEY"] = "k1"
-    os.environ["AGENT_NEXT_API_KEY"] = "k2"
+    os.environ["AI_AGENT_API_KEY"] = "k1"
+    os.environ["AI_AGENT_NEXT_API_KEY"] = "k2"
     limiting._hits.clear()
     client = get_client()
     assert client.get("/", headers={"X-API-Key": "k1"}).status_code == 200

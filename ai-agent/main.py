@@ -48,7 +48,7 @@ from grants_loader import load_grants
 from config import settings  # type: ignore
 
 security_settings, security_ready = load_security_settings()
-_valid_keys = [k for k in [security_settings.AGENT_API_KEY, security_settings.AGENT_NEXT_API_KEY] if k]
+_valid_keys = [k for k in [security_settings.AI_AGENT_API_KEY, security_settings.AI_AGENT_NEXT_API_KEY] if k]
 require_internal_key = require_api_key(_valid_keys, "ai-agent")
 
 

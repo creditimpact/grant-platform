@@ -4,19 +4,17 @@ from pathlib import Path
 from typing import Optional
 from pydantic import BaseSettings
 
-if os.environ.get("NODE_ENV") != "production":
-    print("🔹 Development mode – loading .env manually")
-    try:
-        with open(".env") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#"):
-                    key, value = line.split("=", 1)
-                    os.environ[key.strip()] = value.strip()
-    except FileNotFoundError:
-        print("⚠️ .env file not found – continuing with existing environment variables")
-else:
+# Determine which env file to load. Order of resolution:
+# 1. ENV_FILE if set
+# 2. .env.<NODE_ENV> (defaults to .env.development)
+#    .env.development is committed and should contain development defaults.
+# Production additionally loads secrets from Vault.
+NODE_ENV = os.getenv("NODE_ENV", "development")
+ENV_FILE = os.getenv("ENV_FILE")
+ENV_PATH = ENV_FILE or Path(__file__).resolve().parent / f".env.{NODE_ENV}"
+if NODE_ENV == "production":
     from common.vault import load_vault_secrets
+
     load_vault_secrets()
 
 class Settings(BaseSettings):
@@ -28,6 +26,8 @@ class Settings(BaseSettings):
     TLS_CA_PATH: Optional[Path] = None
 
     class Config:
+        env_file = ENV_PATH
+        env_file_encoding = "utf-8"
         case_sensitive = True
 
 settings = Settings()

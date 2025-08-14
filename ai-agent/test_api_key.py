@@ -11,8 +11,8 @@ def get_client():
 
 
 def test_api_key_auth():
-    os.environ["AGENT_API_KEY"] = "valid"
-    os.environ.pop("AGENT_NEXT_API_KEY", None)
+    os.environ["AI_AGENT_API_KEY"] = "valid"
+    os.environ.pop("AI_AGENT_NEXT_API_KEY", None)
     client = get_client()
     assert client.get("/", headers={"X-API-Key": "valid"}).status_code == 200
     assert client.get("/", headers={"X-API-Key": "bad"}).status_code == 401
@@ -26,8 +26,8 @@ def test_health_ready_endpoints():
 
 def test_readyz_fails_without_key():
     os.environ["SECURITY_ENFORCEMENT_LEVEL"] = "prod"
-    os.environ.pop("AGENT_API_KEY", None)
+    os.environ.pop("AI_AGENT_API_KEY", None)
     client = get_client()
     assert client.get("/readyz").status_code == 503
     os.environ["SECURITY_ENFORCEMENT_LEVEL"] = "dev"
-    os.environ["AGENT_API_KEY"] = "test-key"
+    os.environ["AI_AGENT_API_KEY"] = "test-key"
