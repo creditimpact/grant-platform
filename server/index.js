@@ -208,14 +208,15 @@ function startServer() {
 }
 
 if (process.env.SKIP_DB !== 'true') {
-  console.log('DEBUG_STARTUP: Before connecting to MongoDB');
+  console.log('DEBUG_STARTUP: Attempting MongoDB connection...');
   connectDB()
     .then(() => {
       console.log('DEBUG_STARTUP: MongoDB connection successful');
       startServer();
     })
     .catch((err) => {
-      logger.error('❌ Failed to connect to MongoDB', { error: err.message });
+      logger.error('❌ Failed to connect to MongoDB', { error: err.stack });
+      console.error('DEBUG_STARTUP: MongoDB connection failed');
       process.exit(1);
     });
 }

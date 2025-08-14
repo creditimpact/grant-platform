@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const logger = require('../utils/logger');
 
 const connectDB = async () => {
   try {
@@ -28,13 +29,17 @@ const connectDB = async () => {
       console.log('🔹 Connecting to MongoDB using URI only (development mode)');
     }
 
+    const maskedURI = mongoURI.replace(/:\/\/[^@]*@/, '://****@');
+    console.log(`Connecting to MongoDB at ${maskedURI}`);
+
     const conn = await mongoose.connect(mongoURI, options);
-    const logger = require('../utils/logger');
+    console.log(`✅ MongoDB connection established (host: ${conn.connection.host})`);
     logger.info('mongo_connected', { host: conn.connection.host });
   } catch (error) {
-    const logger = require('../utils/logger');
-    logger.error('mongo_error', { error: error.message });
-    process.exit(1); // עצור את התהליך אם החיבור נכשל
+    console.error('❌ MongoDB connection failed');
+    console.error(error.stack);
+    logger.error('mongo_error', { error: error.stack });
+    throw error; // caller decides how to handle
   }
 };
 
