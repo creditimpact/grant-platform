@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException, Depends
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from engine import analyze_eligibility
 from grants_loader import load_grants
 import os
@@ -13,6 +13,7 @@ from common.settings import load_security_settings
 from common.security import require_api_key
 from common.limiting import rate_limiter
 from config import settings  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))
@@ -56,6 +57,21 @@ try:
 except AttributeError:
     pass
 app.middleware("http")(observability_middleware)
+
+origins_env = os.getenv("ALLOWED_ORIGINS")
+if origins_env:
+    origins = [o.strip() for o in origins_env.split(",") if o.strip()]
+else:
+    origins = [os.getenv("FRONTEND_URL"), os.getenv("ADMIN_URL")]
+    origins = [o for o in origins if o]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key", "X-Request-Id"],
+)
  
 
 @app.get("/healthz")
@@ -64,10 +80,20 @@ def healthz() -> dict[str, str]:
 
 
 @app.get("/readyz")
-def readyz() -> dict[str, str]:
-    if not (security_ready and _valid_keys):
-        raise HTTPException(status_code=503, detail="not ready")
-    return {"status": "ok"}
+def readyz() -> JSONResponse:
+    checks: dict[str, str] = {}
+    security_ok = security_ready and bool(_valid_keys)
+    checks["security"] = "ok" if security_ok else "missing_keys"
+
+    if security_settings.SECURITY_ENFORCEMENT_LEVEL == "prod" and not security_settings.DISABLE_VAULT:
+        checks["vault"] = "ok" if security_ready else "unavailable"
+    else:
+        checks["vault"] = "skipped"
+
+    ready = all(v in {"ok", "skipped"} for v in checks.values())
+    status = "ready" if ready else "not_ready"
+    code = 200 if ready else 503
+    return JSONResponse(status_code=code, content={"status": status, "checks": checks})
 if PROM_ENABLED:
     app.get("/metrics")(metrics)
 

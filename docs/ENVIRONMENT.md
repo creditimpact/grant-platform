@@ -6,6 +6,18 @@ may be supplied for local development but should come from the runtime environme
 production. The keys listed below reside inside the Vault paths and are not read from
 `.env` files.
 
+## Common Variables
+| Variable | Purpose | Required | Default |
+| --- | --- | --- | --- |
+| FRONTEND_URL | Allowed frontend origin | yes* | - |
+| ADMIN_URL | Allowed admin origin | no | - |
+| ALLOWED_ORIGINS | Comma-separated override for allowed CORS origins | no | - |
+| DISABLE_VAULT | Skip Vault checks (set `true` in dev) | no | `true` |
+| SECURITY_ENFORCEMENT_LEVEL | `dev` or `prod` readiness mode | no | `dev` |
+| SKIP_DB | Skip database readiness checks | no | `false` |
+
+`*` Required unless `ALLOWED_ORIGINS` is provided.
+
 ## Vault Configuration
 | Variable | Purpose | Required |
 | --- | --- | --- |
