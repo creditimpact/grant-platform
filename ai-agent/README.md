@@ -13,7 +13,7 @@ uvicorn main:app --reload
 
 Secrets are loaded from Vault. Set `VAULT_ADDR`, `VAULT_TOKEN` (for local
 testing) and `VAULT_SECRET_PATH` to point at a KV v2 location containing values
-such as `MONGO_URI`, `MONGO_USER`, `MONGO_PASS`, `MONGO_CA_FILE` and
+such as `MONGO_URI`, optional `MONGO_USER` and `MONGO_PASS`, `MONGO_CA_FILE` and
 `OPENAI_API_KEY`.
 
 ## Endpoints
