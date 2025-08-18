@@ -8,3 +8,4 @@ pymongo==4.6.3
 pytest==8.0.2
 coverage==7.4.0
 flake8==6.1.0
+pydantic-settings
