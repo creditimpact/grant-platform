@@ -1,7 +1,7 @@
 # ENV VALIDATION: centralized env settings for ai-analyzer
 import os
 from pathlib import Path
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Determine which env file to load. Order of resolution:
 # 1. ENV_FILE if set
@@ -13,9 +13,6 @@ ENV_PATH = ENV_FILE or Path(__file__).resolve().parent / f".env.{NODE_ENV}"
 class Settings(BaseSettings):
     NODE_ENV: str = "development"
 
-    class Config:
-        env_file = ENV_PATH
-        env_file_encoding = "utf-8"
-        case_sensitive = True
+    model_config = SettingsConfigDict(env_file=ENV_PATH, extra="ignore")
 
 settings = Settings()
