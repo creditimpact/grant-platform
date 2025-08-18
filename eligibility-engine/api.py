@@ -1,27 +1,20 @@
-from fastapi import FastAPI, Request, HTTPException, Depends
-from fastapi.responses import Response, JSONResponse
-from engine import analyze_eligibility
-from grants_loader import load_grants
-import os
-import sys
-import time
-from pathlib import Path
-from prometheus_client import Histogram, CONTENT_TYPE_LATEST, generate_latest
-from common.logger import get_logger
-from common.request_id import request_id_middleware
-from common.settings import load_security_settings
-from common.security import require_api_key
-from common.limiting import rate_limiter
-from config import settings  # type: ignore
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, Response
+import time
+import os
+from pathlib import Path
+import sys
+from typing import Any
+from prometheus_client import Histogram, CONTENT_TYPE_LATEST, generate_latest
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))
-
-
-security_settings, security_ready = load_security_settings()
-_valid_keys = [k for k in [security_settings.ELIGIBILITY_ENGINE_API_KEY, security_settings.ELIGIBILITY_ENGINE_NEXT_API_KEY] if k]
-require_internal_key = require_api_key(_valid_keys, "eligibility-engine")
+from common.logger import get_logger
+from common.request_id import request_id_middleware
+from grants_loader import load_grants
+from engine import analyze_eligibility
+from config import settings  # type: ignore
 
 logger = get_logger(__name__)
 
@@ -35,86 +28,55 @@ if PROM_ENABLED:
         ["method", "path", "status"],
     )
 
-
 async def observability_middleware(request: Request, call_next):
     start = time.time()
     response = await call_next(request)
     if PROM_ENABLED:
-        REQ_LATENCY.labels(request.method, request.url.path, response.status_code).observe(
-            time.time() - start
-        )
+        REQ_LATENCY.labels(request.method, request.url.path, response.status_code).observe(time.time() - start)
     return response
-
 
 if PROM_ENABLED:
     def metrics():
         return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
-
-app = FastAPI(title="Grant Eligibility Engine", dependencies=[Depends(require_internal_key), rate_limiter("eligibility-engine")])
+app = FastAPI(title="Grant Eligibility Engine")
 try:
     app.middleware("http")(request_id_middleware)
 except AttributeError:
     pass
 app.middleware("http")(observability_middleware)
 
-origins_env = os.getenv("ALLOWED_ORIGINS")
-if origins_env:
-    origins = [o.strip() for o in origins_env.split(",") if o.strip()]
-else:
-    origins = [os.getenv("FRONTEND_URL"), os.getenv("ADMIN_URL")]
-    origins = [o for o in origins if o]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["Content-Type", "Authorization", "X-API-Key", "X-Request-Id"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
- 
 
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
     return {"status": "ok"}
 
-
 @app.get("/readyz")
 def readyz() -> JSONResponse:
-    checks: dict[str, str] = {}
-    security_ok = security_ready and bool(_valid_keys)
-    checks["security"] = "ok" if security_ok else "missing_keys"
+    return JSONResponse(status_code=200, content={"status": "ready"})
 
-    if security_settings.SECURITY_ENFORCEMENT_LEVEL == "prod" and not security_settings.DISABLE_VAULT:
-        checks["vault"] = "ok" if security_ready else "unavailable"
-    else:
-        checks["vault"] = "skipped"
-
-    ready = all(v in {"ok", "skipped"} for v in checks.values())
-    status = "ready" if ready else "not_ready"
-    code = 200 if ready else 503
-    return JSONResponse(status_code=code, content={"status": status, "checks": checks})
 if PROM_ENABLED:
     app.get("/metrics")(metrics)
 
-
 @app.get("/")
 def root() -> dict[str, str]:
-    """Health check route."""
     return {"status": "ok"}
-
 
 @app.get("/status")
 def status() -> dict[str, str]:
-    """Alias health check."""
     return {"status": "ok"}
 
 GRANTS = load_grants()
 
-
 @app.post("/check")
 async def check_eligibility(request: Request):
-    """Check grant eligibility for provided user data."""
     try:
         data = await request.json()
         result = analyze_eligibility(data, explain=True)
@@ -124,10 +86,8 @@ async def check_eligibility(request: Request):
         logger.error("eligibility_check_failed", extra={"error": str(e)})
         raise HTTPException(status_code=500, detail="internal error")
 
-
 @app.get("/grants")
 def list_grants():
-    """List all available grants with metadata."""
     return [
         {
             "key": g["key"],
@@ -139,18 +99,16 @@ def list_grants():
         for g in GRANTS
     ]
 
-
 @app.get("/grants/{grant_key}")
 def get_grant(grant_key: str):
-    """Retrieve a single grant configuration by key."""
     for g in GRANTS:
         if g["key"] == grant_key:
             return g
     raise HTTPException(status_code=404, detail="Grant not found")
 
-
 if __name__ == "__main__":
-    import uvicorn, ssl, os
+    import uvicorn
+    import ssl
 
     cert = str(settings.TLS_CERT_PATH)
     key = str(settings.TLS_KEY_PATH)
