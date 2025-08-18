@@ -2,8 +2,8 @@
 
 This repository contains three microservices used to test a grant eligibility workflow.
 
-- **server/** – Express API for authentication, file uploads and analysis forwarding
-- **ai-analyzer/** – FastAPI service that extracts text using Tesseract OCR and simple NLP with confidence scores while enforcing API key authentication, a 5MB upload limit and ClamAV virus scanning
+- **server/** – Express API for file uploads and analysis forwarding
+- **ai-analyzer/** – FastAPI service that extracts text using Tesseract OCR and simple NLP with confidence scores
 - **eligibility-engine/** – Python rules engine returning missing fields and suggested next steps
 - **ai-agent/** – LLM-ready service with conversational endpoints and smart form filling
 
@@ -11,7 +11,7 @@ All Node.js dependencies are pinned to exact versions, and the server runs on th
 
 ## Persistence
 
-User cases, pipeline state, uploaded file metadata and AI agent conversations are now stored in MongoDB. Sessions are persisted in a TTL-indexed collection and file uploads stream to disk with their paths tracked in the database. See [`docs/mongo-security.md`](docs/mongo-security.md) for details on authentication, TLS and role setup.
+User cases, pipeline state, uploaded file metadata and AI agent conversations are now stored in MongoDB. Sessions are persisted in a TTL-indexed collection and file uploads stream to disk with their paths tracked in the database.
 
 The eligibility engine now ships with templates for common programs including a Business Tax Refund Grant, a Veteran Owned Business Grant, the Employee Retention Credit (ERC), a comprehensive Rural Development Grant covering USDA sub-programs, a Green Energy State Incentive aggregating state-level rebates, credits and grants for renewable installations, an Urban Small Business Grants (2025) package spanning nine city programs, and a California Small Business Grant (2025) bundling the Dream Fund, STEP export vouchers, San Francisco Women’s Entrepreneurship Fund, Route 66 Extraordinary Women Micro-Grant, CDFA grants, RUST assistance, CalChamber awards and the LA Region Small Business Relief Fund.
 The Rural Development configuration now includes federal form templates for SF-424, 424A, RD 400-1, RD 400-4 and RD 400-8.
@@ -25,7 +25,7 @@ project-root/
   frontend/             Next.js application
 ```
 
-The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files up to 5MB each and scans them for viruses before analysis. All upload endpoints require valid authentication and will reject unauthorized requests. The ClamAV binary used for scanning can be customized with the `CLAMSCAN_PATH` environment variable.
+The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files up to 5MB each.
 
 ### Veteran Owned Business Grant
 
@@ -58,36 +58,6 @@ ELIGIBILITY_ENGINE_URL=https://eligibility-engine:4001
 AI_AGENT_URL=https://ai-agent:5001
 ```
 
-## Authentication
-
-Internal Python services (AI Agent, AI Analyzer, Eligibility Engine) require an `X-API-Key`
-header that matches the target service's API key (e.g. `AI_AGENT_API_KEY`). During key
-rotation the `*_NEXT_API_KEY` value is also accepted. Example:
-
-```bash
-curl -k -H "X-API-Key: your_key" https://localhost:5001/status
-```
-
-To rotate a key, deploy the new value via the `*_NEXT_API_KEY` variable on the target
-service and its callers. Requests are accepted with either key. Once callers are
-updated to use the new key, promote it to `*_API_KEY` and remove the old value.
-
-Requests without a key return **401 Unauthorized**. The Express server protects routes under `/api` using JWT bearer tokens:
-
-```bash
-curl -k -H "Authorization: Bearer <token>" https://localhost:5000/api/users
-```
-
-A missing or invalid token results in **401 Unauthorized**.
-
-The utility `/echo` endpoint is likewise protected and requires a valid JWT. Prometheus metrics at `/metrics` are secured with
-HTTP Basic auth; set `METRICS_BASIC_AUTH=user:pass` and scrape with `curl -u user:pass https://localhost:5000/metrics`.
-
-JWT payloads also contain a user's `role` (`user` or `admin`). The backend exposes a
-`requireRole('admin')` middleware used by admin-only endpoints such as
-`POST /api/form-template`.
-
-
 ### Case Management API
 
 The frontend interacts with a simpler set of endpoints that manage a user's in‑progress case:
@@ -98,8 +68,6 @@ The frontend interacts with a simpler set of endpoints that manage a user's in�
 | `/api/case/questionnaire` | GET/POST | Retrieve or store questionnaire answers |
 | `/api/files/upload` | POST | Upload a single document (fields: `file` and `key`) |
 | `/api/eligibility-report` | GET/POST | Fetch or trigger eligibility analysis |
-
-All routes are protected and expect a `Bearer` JWT token. Service URLs for the AI Agent, Eligibility Engine and Form Filler are configured with the environment variables shown above.
 
 ### Questionnaire Payload
 
@@ -136,15 +104,10 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
 ## Running locally
 
 1. Install Node dependencies and start the API server. Dependency versions, including Express 4.18.2, are pinned in `package.json` and `package-lock.json`.
-   ```bash
-   npm install
-   node server/index.js
-   ```
-   Secrets are now retrieved from Hashicorp Vault. Populate Vault with the
-   required keys and set `VAULT_ADDR`, `VAULT_TOKEN` (for local testing) and
-   `VAULT_SECRET_PATH` pointing at the secret mount for the server.
-   Non‑secret configuration such as service URLs can still be supplied via
-   regular environment variables.
+    ```bash
+    npm install
+    node server/index.js
+    ```
 
 2. Start the AI analyzer service
    ```bash
@@ -158,9 +121,6 @@ All routes are protected and expect a `Bearer` JWT token. Service URLs for the A
    pip install -r requirements.txt
    python -m uvicorn main:app --port 5001
    ```
-   The AI agent reads all sensitive values from Vault as well. Configure the
-   agent's `VAULT_SECRET_PATH` to point at its secret namespace containing API
-   keys and database credentials.
 4. Start the eligibility engine
    ```bash
    cd eligibility-engine

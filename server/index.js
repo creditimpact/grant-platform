@@ -5,9 +5,6 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const connectDB = require('./utils/db');
-const path = require('path');
-const fs = require('fs');
-const https = require('https');
 
 const logger = require('./utils/logger');
 const requestId = require('./middleware/requestId');
@@ -60,8 +57,6 @@ app.get('/status', (req, res) => {
   res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' });
 });
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
 app.use('/api', require('./routes/pipeline'));
 app.use('/api', require('./routes/case'));
 app.use('/api', require('./routes/formTemplate'));
@@ -69,25 +64,9 @@ app.use('/api', require('./routes/formTemplate'));
 const PORT = env.PORT || 5000;
 
 function startServer() {
-  const keyPath = process.env.TLS_KEY_PATH;
-  const certPath = process.env.TLS_CERT_PATH;
-
-  if (keyPath && certPath) {
-    const options = {
-      key: fs.readFileSync(keyPath),
-      cert: fs.readFileSync(certPath),
-      ca: process.env.TLS_CA_PATH ? fs.readFileSync(process.env.TLS_CA_PATH) : undefined,
-      requestCert: true,
-      rejectUnauthorized: true,
-    };
-    https.createServer(options, app).listen(PORT, () => {
-      logger.info(`HTTPS server running on port ${PORT}`);
-    });
-  } else {
-    app.listen(PORT, () => {
-      logger.info(`Server running on port ${PORT}`);
-    });
-  }
+  app.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`);
+  });
 }
 
 if (process.env.SKIP_DB !== 'true') {

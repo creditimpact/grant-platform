@@ -4,7 +4,6 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 const fetchFn = global.pipelineFetch || (global.fetch ? global.fetch.bind(global) : (...args) => import('node-fetch').then(({ default: f }) => f(...args)));
-const createAgent = require('../utils/tlsAgent');
 const { createCase, updateCase, getCase } = require('../utils/pipelineStore');
 const logger = require('../utils/logger');
 const { validate, schemas } = require('../middleware/validate');
@@ -13,7 +12,6 @@ const { validateAgainstSchema } = require('../middleware/formValidation');
 const { getServiceHeaders } = require('../utils/serviceHeaders');
 
 const router = express.Router();
-const agent = createAgent();
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -51,7 +49,6 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
         method: 'POST',
         body: form,
         headers: { ...form.getHeaders(), ...getServiceHeaders('AI_ANALYZER', req) },
-        agent,
       });
       if (!resp.ok) {
         const text = await resp.text();
@@ -70,7 +67,6 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getServiceHeaders('ELIGIBILITY_ENGINE', req) },
       body: JSON.stringify(normalized),
-      agent,
     });
     if (!eligResp.ok) {
       const text = await eligResp.text();
@@ -88,7 +84,6 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getServiceHeaders('AI_AGENT', req) },
         body: JSON.stringify({ form_name: formName, user_payload: normalized }),
-        agent,
       });
       if (!agentResp.ok) {
         const text = await agentResp.text();
