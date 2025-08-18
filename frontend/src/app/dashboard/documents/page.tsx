@@ -5,7 +5,6 @@
  */
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Protected from '@/components/Protected';
 import api from '@/lib/api';
 import Stepper from '@/components/Stepper';
 import { normalizeQuestionnaire } from '@/lib/validation';
@@ -55,9 +54,7 @@ export default function Documents() {
     }
   };
 
-  if (!caseData) return (
-    <Protected><p>Loading...</p></Protected>
-  );
+  if (!caseData) return <p>Loading...</p>;
 
   const docs = Array.isArray(caseData.documents) ? caseData.documents : [];
   const uploadedCount = docs.filter((d: any) => d.uploaded).length;
@@ -123,81 +120,80 @@ export default function Documents() {
   };
 
   return (
-    <Protected>
-      <div className="py-6 max-w-xl mx-auto space-y-4">
-        <Stepper
-          steps={["Questionnaire", "Documents", "Analysis", "Results"]}
-          current={loading ? 2 : 1}
-        />
-        {savedMessage && (
-          <div className="text-green-600 text-sm">{savedMessage}</div>
-        )}
-        <h1 className="text-2xl font-bold">Upload Documents</h1>
-        <p className="text-sm text-gray-600">Accepted formats: PDF, JPG, JPEG, PNG.</p>
-        {docs.map((doc: any) => (
-          <div key={doc.key} className="flex items-center space-x-3">
-            <span className="w-48">
-              {doc.name}
-              {doc.reason && (
-                <span className="block text-xs text-gray-500">{doc.reason}</span>
+    <div className="py-6 max-w-xl mx-auto space-y-4">
+      <Stepper
+        steps={["Questionnaire", "Documents", "Analysis", "Results"]}
+        current={loading ? 2 : 1}
+      />
+      {savedMessage && (
+        <div className="text-green-600 text-sm">{savedMessage}</div>
+      )}
+      <h1 className="text-2xl font-bold">Upload Documents</h1>
+      <p className="text-sm text-gray-600">Accepted formats: PDF, JPG, JPEG, PNG.</p>
+      {docs.map((doc: any) => (
+        <div key={doc.key} className="flex items-center space-x-3">
+          <span className="w-48">
+            {doc.name}
+            {doc.reason && (
+              <span className="block text-xs text-gray-500">{doc.reason}</span>
+            )}
+          </span>
+          {doc.uploaded ? (
+            <>
+              <span className="text-green-600">✓ Uploaded</span>
+              {doc.mimetype?.startsWith('image/') && doc.url ? (
+                <img
+                  src={doc.url}
+                  alt={doc.name}
+                  className="w-16 h-16 object-cover"
+                />
+              ) : (
+                <span className="text-sm text-gray-600">{doc.originalname}</span>
               )}
-            </span>
-            {doc.uploaded ? (
-              <>
-                <span className="text-green-600">✓ Uploaded</span>
-                {doc.mimetype?.startsWith('image/') && doc.url ? (
-                  <img
-                    src={doc.url}
-                    alt={doc.name}
-                    className="w-16 h-16 object-cover"
-                  />
-                ) : (
-                  <span className="text-sm text-gray-600">{doc.originalname}</span>
-                )}
-                {doc.url && (
-                  <a
-                    href={doc.url}
-                    className="text-blue-600"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View
-                  </a>
-                )}
-                <button
-                  onClick={() => setReplaceKey(doc.key)}
-                  className="px-2 py-1 bg-gray-200 rounded"
+              {doc.url && (
+                <a
+                  href={doc.url}
+                  className="text-blue-600"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  Replace
-                </button>
-                {replaceKey === doc.key && (
-                  <>
-                    <input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) =>
-                        setUploads({
-                          ...uploads,
-                          [doc.key]: e.target.files?.[0] || null,
-                        })
-                      }
-                    />
-                    {uploads[doc.key] && (
-                      <span className="text-sm text-gray-600">
-                        {uploads[doc.key]?.name}
-                      </span>
-                    )}
-                    <button
-                      onClick={() => handleUpload(doc.key)}
-                      className="px-2 py-1 bg-blue-600 text-white rounded"
-                    >
-                      Upload
-                    </button>
-                  </>
-                )}
-              </>
-            ) : (
-              <>
+                  View
+                </a>
+              )}
+              <button
+                onClick={() => setReplaceKey(doc.key)}
+                className="px-2 py-1 bg-gray-200 rounded"
+              >
+                Replace
+              </button>
+              {replaceKey === doc.key && (
+                <>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={(e) =>
+                      setUploads({
+                        ...uploads,
+                        [doc.key]: e.target.files?.[0] || null,
+                      })
+                    }
+                  />
+                  {uploads[doc.key] && (
+                    <span className="text-sm text-gray-600">
+                      {uploads[doc.key]?.name}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => handleUpload(doc.key)}
+                    className="px-2 py-1 bg-blue-600 text-white rounded"
+                  >
+                    Upload
+                  </button>
+                </>
+              )}
+            </>
+          ) : (
+            <>
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
@@ -241,6 +237,5 @@ export default function Documents() {
           </button>
         </div>
       </div>
-    </Protected>
   );
 }

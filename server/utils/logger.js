@@ -1,7 +1,7 @@
 // SECURITY FIX: add recursive PII redaction and suppress info logs in production
 const crypto = require('crypto');
 const logs = [];
-const PII_PATTERNS = [/name/i, /email/i, /address/i, /phone/i, /ssn/i, /password/i, /token/i, /apikey/i];
+const PII_PATTERNS = [/name/i, /email/i, /address/i, /phone/i, /ssn/i, /password/i, /token/i];
 const EMAIL_REGEX = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 const IP_REGEX = /\b(?:\d{1,3}\.){3}\d{1,3}\b/;
 
