@@ -10,7 +10,7 @@ async function updateCase(caseId, updates) {
 }
 
 async function getCase(userId, caseId) {
-  return PipelineCase.findOne({ _id: caseId, userId });
+  return PipelineCase.findOne({ _id: caseId });
 }
 
 module.exports = { createCase, updateCase, getCase };

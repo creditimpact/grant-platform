@@ -1,19 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const auth = require('../middleware/authMiddleware');
-const logger = require('../utils/logger'); // SECURITY FIX: logging with PII masking
 
-// @route   GET /api/users
-// @desc    Get all users (protected)
-// @access  Private
-// SECURITY FIX: restrict to authenticated user's profile only
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password -__v');
-    res.status(200).json(user);
+    const users = await User.find().select('-password -__v');
+    res.status(200).json(users);
   } catch (err) {
-    logger.error('Failed to fetch user', { error: err.message }); // SECURITY FIX: sanitized logging
     res.status(500).json({ message: 'Server error' });
   }
 });
