@@ -1,5 +1,6 @@
 # ENV VALIDATION: centralized env settings for ai-agent
-from pydantic import BaseSettings, AnyUrl, FilePath, Field
+from pydantic_settings import BaseSettings
+from pydantic import AnyUrl, FilePath, Field
 import os
 
 # ``common`` lives one directory above this service. When tests import the
