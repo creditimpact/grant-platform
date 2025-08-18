@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
-const createAgent = require('./tlsAgent');
 const Case = require('../models/Case');
 const logger = require('./logger');
 
@@ -12,7 +11,6 @@ function loadGrantConfig() {
   return JSON.parse(clean);
 }
 
-const agent = createAgent();
 
 async function computeDocuments(answers = {}) {
   const docs = [
@@ -118,7 +116,6 @@ async function computeDocuments(answers = {}) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(answers),
-      agent,
     });
     const results = await response.json();
     if (Array.isArray(results)) {

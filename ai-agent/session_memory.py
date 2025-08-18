@@ -2,26 +2,12 @@
 from typing import Dict, Any, List
 from pymongo import MongoClient
 from config import settings  # type: ignore
-from mongo_uri import build_mongo_uri
 
-# Require explicit credentials and TLS for all connections.
-# When running tests without database credentials, the client is not created.
 MONGO_URI = getattr(settings, "MONGO_URI", None)
-MONGO_USER = getattr(settings, "MONGO_USER", None)
-MONGO_PASS = getattr(settings, "MONGO_PASS", None)
-MONGO_CA_FILE = getattr(settings, "MONGO_CA_FILE", None)
 
 if MONGO_URI:
     try:
-        uri = build_mongo_uri(MONGO_URI, MONGO_USER, MONGO_PASS)
-        client = MongoClient(
-            uri,
-            tls=True,
-            tlsCAFile=str(MONGO_CA_FILE) if MONGO_CA_FILE else None,
-            authSource=getattr(settings, "MONGO_AUTH_DB", "admin"),
-            tlsAllowInvalidCertificates=False,
-            serverSelectionTimeoutMS=500,
-        )
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=500)
         db = client["ai_agent"]
         collection = db["session_memory"]
         _memory_store: Dict[str, List[Dict[str, Any]]] | None = None
@@ -35,7 +21,7 @@ else:  # pragma: no cover - db disabled in tests
     db = None
     collection = None
     # Simple in-memory store used when MongoDB isn't configured (e.g. in unit
-    # tests).  It mimics the structure of the persisted documents.
+    # tests). It mimics the structure of the persisted documents.
     _memory_store: Dict[str, List[Dict[str, Any]]] = {}
 
 
