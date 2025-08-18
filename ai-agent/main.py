@@ -65,7 +65,10 @@ class FormFillRequest(BaseModel):
     session_id: str | None = None
 
 
-app = FastAPI(title="AI Agent Service", dependencies=[Depends(require_internal_key), rate_limiter("ai-agent")])
+app = FastAPI(
+    title="AI Agent Service",
+    dependencies=[Depends(require_internal_key), Depends(rate_limiter("ai-agent"))],
+)
 try:
     app.middleware("http")(request_id_middleware)
 except AttributeError:
