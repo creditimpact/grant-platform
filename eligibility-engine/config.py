@@ -1,5 +1,5 @@
 # ENV VALIDATION: centralized env settings for eligibility-engine
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 import os
 from pathlib import Path
 from dotenv import load_dotenv

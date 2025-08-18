@@ -1,7 +1,7 @@
 # ENV VALIDATION: centralized env settings for ai-analyzer
 import os
 from pathlib import Path
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 # Determine which env file to load. Order of resolution:
 # 1. ENV_FILE if set
