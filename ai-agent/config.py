@@ -1,5 +1,5 @@
 # ENV VALIDATION: centralized env settings for ai-agent
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import AnyUrl, FilePath, Field
 import os
 
@@ -28,9 +28,6 @@ class Settings(BaseSettings):
     MONGO_URI: AnyUrl | None = None
     ENABLE_DEBUG: bool = False
 
-    class Config:
-        env_file = ENV_PATH
-        env_file_encoding = "utf-8"
-        case_sensitive = True
+    model_config = SettingsConfigDict(env_file=ENV_PATH, extra="ignore")
 
 settings = Settings()
