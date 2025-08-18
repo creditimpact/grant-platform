@@ -1,5 +1,5 @@
 # ENV VALIDATION: centralized env settings for ai-agent
-from pydantic import BaseSettings, AnyUrl, FilePath
+from pydantic import BaseSettings, AnyUrl, FilePath, Field
 import os
 
 # ``common`` lives one directory above this service.  When tests import the
@@ -33,8 +33,12 @@ class Settings(BaseSettings):
     AI_AGENT_NEXT_API_KEY: str | None = None
     OPENAI_API_KEY: str
     MONGO_URI: AnyUrl
-    MONGO_USER: str
-    MONGO_PASS: str
+    MONGO_USER: str | None = Field(
+        default=None, description="MongoDB username; optional for development"
+    )
+    MONGO_PASS: str | None = Field(
+        default=None, description="MongoDB password; optional for development"
+    )
     MONGO_CA_FILE: FilePath | None = None
     MONGO_AUTH_DB: str = "admin"
     TLS_CERT_PATH: FilePath | None = None
