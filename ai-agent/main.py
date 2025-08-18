@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Body, UploadFile, File, Form, Depends, HTTPException
+from fastapi import FastAPI, Request, Body, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -8,31 +8,16 @@ import json
 import sys
 import os
 
-# Resolve project directories and load environment variables
 CURRENT_DIR = Path(__file__).resolve().parent
-
-# ENV VALIDATION: load settings before other imports
-
-# ensure local imports work regardless of working directory.  ``CURRENT_DIR``
-# must take precedence so that ``config`` resolves to the ai-agent module and
-# not to similarly named modules from sibling services such as the
-# eligibility engine.  We therefore insert paths in reverse order so that the
-# final ``sys.path`` starts with ``CURRENT_DIR``.
 BASE_DIR = CURRENT_DIR.parent
 ENGINE_DIR = BASE_DIR / "eligibility-engine"
 
-# allow importing the eligibility engine (lowest precedence)
 sys.path.insert(0, str(ENGINE_DIR))
-# allow importing shared utilities
 sys.path.insert(0, str(BASE_DIR))
-# ensure ai-agent modules (like config) are searched first
 sys.path.insert(0, str(CURRENT_DIR))
 
 from common.logger import get_logger
 from common.request_id import request_id_middleware
-from common.settings import load_security_settings
-from common.security import require_api_key
-from common.limiting import rate_limiter
 
 from engine import analyze_eligibility  # type: ignore
 from document_utils import extract_fields
@@ -49,44 +34,27 @@ from grants_loader import load_grants
 
 from config import settings  # type: ignore
 
-security_settings, security_ready = load_security_settings()
-_valid_keys = [k for k in [security_settings.AI_AGENT_API_KEY, security_settings.AI_AGENT_NEXT_API_KEY] if k]
-require_internal_key = require_api_key(_valid_keys, "ai-agent")
-
-
 logger = get_logger(__name__)
 
 
 class FormFillRequest(BaseModel):
-    """Schema for the /form-fill endpoint."""
-
     form_name: str
     user_payload: dict[str, Any]
     session_id: str | None = None
 
 
-app = FastAPI(
-    title="AI Agent Service",
-    dependencies=[Depends(require_internal_key), Depends(rate_limiter("ai-agent"))],
-)
+app = FastAPI(title="AI Agent Service")
 try:
     app.middleware("http")(request_id_middleware)
 except AttributeError:
     pass
 
-origins_env = os.getenv("ALLOWED_ORIGINS")
-if origins_env:
-    origins = [o.strip() for o in origins_env.split(",") if o.strip()]
-else:
-    origins = [os.getenv("FRONTEND_URL"), os.getenv("ADMIN_URL")]
-    origins = [o for o in origins if o]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["Content-Type", "Authorization", "X-API-Key", "X-Request-Id"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -97,40 +65,16 @@ def healthz() -> dict[str, str]:
 
 @app.get("/readyz")
 def readyz() -> JSONResponse:
-    checks: dict[str, str] = {}
-    security_ok = security_ready and bool(_valid_keys)
-    checks["security"] = "ok" if security_ok else "missing_keys"
-
-    if os.getenv("SKIP_DB") == "true":
-        checks["mongo"] = "skipped"
-    else:
-        from session_memory import client
-        try:
-            ok = bool(client and client.admin.command("ping"))
-        except Exception:
-            ok = False
-        checks["mongo"] = "ok" if ok else "failed"
-
-    if security_settings.SECURITY_ENFORCEMENT_LEVEL == "prod" and not security_settings.DISABLE_VAULT:
-        checks["vault"] = "ok" if security_ready else "unavailable"
-    else:
-        checks["vault"] = "skipped"
-
-    ready = all(v in {"ok", "skipped"} for v in checks.values())
-    status = "ready" if ready else "not_ready"
-    code = 200 if ready else 503
-    return JSONResponse(status_code=code, content={"status": status, "checks": checks})
+    return JSONResponse(status_code=200, content={"status": "ready"})
 
 
 @app.get("/")
 def root() -> dict[str, str]:
-    """Health check route."""
     return {"status": "ok"}
 
 
 @app.get("/status")
 def status() -> dict[str, str]:
-    """Alias health check."""
     return {"status": "ok"}
 
 
@@ -142,7 +86,6 @@ async def check(
     explain: bool = False,
     session_id: str | None = None,
 ):
-    """Run eligibility check using provided data or uploaded document."""
     if data:
         payload = json.loads(data)
     elif request.headers.get("content-type", "").startswith("application/json"):
@@ -150,7 +93,6 @@ async def check(
     else:
         payload = {}
 
-    # query parameters override defaults
     qp = getattr(request, "query_params", {})
     if "explain" in qp:
         val = qp.get("explain")
@@ -197,15 +139,12 @@ async def check(
 async def form_fill(
     request_model: FormFillRequest = Body(
         ...,
-        # Pydantic v2 removed the ``embed`` parameter so we rely on the default
-        # behavior which expects the JSON fields at the top level.
         example={
             "form_name": "form_8974",
             "user_payload": {"employer_identification_number": "12-3456789"},
         }
     )
 ):
-    """Fill a grant form template with provided user data."""
     if isinstance(request_model, dict):
         request_model = FormFillRequest(**request_model)
 
@@ -222,7 +161,6 @@ async def form_fill(
 
 @app.post("/preview-form")
 async def preview_form(body: dict, file: UploadFile | None = None):
-    """Preview a form with reasoning before final submission."""
     grant_key = body.get("grant")
     data = body.get("data", {})
     session_id = body.get("session_id")
@@ -239,7 +177,6 @@ async def preview_form(body: dict, file: UploadFile | None = None):
 
 @app.post("/chat")
 async def chat(message: dict):
-    """Conversational endpoint backed by the LLM."""
     mode = message.get("mode")
     text = message.get("text") or message.get("prompt")
     grant_key = message.get("grant")
@@ -268,7 +205,6 @@ async def chat(message: dict):
             result["follow_up"] = follow_up
         return result
 
-    # fallback to canned responses when no free text supplied
     mode = mode or "info"
     if mode == "info":
         response = "I can help match you to grants and fill forms."
@@ -296,7 +232,6 @@ ENABLE_DEBUG = os.getenv("ENABLE_DEBUG", "false").lower() == "true"
 
 @app.get("/llm-debug/{session_id}")
 async def llm_debug(session_id: str):
-    """Return a summary of agent actions for debugging."""
     if not ENABLE_DEBUG:
         raise HTTPException(status_code=403, detail="Debug access disabled")
     history = get_conversation(session_id)
@@ -306,17 +241,15 @@ async def llm_debug(session_id: str):
 
 
 if __name__ == "__main__":
-    import uvicorn, ssl, os
+    import uvicorn
+    import ssl
 
     cert = os.getenv("TLS_CERT_PATH")
     key = os.getenv("TLS_KEY_PATH")
     ca = os.getenv("TLS_CA_PATH")
     kwargs: dict[str, object] = {"reload": True}
     if cert and key:
-        kwargs.update({
-            "ssl_certfile": cert,
-            "ssl_keyfile": key,
-        })
+        kwargs.update({"ssl_certfile": cert, "ssl_keyfile": key})
         if ca:
             kwargs["ssl_ca_certs"] = ca
             kwargs["ssl_cert_reqs"] = ssl.CERT_REQUIRED

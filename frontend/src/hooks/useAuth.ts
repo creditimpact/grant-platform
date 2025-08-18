@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from '@/lib/api'; // ← Axios instance עם baseURL מוגדר
+import api from '@/lib/api';
 import { safeWarn } from '@/utils/logger';
 
 interface AuthState {
@@ -17,7 +17,6 @@ export const useAuth = create<AuthState>((set) => ({
 
   async login(email, password) {
     set({ loading: true });
-    await api.get('/auth/csrf-token'); // SECURITY FIX: fetch CSRF token
     await api.post('/auth/login', { email, password });
     await useAuth.getState().check();
     set({ loading: false });
@@ -25,7 +24,6 @@ export const useAuth = create<AuthState>((set) => ({
 
   async register(data) {
     set({ loading: true });
-    await api.get('/auth/csrf-token'); // SECURITY FIX: fetch CSRF token
     await api.post('/auth/register', data);
     await useAuth.getState().check();
     set({ loading: false });

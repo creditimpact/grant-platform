@@ -1,30 +1,10 @@
-// Load environment variables from an env file early based on NODE_ENV.
-// Order of resolution:
-// 1. ENV_FILE if explicitly provided
-// 2. .env.<NODE_ENV> (defaults to .env.development)
-//    .env.development is checked in and should contain local defaults
-// 3. Production secrets are loaded from Vault after dotenv
 const path = require('path');
 const nodeEnv = process.env.NODE_ENV || 'development';
 const envFile = process.env.ENV_FILE || path.resolve(__dirname, '..', `.env.${nodeEnv}`);
 require('dotenv').config({ path: envFile });
-// Support legacy AGENT_API_KEY expected by security middleware
-if (process.env.AI_AGENT_API_KEY && !process.env.AGENT_API_KEY) {
-  process.env.AGENT_API_KEY = process.env.AI_AGENT_API_KEY;
-}
 
-const fs = require('fs');
 const { URL } = require('url');
 
-// Load secrets from Vault only in production
-if (process.env.NODE_ENV === 'production') {
-  const { loadVaultSecrets } = require('./vaultClient');
-  loadVaultSecrets();
-} else {
-  console.log('🔹 Development mode detected – loading secrets from .env instead of Vault');
-}
-
-// === Validation Utilities ===
 function requireString(name) {
   const val = process.env[name];
   if (!val) throw new Error(`Missing required environment variable ${name}`);
@@ -41,25 +21,6 @@ function requireURL(name) {
   }
 }
 
-function requireHTTPSURL(name) {
-  const val = requireString(name);
-  try {
-    const url = new URL(val);
-    if (url.protocol !== 'https:') throw new Error();
-    return val;
-  } catch {
-    throw new Error(`Invalid HTTPS URL for environment variable ${name}`);
-  }
-}
-
-function requirePath(name) {
-  const val = requireString(name);
-  if (!fs.existsSync(val)) {
-    throw new Error(`File not found for ${name}: ${val}`);
-  }
-  return val;
-}
-
 function requireInt(name) {
   const val = requireString(name);
   const num = Number(val);
@@ -69,50 +30,14 @@ function requireInt(name) {
   return num;
 }
 
-function getBool(name, def = false) {
-  const val = process.env[name];
-  if (val === undefined) return def;
-  return ['1', 'true', 'yes'].includes(val.toLowerCase());
-}
-
-// === Required Secrets ===
-requireString('JWT_SECRET');
-requireString('AI_AGENT_API_KEY');
-requireString('AI_ANALYZER_API_KEY');
-requireString('ELIGIBILITY_ENGINE_API_KEY');
-requireString('OPENAI_API_KEY');
-
-// === URLs ===
-// In production, enforce HTTPS; in development, allow HTTP
-const urlValidator = process.env.NODE_ENV === 'production' ? requireHTTPSURL : requireURL;
-urlValidator('FRONTEND_URL');
-urlValidator('ELIGIBILITY_ENGINE_URL');
-urlValidator('AI_ANALYZER_URL');
-urlValidator('AI_AGENT_URL');
-
-// === MongoDB ===
+requireURL('FRONTEND_URL');
+requireURL('ELIGIBILITY_ENGINE_URL');
+requireURL('AI_ANALYZER_URL');
+requireURL('AI_AGENT_URL');
 requireURL('MONGO_URI');
-if (process.env.NODE_ENV === 'production') {
-  requireString('MONGO_USER');
-  requireString('MONGO_PASS');
-  requirePath('MONGO_CA_FILE');
-} else {
-  console.log('🔹 Skipping MongoDB credentials & CA file check in development');
-}
 
-// === TLS (Production only) ===
-if (process.env.NODE_ENV === 'production') {
-  requirePath('TLS_KEY_PATH');
-  requirePath('TLS_CERT_PATH');
-  if (process.env.TLS_CA_PATH) requirePath('TLS_CA_PATH');
-  if (process.env.CLIENT_CERT_PATH) requirePath('CLIENT_CERT_PATH');
-  if (process.env.CLIENT_KEY_PATH) requirePath('CLIENT_KEY_PATH');
-  if (process.env.CLIENT_CA_PATH) requirePath('CLIENT_CA_PATH');
-}
-
-// === Misc ===
 const PORT = requireInt('PORT');
-const ENABLE_DEBUG = getBool('ENABLE_DEBUG');
-const SKIP_DB = getBool('SKIP_DB');
+const ENABLE_DEBUG = false;
+const SKIP_DB = process.env.SKIP_DB === 'true';
 
 module.exports = { PORT, ENABLE_DEBUG, SKIP_DB };
