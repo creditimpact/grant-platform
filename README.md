@@ -179,7 +179,6 @@ The backend uses `AI_ANALYZER_URL`, `ELIGIBILITY_ENGINE_URL` and `AI_AGENT_URL` 
 4. When all documents are uploaded, click **Submit for Analysis** to see eligibility results.
 
 ![Dashboard Flow](frontend/public/dashboard-placeholder.svg)
-![Login Screen](frontend/public/login-placeholder.svg)
 ![Document Upload](frontend/public/upload-placeholder.svg)
 
 ## Docker Compose
