@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "echo 'no tests'",
+    "test": "jest --runInBand",
     "verify:mongo": "node scripts/verify-mongo-tls.js",
     "profile:flame": "clinic flame -- node index.js",
     "profile:doctor": "clinic doctor -- node index.js",
@@ -21,5 +21,10 @@
     "pino": "8.16.0",
     "prom-client": "15.0.0",
     "uuid": "9.0.1"
+  },
+  "devDependencies": {
+    "jest": "29.7.0",
+    "nock": "13.5.2",
+    "supertest": "6.3.4"
   }
 }
