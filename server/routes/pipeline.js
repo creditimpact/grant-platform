@@ -29,7 +29,8 @@ const upload = multer({ storage });
 
 router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), async (req, res) => {
   const userId = 'dev-user';
-  const caseId = await createCase(userId);
+  const { caseId: providedCaseId, ...basePayload } = req.body;
+  const caseId = await createCase(userId, providedCaseId);
   try {
     const docMeta = req.files.map((f) => ({
       originalname: f.originalname,
@@ -58,8 +59,8 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
       const fields = await resp.json();
       extracted = { ...extracted, ...fields };
     }
-    const normalized = { ...req.body, ...extracted };
-    await updateCase(caseId, { status: 'analyzed', normalized });
+    const normalized = { ...basePayload, ...extracted };
+    await updateCase(caseId, { status: 'analyzed', normalized, analyzer: extracted });
 
     const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
     const engineUrl = `${engineBase.replace(/\/$/, '')}/check`;
@@ -76,19 +77,30 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
     const eligibility = await eligResp.json();
     await updateCase(caseId, { status: 'checked', eligibility });
 
+    // Aggregate required forms from all eligibility results
+    const requiredForms = Array.isArray(eligibility)
+      ? [...new Set(eligibility.flatMap((r) => r.requiredForms || []))]
+      : eligibility.requiredForms || [];
+
     const agentBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
     const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
     const filledForms = [];
-    for (const formName of eligibility.requiredForms || []) {
+    for (const formName of requiredForms) {
       const agentResp = await fetchFn(agentUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getServiceHeaders('AI_AGENT', req) },
-        body: JSON.stringify({ form_name: formName, user_payload: normalized }),
+        body: JSON.stringify({
+          form_name: formName,
+          user_payload: normalized,
+          analyzer_fields: extracted,
+        }),
       });
       if (!agentResp.ok) {
         const text = await agentResp.text();
         await updateCase(caseId, { status: 'error', error: text });
-        return res.status(502).json({ message: `AI agent form-fill error ${agentResp.status}`, details: text });
+        return res
+          .status(502)
+          .json({ message: `AI agent form-fill error ${agentResp.status}`, details: text });
       }
       const agentData = await agentResp.json();
       const tmpl = await getLatestTemplate(formName);
@@ -115,7 +127,16 @@ router.get('/status/:caseId', async (req, res) => {
   const userId = 'dev-user';
   const c = await getCase(userId, req.params.caseId);
   if (!c) return res.status(404).json({ message: 'Case not found' });
-  res.json({ status: c.status, eligibility: c.eligibility, documents: c.documents, generatedForms: c.generatedForms });
+  res.json({
+    caseId: c.caseId,
+    createdAt: c.createdAt,
+    status: c.status,
+    analyzer: c.analyzer,
+    eligibility: c.eligibility,
+    generatedForms: c.generatedForms,
+    documents: c.documents,
+    normalized: c.normalized,
+  });
 });
 
 module.exports = router;
