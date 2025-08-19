@@ -3,7 +3,7 @@ export function safeLog(...args: any[]) {
   try {
     console.log(...args);
   } catch {
-    /* ignore */
+    /* no-op */
   }
 }
 
@@ -11,6 +11,6 @@ export function safeError(...args: any[]) {
   try {
     console.error(...args);
   } catch {
-    /* ignore */
+    /* no-op */
   }
 }
