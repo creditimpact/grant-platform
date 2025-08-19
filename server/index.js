@@ -58,7 +58,9 @@ app.get('/status', (req, res) => {
 });
 
 app.use('/api', require('./routes/pipeline'));
-app.use('/api', require('./routes/case'));
+const caseRouter = require('./routes/case');
+app.use('/api', caseRouter);
+app.get('/case/status', caseRouter.caseStatusHandler);
 app.use('/api', require('./routes/formTemplate'));
 
 const PORT = env.PORT || 5000;
