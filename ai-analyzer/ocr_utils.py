@@ -19,13 +19,13 @@ def extract_text(file_bytes: bytes) -> str:
         try:  # pragma: no cover - relies on external binaries
             image = Image.open(io.BytesIO(file_bytes))
             text = pytesseract.image_to_string(image)
-            return text
+            return text.strip()
         except Exception:
             pass
 
     # Fallback to simple decoding
     try:
-        return file_bytes.decode("utf-8")
+        return file_bytes.decode("utf-8").strip()
     except Exception:
         # Final fallback for binary files
         return "sample extracted text"

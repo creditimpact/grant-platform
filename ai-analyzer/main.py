@@ -1,12 +1,12 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import tempfile
 import sys
-import os
 from pathlib import Path
+from typing import Optional
+from pydantic import BaseModel, constr
 from ocr_utils import extract_text
-from nlp_parser import parse_fields
+from nlp_parser import extract_fields, normalize_text
 from config import settings  # type: ignore
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -46,18 +46,75 @@ def root() -> dict[str, str]:
 def status() -> dict[str, str]:
     return {"status": "ok"}
 
-@app.post('/analyze')
-async def analyze(file: UploadFile = File(...)):
-    content = await file.read()
-    text = extract_text(content)
-    fields, confidence = parse_fields(text)
+class TextAnalyzeRequest(BaseModel):
+    text: constr(strip_whitespace=True, min_length=1, max_length=100_000)
+
+
+TEXT_LIMIT = 100_000
+ALLOWED_FILE_TYPES = {"application/pdf", "image/png", "image/jpeg"}
+
+
+@app.post("/analyze")
+async def analyze(
+    request: Request,
+    file: Optional[UploadFile] = File(None),
+    text: Optional[str] = Form(None),
+):
+    ctype = request.headers.get("content-type", "")
+
+    if "application/json" in ctype:
+        try:
+            payload = await request.json()
+        except Exception as exc:  # pragma: no cover - FastAPI handles body parsing
+            raise HTTPException(status_code=422, detail="Invalid JSON") from exc
+        try:
+            req = TextAnalyzeRequest(**payload)
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail="Invalid JSON shape") from exc
+        return await analyze_text_flow(req.text, source="text")
+
+    if "text/plain" in ctype:
+        raw = await request.body()
+        if len(raw) > TEXT_LIMIT:
+            raise HTTPException(status_code=400, detail="Text exceeds limit")
+        body_text = raw.decode("utf-8", errors="replace").strip()
+        if not body_text:
+            raise HTTPException(status_code=400, detail="Provide file or text")
+        return await analyze_text_flow(body_text, source="text")
+
+    if "multipart/form-data" in ctype:
+        if text and text.strip():
+            if len(text.encode("utf-8")) > TEXT_LIMIT:
+                raise HTTPException(status_code=400, detail="Text exceeds limit")
+            return await analyze_text_flow(text.strip(), source="text")
+        if file is None:
+            raise HTTPException(status_code=400, detail="Provide file or text")
+        if file.content_type not in ALLOWED_FILE_TYPES:
+            raise HTTPException(status_code=400, detail="Unsupported file type")
+        content = await file.read()
+        extracted = extract_text(content)
+        return await analyze_text_flow(extracted, source="file", filename=file.filename, content_type=file.content_type)
+
+    raise HTTPException(status_code=400, detail="Unsupported Content-Type")
+
+
+async def analyze_text_flow(text: str, *, source: str, filename: str | None = None, content_type: str | None = None) -> dict:
+    normalized = normalize_text(text)
+    fields, confidence = extract_fields(normalized)
     response = {
         "revenue": fields.get("revenue", "N/A"),
         "employees": fields.get("employees", "N/A"),
+        "ein": fields.get("ein", "N/A"),
         "year_founded": fields.get("year_founded", "N/A"),
         "confidence": confidence,
+        "source": source,
     }
-    logger.info("analyze", extra={"filename": file.filename, "content_type": file.content_type})
+    extra = {"source": source}
+    if filename:
+        extra["filename"] = filename
+    if content_type:
+        extra["content_type"] = content_type
+    logger.info("analyze", extra=extra)
     return response
 
 if __name__ == "__main__":
