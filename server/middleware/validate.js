@@ -26,6 +26,7 @@ const schemas = {
     businessName: { required: true, type: 'string', min: 1, max: 200 },
     email: { required: true, type: 'string', pattern: /^[^@]+@[^@]+\.[^@]+$/ },
     phone: { required: true, type: 'string', min: 7, max: 20 },
+    caseId: { required: false, type: 'string', min: 1, max: 100 },
   },
 };
 
