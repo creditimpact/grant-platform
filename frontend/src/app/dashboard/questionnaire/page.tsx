@@ -9,6 +9,7 @@ import FormInput from '@/components/FormInput';
 import { api } from '@/lib/api';
 import Stepper from '@/components/Stepper';
 import { safeError, safeLog } from '@/utils/logger';
+import { getCaseId, setCaseId } from '@/lib/case-store';
 
 const logApiError = (endpoint: string, payload: unknown, err: any) => {
   const status = err?.response?.status;
@@ -61,12 +62,21 @@ export default function Questionnaire() {
       hasPayroll: false,
     hasInsurance: false,
   });
+  const [missingHints, setMissingHints] = useState<string[]>([]);
+  const [error, setError] = useState<string | undefined>();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
       try {
-        const res = await api.get('/case/questionnaire');
-        const data = res.data || {};
+        const id = getCaseId();
+        const res = await api.get('/case/questionnaire', {
+          params: { caseId: id },
+        });
+        if (res.data.caseId) setCaseId(res.data.caseId);
+        const data = res.data.data || {};
+        setMissingHints(res.data.missingFieldsHint || []);
         const mapped = {
           ...data,
           businessType: data.businessType || data.entityType || '',
@@ -99,8 +109,11 @@ export default function Questionnaire() {
         }));
       } catch (err: any) {
         logApiError('/case/questionnaire', undefined, err);
+        setError(`/case/questionnaire ${err?.response?.status || ''} ${err?.response?.data?.message || err.message}`);
         const saved = sessionStorage.getItem('questionnaire');
         if (saved) setAnswers(JSON.parse(saved));
+      } finally {
+        setLoading(false);
       }
     };
     load();
@@ -143,20 +156,27 @@ export default function Questionnaire() {
         previousGrants: answers.previousGrants === 'yes',
         sam: answers.sam === 'yes',
       };
-      await api.post('/case/questionnaire', payload);
+      const res = await api.post('/case/questionnaire', {
+        caseId: getCaseId(),
+        data: payload,
+      });
+      if (res.data.caseId) setCaseId(res.data.caseId);
+      setMissingHints(res.data.missingFieldsHint || []);
       if (process.env.NODE_ENV !== 'production') {
         safeLog('Questionnaire submitted successfully');
       }
-      sessionStorage.setItem('caseStage', 'documents');
       router.push('/dashboard/documents');
     } catch (err: any) {
       logApiError('/case/questionnaire', answers, err);
-      const msg = err?.response?.data?.message || 'Unable to save';
-      const missing = err?.response?.data?.missing?.join(', ');
-      const invalid = err?.response?.data?.invalid?.join(', ');
-      alert([msg, missing && `Missing: ${missing}`, invalid && `Invalid: ${invalid}`].filter(Boolean).join('\n'));
+      setError(
+        `/case/questionnaire ${err?.response?.status || ''} ${
+          err?.response?.data?.message || err.message
+        }`
+      );
     }
   };
+
+  if (loading) return <p className="p-6">Loading...</p>;
 
   return (
       <div className="max-w-xl mx-auto py-6 space-y-4">
@@ -164,6 +184,19 @@ export default function Questionnaire() {
           steps={["Business", "Ownership", "Financials", "Compliance"]}
           current={step}
         />
+        {error && (
+          <div className="bg-red-100 text-red-800 p-2 rounded">{error}</div>
+        )}
+        {missingHints.length > 0 && (
+          <div className="bg-yellow-100 p-2 rounded text-sm">
+            <p className="font-medium">Missing Information</p>
+            <ul className="list-disc list-inside">
+              {missingHints.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <h1 className="text-2xl font-bold">Grant Questionnaire</h1>
         {step === 0 && (
           <>
