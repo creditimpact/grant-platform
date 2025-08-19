@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import { api } from '@/lib/api';
 import Stepper from '@/components/Stepper';
 import { normalizeQuestionnaire } from '@/lib/validation';
 

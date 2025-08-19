@@ -4,7 +4,7 @@
  * Determines the current step from API status.
  */
 import { useEffect, useState } from 'react';
-import api from '@/lib/api';
+import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import Stepper from '@/components/Stepper';
 
