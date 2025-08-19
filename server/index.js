@@ -62,6 +62,9 @@ const caseRouter = require('./routes/case');
 app.use('/api', caseRouter);
 app.get('/case/status', caseRouter.caseStatusHandler);
 app.use('/api', require('./routes/formTemplate'));
+app.use('/api', require('./routes/files'));
+app.use('/api', require('./routes/eligibility'));
+app.use('/api', require('./routes/questionnaire'));
 
 const PORT = env.PORT || 5000;
 

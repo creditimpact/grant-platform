@@ -6,16 +6,19 @@ const memoryStore = new Map();
 async function createCase(userId, caseId) {
   const id = caseId || `case-${Date.now()}`;
   if (useMemory) {
+    const now = new Date().toISOString();
     memoryStore.set(id, {
       caseId: id,
       userId,
-      status: 'received',
-      analyzer: {},
-      normalized: {},
-      eligibility: null,
+      status: 'open',
+      analyzer: { fields: {}, lastUpdated: null },
+      questionnaire: { data: {}, lastUpdated: null },
+      eligibility: { results: [], requiredForms: [], lastUpdated: null },
       documents: [],
       generatedForms: [],
-      createdAt: new Date(),
+      normalized: {},
+      createdAt: now,
+      updatedAt: now,
     });
     return id;
   }
@@ -26,10 +29,17 @@ async function createCase(userId, caseId) {
 async function updateCase(caseId, updates) {
   if (useMemory) {
     const c = memoryStore.get(caseId);
-    if (c) Object.assign(c, updates);
+    if (c) {
+      Object.assign(c, updates);
+      c.updatedAt = new Date().toISOString();
+    }
     return;
   }
-  await PipelineCase.findOneAndUpdate({ caseId }, updates, { new: true });
+  await PipelineCase.findOneAndUpdate(
+    { caseId },
+    { ...updates, updatedAt: new Date() },
+    { new: true }
+  );
 }
 
 async function getCase(userId, caseId) {
@@ -52,4 +62,8 @@ async function getLatestCase(userId) {
   return PipelineCase.findOne({ userId }).sort({ createdAt: -1 });
 }
 
-module.exports = { createCase, updateCase, getCase, getLatestCase };
+function resetStore() {
+  if (useMemory) memoryStore.clear();
+}
+
+module.exports = { createCase, updateCase, getCase, getLatestCase, resetStore };
