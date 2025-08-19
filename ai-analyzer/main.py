@@ -4,10 +4,19 @@ from fastapi.responses import JSONResponse
 import sys
 from pathlib import Path
 from typing import Optional
+import io
 from pydantic import BaseModel, constr
 from ocr_utils import extract_text
 from nlp_parser import extract_fields, normalize_text
 from config import settings  # type: ignore
+
+try:  # pragma: no cover - external dependency may be missing
+    import pytesseract  # type: ignore
+    from PIL import Image  # type: ignore
+    pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+except Exception:  # pragma: no cover - gracefully handle missing libs
+    pytesseract = None  # type: ignore
+    Image = None  # type: ignore
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))
@@ -45,6 +54,16 @@ def root() -> dict[str, str]:
 @app.get("/status")
 def status() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post("/ocr-image")
+async def ocr_image(file: UploadFile = File(...)) -> dict[str, str]:
+    if not pytesseract or not Image:
+        raise HTTPException(status_code=500, detail="Tesseract OCR not available")
+    contents = await file.read()
+    image = Image.open(io.BytesIO(contents))
+    text = pytesseract.image_to_string(image)
+    return {"text": text}
 
 class TextAnalyzeRequest(BaseModel):
     text: constr(strip_whitespace=True, min_length=1, max_length=100_000)
