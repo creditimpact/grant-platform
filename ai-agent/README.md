@@ -18,12 +18,13 @@ such as `MONGO_URI`, optional `MONGO_USER` and `MONGO_PASS`, `MONGO_CA_FILE` and
 
 ## Endpoints
 
-- `POST /check` – submit user data, notes or an uploaded document. Free-form
-  text is semantically parsed and merged with the eligibility engine. Results
-  include `llm_summary`, `clarifying_questions` and richer `reasoning_steps`.
-- `POST /form-fill` – submit `form_name` and `user_payload` as JSON (top-level,
-  no embedded wrapper) to receive a filled form from `form_templates/`.
-  Conditional and computed fields will be evaluated.
+- `POST /check` – submit structured JSON payloads validated with Pydantic
+  models. The agent normalises dates, infers only missing fields and returns a
+  `normalized_profile`, eligibility results and a `reasoning` object containing
+  `reasoning_steps` and `clarifying_questions`.
+- `POST /form-fill` – submit `form_name` and `user_payload` as JSON to receive a
+  filled form. User supplied values always win; inference only fills blanks and
+  reasoning records the source of each field.
 - `POST /chat` – simple conversational endpoint that stores context in
   `session_id` records.
 
@@ -57,3 +58,15 @@ by the demo OCR parser.
 The service includes helper functions for semantic inference and session
 tracking so a future LLM can generate summaries, request additional documents or
 even create dashboard tickets automatically.
+
+## Date normalisation
+
+Date fields accept `dd/MM/YYYY`, `MM/DD/YYYY` and ISO `YYYY-MM-DD` formats. All
+dates are normalised to ISO format and each change is logged in the
+`reasoning_steps` of responses.
+
+## User data precedence
+
+When merging inferred data with user provided payloads the agent never
+overwrites explicit user values. Missing fields are filled from inference or
+defaults and each decision is captured in the reasoning steps.

@@ -1,10 +1,8 @@
-from fastapi import FastAPI, Request, Body, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 from typing import Any
 from pathlib import Path
-import json
 import sys
 import os
 
@@ -20,27 +18,25 @@ from common.logger import get_logger
 from common.request_id import request_id_middleware
 
 from engine import analyze_eligibility  # type: ignore
-from document_utils import extract_fields
 from form_filler import fill_form
-from reasoning_generator import (
-    generate_reasoning_steps,
-    generate_llm_summary,
-    generate_clarifying_questions,
-    generate_reasoning_explanation,
-)
 from session_memory import append_memory, get_missing_fields, save_draft_form, get_conversation
 from nlp_utils import llm_semantic_inference, llm_complete
 from grants_loader import load_grants
 
 from config import settings  # type: ignore
 
+from schemas import (
+    AgentCheckRequest,
+    AgentCheckResponse,
+    FormFillRequest,
+    FormFillResponse,
+    Reasoning,
+)
+from utils.dates import normalize_dates_in_mapping
+from utils.merge import merge_preserving_user
+from utils.reasoning import build_clarifying_questions
+
 logger = get_logger(__name__)
-
-
-class FormFillRequest(BaseModel):
-    form_name: str
-    user_payload: dict[str, Any]
-    session_id: str | None = None
 
 
 app = FastAPI(title="AI Agent Service")
@@ -79,84 +75,65 @@ def status() -> dict[str, str]:
 
 
 @app.post("/check")
-async def check(
-    request: Request,
-    file: UploadFile = File(None),
-    data: str = Form(None),
-    explain: bool = False,
-    session_id: str | None = None,
-):
-    if data:
-        payload = json.loads(data)
-    elif request.headers.get("content-type", "").startswith("application/json"):
-        payload = await request.json()
-    else:
-        payload = {}
+async def check(request_model: AgentCheckRequest) -> AgentCheckResponse:
+    payload: dict[str, Any] = {}
+    if request_model.profile:
+        payload.update(request_model.profile.model_dump(exclude_none=True))
+    if request_model.analyzer_fields:
+        payload.update(request_model.analyzer_fields)
 
-    qp = getattr(request, "query_params", {})
-    if "explain" in qp:
-        val = qp.get("explain")
-        explain = str(val).lower() in {"1", "true", "yes"}
-    if "session_id" in qp:
-        session_id = qp.get("session_id")
+    normalized_profile, norm_steps = normalize_dates_in_mapping(payload)
 
-    if file is not None:
-        content = await file.read()
-        payload.update(extract_fields(content))
+    inferred = (
+        llm_semantic_inference(request_model.notes, dict(normalized_profile))
+        if request_model.notes
+        else dict(normalized_profile)
+    )
 
-    if isinstance(payload.get("notes"), str):
-        payload = llm_semantic_inference(payload["notes"], payload)
+    merged_profile, merge_steps = merge_preserving_user(normalized_profile, inferred)
 
-    results = analyze_eligibility(payload, explain=True)
+    results = analyze_eligibility(merged_profile, explain=True)
+    missing: set[str] = set()
+    for res in results:
+        missing.update(res.get("missing_fields", []))
 
-    if explain:
-        grants = load_grants()
-        for r in results:
-            gdef = next((g for g in grants if g["name"] == r.get("name")), {})
-            r["reasoning_steps"] = generate_reasoning_steps(gdef, payload, r)
-    else:
-        for r in results:
-            r["reasoning_steps"] = []
+    reasoning_steps = norm_steps + merge_steps
+    clarifying = build_clarifying_questions(sorted(missing))
+    reasoning = Reasoning(reasoning_steps=reasoning_steps, clarifying_questions=clarifying)
 
-    llm_summary = generate_llm_summary(results, payload)
-    clarifying = generate_clarifying_questions(results)
-    grants = load_grants()
-    for r in results:
-        r["llm_summary"] = llm_summary
-        r["clarifying_questions"] = clarifying
-        gdef = next((g for g in grants if g["name"] == r.get("name")), {})
-        r["explanation"] = generate_reasoning_explanation(gdef, payload, r)
+    if request_model.session_id:
+        append_memory(request_model.session_id, {"payload": merged_profile, "results": results})
 
-    if session_id:
-        append_memory(session_id, {"payload": payload, "results": results})
+    logger.info(
+        "eligibility_check",
+        extra={"session_id": request_model.session_id, "grants_returned": len(results)},
+    )
 
-    logger.info("eligibility_check", extra={"session_id": session_id, "grants_returned": len(results)})
-
-    return results
+    return AgentCheckResponse(
+        normalized_profile=merged_profile, eligibility=results, reasoning=reasoning
+    )
 
 
 @app.post("/form-fill")
-async def form_fill(
-    request_model: FormFillRequest = Body(
-        ...,
-        example={
-            "form_name": "form_8974",
-            "user_payload": {"employer_identification_number": "12-3456789"},
-        }
+async def form_fill(request_model: FormFillRequest) -> FormFillResponse:
+    normalized_data, norm_steps = normalize_dates_in_mapping(request_model.user_payload)
+    filled = fill_form(request_model.form_name, normalized_data)
+
+    merged_fields, merge_steps = merge_preserving_user(
+        normalized_data, filled.get("fields", {})
     )
-):
-    if isinstance(request_model, dict):
-        request_model = FormFillRequest(**request_model)
+    filled["fields"] = merged_fields
 
-    grant_key = request_model.form_name
-    data = request_model.user_payload
-    session_id = request_model.session_id
-    filled = fill_form(grant_key, data)
+    reasoning_steps = norm_steps + merge_steps
+    reasoning = Reasoning(reasoning_steps=reasoning_steps, clarifying_questions=[])
 
-    if session_id:
-        append_memory(session_id, {"form": grant_key, "data": data})
+    if request_model.session_id:
+        append_memory(
+            request_model.session_id,
+            {"form": request_model.form_name, "data": normalized_data},
+        )
 
-    return {"filled_form": filled}
+    return FormFillResponse(filled_form=filled, reasoning=reasoning)
 
 
 @app.post("/preview-form")
