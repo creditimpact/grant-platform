@@ -93,7 +93,6 @@ export default function Dashboard() {
                         ? 'Yes'
                         : 'No'}
                     </div>
-                    {r.score !== undefined && <div>Score: {r.score}</div>}
                     {r.estimated_amount !== undefined && (
                       <div>Estimated Amount: ${r.estimated_amount}</div>
                     )}
@@ -110,21 +109,15 @@ export default function Dashboard() {
                     {r.next_steps && (
                       <p className="text-xs text-gray-700">Next: {r.next_steps}</p>
                     )}
-                    {(r.reasoning || r.rationale) && (
+                    {r.reasoning && r.reasoning.length > 0 && (
                       <details className="text-xs">
                         <summary className="cursor-pointer">Why?</summary>
                         <div className="ml-4 mt-1">
-                          {Array.isArray(r.reasoning || r.rationale)
-                            ? (
-                                <ul className="list-disc list-inside">
-                                  {(r.reasoning || r.rationale).map((x) => (
-                                    <li key={x}>{x}</li>
-                                  ))}
-                                </ul>
-                              )
-                            : (
-                                <span>{r.reasoning || r.rationale}</span>
-                              )}
+                          <ul className="list-disc list-inside">
+                            {r.reasoning.map((x) => (
+                              <li key={x}>{x}</li>
+                            ))}
+                          </ul>
                         </div>
                       </details>
                     )}
