@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     # Known settings
     NODE_ENV: str = "development"
     MONGO_URI: str = "mongodb://localhost:27017/grant-platform"
+    WRAP_RESULTS: bool = True
 
 
 settings = Settings()
