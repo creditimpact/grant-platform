@@ -18,6 +18,7 @@ async function caseStatusHandler(req, res) {
     createdAt: c.createdAt,
     status: c.status,
     analyzer: c.analyzer,
+    analyzerFields: c.analyzer?.fields,
     eligibility: c.eligibility,
     generatedForms: c.generatedForms,
     documents: c.documents,

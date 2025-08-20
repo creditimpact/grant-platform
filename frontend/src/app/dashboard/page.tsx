@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { getStatus } from '@/lib/api';
 import { getCaseId, setCaseId } from '@/lib/case-store';
 import type { CaseSnapshot } from '@/lib/types';
 import { safeError } from '@/utils/logger';
@@ -19,25 +19,24 @@ export default function Dashboard() {
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
-    const id = getCaseId();
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-    api
-      .get(`/status/${id}`)
-      .then((res) => {
-        if (res.data.caseId) setCaseId(res.data.caseId);
-        setSnapshot(res.data);
-      })
-      .catch((err) => {
-        setError(formatError(`/status/${id}`, err));
+    const load = async () => {
+      setLoading(true);
+      try {
+        const id = getCaseId();
+        const res = await getStatus(id);
+        if (res.caseId) setCaseId(res.caseId);
+        setSnapshot(res);
+      } catch (err: any) {
+        setError(formatError('status', err));
         safeError('dashboard status', err);
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
-  if (!getCaseId()) {
+  if (!snapshot && !loading) {
     return (
       <div className="p-6 text-center space-y-4">
         <h1 className="text-2xl font-bold">Welcome</h1>
@@ -64,20 +63,27 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
           <p className="text-sm text-gray-700">Case ID: {snapshot.caseId}</p>
           <p>Status: {snapshot.status}</p>
-          {snapshot.analyzer?.fields && (
+          {snapshot.analyzerFields && (
             <div>
               <h2 className="font-semibold mt-4">Analyzer Fields</h2>
-              <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
-                {JSON.stringify(snapshot.analyzer.fields, null, 2)}
-              </pre>
+              <table className="w-full text-sm bg-gray-50 rounded">
+                <tbody>
+                  {Object.entries(snapshot.analyzerFields).map(([k, v]) => (
+                    <tr key={k} className="border-b last:border-none">
+                      <td className="p-1 font-medium w-1/3 break-words">{k}</td>
+                      <td className="p-1 break-words">{String(v)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-          {snapshot.eligibility && (
+          {snapshot.eligibility && snapshot.eligibility.length > 0 ? (
             <div>
               <h2 className="font-semibold mt-4">Eligibility Results</h2>
               <div className="grid gap-2 md:grid-cols-2">
-                {snapshot.eligibility.results.map((r) => (
-                  <div key={r.name} className="border p-2 rounded">
+                {snapshot.eligibility.map((r) => (
+                  <div key={r.name} className="border p-2 rounded space-y-1">
                     <div className="font-medium">{r.name}</div>
                     <div>
                       Eligible:{' '}
@@ -87,28 +93,47 @@ export default function Dashboard() {
                         ? 'Yes'
                         : 'No'}
                     </div>
+                    {r.score !== undefined && <div>Score: {r.score}</div>}
                     {r.estimated_amount !== undefined && (
                       <div>Estimated Amount: ${r.estimated_amount}</div>
                     )}
-                    {(r.reasoning || r.rationale) && (
-                      <div className="text-xs text-gray-700">
-                        {(r.reasoning || r.rationale)?.join(', ')}
+                    {r.missing_fields && r.missing_fields.length > 0 && (
+                      <div className="mt-1 bg-yellow-50 text-yellow-800 p-2 rounded">
+                        <p className="text-xs font-medium">Missing fields</p>
+                        <ul className="list-disc list-inside text-xs">
+                          {r.missing_fields.map((m) => (
+                            <li key={m}>{m}</li>
+                          ))}
+                        </ul>
                       </div>
+                    )}
+                    {r.next_steps && (
+                      <p className="text-xs text-gray-700">Next: {r.next_steps}</p>
+                    )}
+                    {(r.reasoning || r.rationale) && (
+                      <details className="text-xs">
+                        <summary className="cursor-pointer">Why?</summary>
+                        <div className="ml-4 mt-1">
+                          {Array.isArray(r.reasoning || r.rationale)
+                            ? (
+                                <ul className="list-disc list-inside">
+                                  {(r.reasoning || r.rationale).map((x) => (
+                                    <li key={x}>{x}</li>
+                                  ))}
+                                </ul>
+                              )
+                            : (
+                                <span>{r.reasoning || r.rationale}</span>
+                              )}
+                        </div>
+                      </details>
                     )}
                   </div>
                 ))}
               </div>
-              {snapshot.eligibility.requiredForms?.length ? (
-                <div className="mt-2">
-                  <h3 className="font-medium">Required Forms</h3>
-                  <ul className="list-disc list-inside">
-                    {snapshot.eligibility.requiredForms.map((f) => (
-                      <li key={f}>{f}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
             </div>
+          ) : (
+            <p>No eligibility results yet — generate the report.</p>
           )}
         </>
       )}
