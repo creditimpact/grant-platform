@@ -1,7 +1,18 @@
 const path = require('path');
 const nodeEnv = process.env.NODE_ENV || 'development';
 const envFile = process.env.ENV_FILE || path.resolve(__dirname, '..', `.env.${nodeEnv}`);
-require('dotenv').config({ path: envFile });
+try {
+  require('dotenv').config({ path: envFile });
+} catch (err) {
+  // dotenv is optional in test environments
+}
+
+process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost';
+process.env.ELIGIBILITY_ENGINE_URL = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
+process.env.AI_ANALYZER_URL = process.env.AI_ANALYZER_URL || 'http://localhost:8000';
+process.env.AI_AGENT_URL = process.env.AI_AGENT_URL || 'http://localhost:9001';
+process.env.MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/test';
+process.env.PORT = process.env.PORT || '3000';
 
 const { URL } = require('url');
 

@@ -17,6 +17,7 @@ from grants_loader import load_grants
 from engine import analyze_eligibility
 from config import settings  # type: ignore
 from models import ResultsEnvelope, GrantResult
+from normalization.ingest import normalize_payload
 
 logger = get_logger(__name__)
 
@@ -149,7 +150,8 @@ def get_grant(grant_key: str):
 
 
 async def compute_grant_results(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
-    return analyze_eligibility(payload, explain=True)
+    normalized = normalize_payload(payload)
+    return analyze_eligibility(normalized, explain=True)
 
 if __name__ == "__main__":
     import uvicorn
