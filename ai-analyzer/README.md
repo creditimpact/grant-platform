@@ -1,8 +1,9 @@
 # AI Analyzer Service
 
 This FastAPI microservice extracts text from uploaded documents using Tesseract OCR
-and parses simple business fields. The `/analyze` endpoint accepts `application/pdf`,
-`image/png` and `image/jpeg` uploads.
+and parses business fields such as EIN, W‑2 employee counts, quarterly revenues and
+entity type. The `/analyze` endpoint accepts `application/pdf`, `image/png` and
+`image/jpeg` uploads.
 
 ## JSON / Text Input
 
@@ -13,12 +14,15 @@ The maximum text size is **100KB** and the response shape matches file uploads.
 # JSON body
 curl -X POST http://localhost:8000/analyze \
   -H "Content-Type: application/json" \
-  -d '{"text":"Revenue 1000; 10 employees; EIN 12-3456789"}'
+  -d '{"text":"EIN 12-3456789; W-2 employees: 13; Q1 2023 revenue $120k; LLC"}'
 
 # Plain text
 curl -X POST http://localhost:8000/analyze \
   -H "Content-Type: text/plain" \
-  --data-binary "Founded 2019; Employees 25"
+  --data-binary "Founded 2019; W2 employees 25"
+
+# File upload
+curl -X POST http://localhost:8000/analyze -F "file=@samples/quarterly_report.pdf"
 ```
 
 ## Local Development Setup

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 import io
 from pydantic import BaseModel, constr
 from ocr_utils import extract_text
@@ -78,10 +78,7 @@ async def ocr_image(file: UploadFile = File(...)) -> dict[str, str]:
     return {"text": text}
 
 class TextAnalyzeRequest(BaseModel):
-    text: constr(strip_whitespace=True, min_length=1, max_length=100_000)
-
-
-TEXT_LIMIT = 100_000
+    text: constr(strip_whitespace=True, min_length=1, max_length=settings.MAX_TEXT_LEN)
 
 
 @app.post("/analyze")
@@ -105,7 +102,7 @@ async def analyze(
 
     if "text/plain" in ctype:
         raw = await request.body()
-        if len(raw) > TEXT_LIMIT:
+        if len(raw) > settings.MAX_TEXT_LEN:
             raise HTTPException(status_code=400, detail="Text exceeds limit")
         body_text = raw.decode("utf-8", errors="replace").strip()
         if not body_text:
@@ -114,7 +111,7 @@ async def analyze(
 
     if "multipart/form-data" in ctype:
         if text and text.strip():
-            if len(text.encode("utf-8")) > TEXT_LIMIT:
+            if len(text.encode("utf-8")) > settings.MAX_TEXT_LEN:
                 raise HTTPException(status_code=400, detail="Text exceeds limit")
             return await analyze_text_flow(text.strip(), source="text")
         if file is None:
@@ -127,15 +124,52 @@ async def analyze(
     raise HTTPException(status_code=400, detail="Unsupported Content-Type")
 
 
-async def analyze_text_flow(text: str, *, source: str, filename: str | None = None, content_type: str | None = None) -> dict:
+async def analyze_text_flow(
+    text: str,
+    *,
+    source: str,
+    filename: str | None = None,
+    content_type: str | None = None,
+) -> dict:
     normalized = normalize_text(text)
-    fields, confidence = extract_fields(normalized)
-    response = {
-        "revenue": fields.get("revenue", "N/A"),
-        "employees": fields.get("employees", "N/A"),
-        "ein": fields.get("ein", "N/A"),
-        "year_founded": fields.get("year_founded", "N/A"),
+    fields, confidence, ambiguities = extract_fields(
+        normalized, enable_secondary=settings.ENABLE_SECONDARY_FIELDS
+    )
+    response: dict[str, Any] = {
+        "ein": fields.get("ein"),
+        "w2_employee_count": fields.get("w2_employee_count"),
+        "quarterly_revenues": fields.get("quarterly_revenues", {}),
+        "entity_type": fields.get("entity_type"),
+        "year_founded": fields.get("year_founded")
+        if settings.ENABLE_SECONDARY_FIELDS
+        else None,
+        "annual_revenue": fields.get("annual_revenue")
+        if settings.ENABLE_SECONDARY_FIELDS
+        else None,
+        "location_state": fields.get("location_state")
+        if settings.ENABLE_SECONDARY_FIELDS
+        else None,
+        "location_country": fields.get("location_country")
+        if settings.ENABLE_SECONDARY_FIELDS
+        else None,
+        "minority_owned": fields.get("minority_owned")
+        if settings.ENABLE_SECONDARY_FIELDS
+        else None,
+        "female_owned": fields.get("female_owned")
+        if settings.ENABLE_SECONDARY_FIELDS
+        else None,
+        "veteran_owned": fields.get("veteran_owned")
+        if settings.ENABLE_SECONDARY_FIELDS
+        else None,
+        "ppp_reference": fields.get("ppp_reference")
+        if settings.ENABLE_SECONDARY_FIELDS
+        else None,
+        "ertc_reference": fields.get("ertc_reference")
+        if settings.ENABLE_SECONDARY_FIELDS
+        else None,
         "confidence": confidence,
+        "ambiguities": ambiguities,
+        "raw_text_preview": normalized[:2000],
         "source": source,
     }
     extra = {"source": source}
