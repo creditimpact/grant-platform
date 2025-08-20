@@ -1,0 +1,162 @@
+{
+  "tech_startup_payroll_credit": {
+    "required_fields": [
+      "gross_receipts",
+      "years_active",
+      "technological_uncertainty",
+      "experimental_process",
+      "scientific_process",
+      "rd_credit_amount",
+      "payroll_tax_liability",
+      "carryforward_credit",
+      "election_filing_quarter",
+      "current_quarter",
+      "tax_year"
+    ],
+    "optional_fields": []
+  },
+  "veteran_owned_business_grant": {
+    "required_fields": [
+      "owner_veteran",
+      "owner_spouse",
+      "ownership_percentage",
+      "number_of_employees",
+      "annual_revenue",
+      "business_location_state",
+      "economically_vulnerable_area",
+      "business_type"
+    ],
+    "optional_fields": []
+  },
+  "erc": {
+    "required_fields": [
+      "business_location_country",
+      "w2_employee_count",
+      "revenue_drop_2020_percent",
+      "revenue_drop_2021_percent",
+      "government_shutdown_2020",
+      "government_shutdown_2021",
+      "qualified_wages_2020",
+      "qualified_wages_2021",
+      "ppp_wages_double_dip"
+    ],
+    "optional_fields": []
+  },
+  "women_owned_tech": {
+    "required_fields": [
+      "sba_small_business",
+      "women_ownership_percent",
+      "women_us_citizen_residents",
+      "women_controlled",
+      "woman_leader_full_time",
+      "for_profit",
+      "entity_type",
+      "owner_debarred",
+      "federal_litigation",
+      "us_based_or_impact",
+      "owner_net_worths",
+      "owner_avg_incomes",
+      "owner_total_assets",
+      "num_employees",
+      "us_ownership_percent",
+      "institutional_investor_controlled",
+      "research_location",
+      "has_research_institution_partner",
+      "sam_registered",
+      "self_certified"
+    ],
+    "optional_fields": []
+  },
+  "rural_development_grant": {
+    "required_fields": [
+      "entity_type",
+      "service_area_population",
+      "income_level",
+      "project_type",
+      "project_cost"
+    ],
+    "optional_fields": []
+  },
+  "green_energy_state_incentive": {
+    "required_fields": [
+      "state",
+      "applicant_type",
+      "project_type",
+      "project_cost",
+      "system_size_kw",
+      "certified_installer",
+      "approved_equipment",
+      "equity_eligible_contractor"
+    ],
+    "optional_fields": []
+  },
+  "minority_female_founder_grant": {
+    "required_fields": [
+      "owner_gender",
+      "owner_minority",
+      "ownership_percentage",
+      "owner_is_decision_maker",
+      "business_age_years",
+      "number_of_employees",
+      "annual_revenue",
+      "business_location_state"
+    ],
+    "optional_fields": []
+  },
+  "business_tax_refund": {
+    "required_fields": [
+      "business_income",
+      "business_expenses",
+      "tax_paid",
+      "business_type",
+      "tax_year",
+      "previous_refunds_claimed"
+    ],
+    "optional_fields": []
+  },
+  "california_smallbiz": {
+    "required_fields": [
+      "business_location_state",
+      "number_of_employees",
+      "annual_revenue",
+      "registration_year",
+      "owner_state",
+      "sbtaep_training_complete",
+      "certified_center_approval",
+      "net_income",
+      "business_age_years",
+      "us_content_percent",
+      "sba_standard_compliant",
+      "city",
+      "women_owned",
+      "technical_assistance_complete",
+      "route_66_location",
+      "industry",
+      "project_type",
+      "ust_owner_operator",
+      "annual_fuel_sales_gallons",
+      "health_safety_compliant",
+      "chamber_nomination",
+      "county",
+      "low_income_community",
+      "disaster_affected"
+    ],
+    "optional_fields": []
+  },
+  "urban_small_business_grants_2025": {
+    "required_fields": [
+      "city",
+      "employee_count",
+      "annual_revenue",
+      "revenue_decline_percent",
+      "business_age_years",
+      "industry",
+      "owner_veteran",
+      "owner_minority",
+      "covid_impact",
+      "structural_damage",
+      "geographic_zone"
+    ],
+    "optional_fields": []
+  }
+}

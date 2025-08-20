@@ -1,0 +1,6 @@
+{
+  "name": "Employee Retention Credit",
+  "eligible": true,
+  "estimated_amount": 7000,
+  "requiredForms": ["941-X"]
+}

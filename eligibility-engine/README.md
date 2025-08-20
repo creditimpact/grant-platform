@@ -116,3 +116,26 @@ Each grant is assigned a percentage score based on how many rules passed. Missin
 ```bash
 python -m pytest
 ```
+
+## Field Contract & Normalization
+
+The engine consumes analyzer output via a normalization layer. Field
+aliases and type coercion rules live in `contracts/field_map.json`. Each
+grant declares its required inputs; the aggregated list can be generated
+with `python scripts/dump_required_fields.py` and is stored at
+`contracts/required_fields.json`.
+
+`normalization/ingest.py` exposes `normalize_payload` which applies the
+field map, converts common units (currency, percentages, dates, EINs and
+booleans) and returns a dictionary the rules can consume directly.
+
+Example mapping:
+
+| Analyzer field | Engine field | Notes |
+| -------------- | ------------ | ----- |
+| `ein` | `employer_identification_number` | formatted as `NN-NNNNNNN` |
+| `employees` | `w2_employee_count` | coerced to integer |
+| `revenue_drop_2020_pct` | `revenue_drop_2020_percent` | percent string → float |
+
+See `tests/contract/test_normalization_examples.py` for sample
+conversions and `tests/fixtures/` for program parity fixtures.

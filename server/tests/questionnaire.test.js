@@ -1,4 +1,5 @@
 const request = require('supertest');
+process.env.SKIP_DB = 'true';
 const app = require('../index');
 const { createCase, updateCase, getCase, resetStore } = require('../utils/pipelineStore');
 

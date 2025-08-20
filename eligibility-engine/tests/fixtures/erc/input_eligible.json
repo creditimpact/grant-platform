@@ -1,0 +1,11 @@
+{
+  "country": "US",
+  "employees": "10",
+  "revenue_drop_2020_pct": "55%",
+  "revenue_drop_2021_pct": "25%",
+  "shutdown_2020": "no",
+  "shutdown_2021": "yes",
+  "qualified_wages_2020": "$100,000",
+  "qualified_wages_2021": "$200,000",
+  "ppp_double_dip": "false"
+}
