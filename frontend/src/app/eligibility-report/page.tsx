@@ -109,15 +109,9 @@ export default function EligibilityReport() {
                     : '—'}
                 </div>
 
-                {/* Reasoning/rationale safe check */}
-                {(Array.isArray(r.reasoning) && r.reasoning.length > 0) ||
-                (Array.isArray(r.rationale) && r.rationale.length > 0) ? (
+                {Array.isArray(r.reasoning) && r.reasoning.length > 0 ? (
                   <div className="text-xs text-gray-700">
-                    {Array.isArray(r.reasoning)
-                      ? r.reasoning.join(', ')
-                      : Array.isArray(r.rationale)
-                      ? r.rationale.join(', ')
-                      : ''}
+                    {r.reasoning.join(', ')}
                   </div>
                 ) : null}
 

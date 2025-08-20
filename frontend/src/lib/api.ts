@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { normalizeEligibility } from './normalize';
-import type { CaseSnapshot, EligibilityReport } from './types';
+import type { CaseSnapshot, EligibilityReport, ResultsEnvelope } from './types';
 
 const base = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5000';
 
@@ -42,17 +42,18 @@ export async function getEligibilityReport(caseId?: string): Promise<Eligibility
     { cache: 'no-store' }
   );
   if (!r.ok) throw new Error(`eligibility-report ${r.status}`);
-  const data = (await r.json()) as EligibilityReport;
+  const data = await r.json();
 
-  if (Array.isArray(data as any)) {
-    const results = normalizeEligibility(data as any);
-    return results as unknown as EligibilityReport;
+  if (Array.isArray(data)) {
+    return normalizeEligibility(data);
   }
-  const envelope = data as any;
+  const envelope = data as ResultsEnvelope;
   if (Array.isArray(envelope.results)) {
     envelope.results = normalizeEligibility(envelope.results);
+  } else {
+    envelope.results = [];
   }
-  return envelope as EligibilityReport;
+  return envelope;
 }
 
 function transformCase(data: any): CaseSnapshot {
@@ -65,7 +66,7 @@ function transformCase(data: any): CaseSnapshot {
     documents: data.documents,
     analyzerFields: data.analyzerFields || data.analyzer?.fields,
     questionnaire: data.questionnaire,
-    eligibility: raw ? normalizeEligibility(raw) : undefined,
+    eligibility: normalizeEligibility(raw),
     generatedForms: data.generatedForms,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
