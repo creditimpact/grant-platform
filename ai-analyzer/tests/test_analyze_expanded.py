@@ -3,6 +3,11 @@ import io
 import pytest
 import env_setup  # noqa: F401
 from fastapi.testclient import TestClient
+import io
+
+import pytest
+import env_setup  # noqa: F401
+from fastapi.testclient import TestClient
 
 from main import app
 
@@ -13,13 +18,16 @@ client = TestClient(app)
 def test_analyze_json_happy_path() -> None:
     resp = client.post(
         "/analyze",
-        json={"text": "Revenue 1000; 10 employees; EIN 12-3456789"},
+        json={
+            "text": "EIN 12-3456789; W-2 employees: 10; Q1 2023 revenue $120k; LLC",
+        },
     )
     assert resp.status_code == 200
     data = resp.json()
-    assert data["revenue"] == 1000
-    assert data["employees"] == 10
     assert data["ein"] == "12-3456789"
+    assert data["w2_employee_count"] == 10
+    assert data["quarterly_revenues"]["2023"]["Q1"] == 120000
+    assert data["entity_type"] == "llc"
     assert data["source"] == "text"
 
 
@@ -27,13 +35,13 @@ def test_analyze_text_plain_happy_path() -> None:
     headers = {"Content-Type": "text/plain"}
     resp = client.post(
         "/analyze",
-        data="Founded 2019\nEmployees: 25",
+        data="Founded 2019\nW-2 employees: 25",
         headers=headers,
     )
     assert resp.status_code == 200
     data = resp.json()
     assert data["year_founded"] == 2019
-    assert data["employees"] == 25
+    assert data["w2_employee_count"] == 25
 
 
 def test_analyze_text_empty() -> None:
@@ -50,7 +58,7 @@ def test_analyze_text_oversize() -> None:
 
 def test_analyze_multipart_file(monkeypatch: pytest.MonkeyPatch) -> None:
     def mock_extract_text(_: bytes) -> str:
-        return "Revenue 5000"
+        return "Q1 2023 revenue $5000; EIN 11-1111111"
 
     monkeypatch.setattr("ocr_utils.extract_text", mock_extract_text)
 
@@ -61,7 +69,8 @@ def test_analyze_multipart_file(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     assert resp.status_code == 200
     data = resp.json()
-    assert data["revenue"] == 5000
+    assert data["quarterly_revenues"]["2023"]["Q1"] == 5000
+    assert data["ein"] == "11-1111111"
     assert data["source"] == "file"
 
 

@@ -13,6 +13,9 @@ ENV_PATH = ENV_FILE or Path(__file__).resolve().parent / f".env.{NODE_ENV}"
 class Settings(BaseSettings):
     NODE_ENV: str = "development"
     MAX_FILE_SIZE_MB: int = 5
+    MAX_TEXT_LEN: int = 100_000
+    ENABLE_SECONDARY_FIELDS: bool = True
+    TESSERACT_CMD: str | None = None
 
     model_config = SettingsConfigDict(env_file=ENV_PATH, extra="ignore")
 
