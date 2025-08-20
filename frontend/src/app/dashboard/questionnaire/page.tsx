@@ -10,6 +10,17 @@ import { getStatus, postQuestionnaire } from '@/lib/api';
 import Stepper from '@/components/Stepper';
 import { safeError, safeLog } from '@/utils/logger';
 import { getCaseId, setCaseId } from '@/lib/case-store';
+import {
+  apiToUi,
+  snakeToCamel,
+  normalizeBusinessTypeForUI,
+  toIsoDateYMD,
+} from '@/lib/field-map';
+import {
+  toNumberOrUndefined,
+  yesNoToBoolOrUndefined,
+  keepStringOrEmpty,
+} from '@/lib/coerce';
 
 const logApiError = (endpoint: string, payload: unknown, err: any) => {
   const status = err?.response?.status;
@@ -76,40 +87,47 @@ export default function Questionnaire() {
         const data = res.questionnaire?.data || {};
         const hints = Array.from(
           new Set(
-            res.eligibility?.flatMap((e) => e.missing_fields || []) || []
+            (res.eligibility?.flatMap((e) => e.missing_fields || []) || []).map(
+              (k: string) => apiToUi[k] ?? snakeToCamel(k)
+            )
           )
         );
+        safeLog('Missing field hints (UI keys)', hints);
         setMissingHints(hints);
         const mapped = {
           ...data,
-          businessType: data.businessType || data.entityType || '',
-          numberOfEmployees: data.numberOfEmployees || data.employees || '',
-          ownershipPercentage:
-            data.ownershipPercentage || data.ownershipPercent || '',
-          incorporationDate: data.incorporationDate || data.dateEstablished || '',
-        };
-        setAnswers((prev) => ({
-          ...prev,
-          ...mapped,
-          previousGrants:
-            typeof mapped.previousGrants === 'boolean'
-              ? mapped.previousGrants
-                ? 'yes'
-                : 'no'
-              : prev.previousGrants,
-          previousRefundsClaimed:
-            typeof mapped.previousRefundsClaimed === 'boolean'
-              ? mapped.previousRefundsClaimed
-                ? 'yes'
-                : 'no'
-              : prev.previousRefundsClaimed,
+          businessType: normalizeBusinessTypeForUI(
+            (data.businessType || data.entityType) as string | undefined
+          ),
+          numberOfEmployees: keepStringOrEmpty(
+            data.numberOfEmployees ?? data.employees
+          ),
+          ownershipPercentage: keepStringOrEmpty(
+            data.ownershipPercentage ?? data.ownershipPercent
+          ),
+          incorporationDate: keepStringOrEmpty(
+            data.incorporationDate ?? data.dateEstablished
+          ),
           sam:
-            typeof mapped.sam === 'boolean'
-              ? mapped.sam
+            typeof data.sam === 'boolean'
+              ? data.sam
                 ? 'yes'
                 : 'no'
-              : mapped.sam || prev.sam,
-        }));
+              : keepStringOrEmpty(data.sam),
+          previousGrants:
+            typeof data.previousGrants === 'boolean'
+              ? data.previousGrants
+                ? 'yes'
+                : 'no'
+              : keepStringOrEmpty(data.previousGrants),
+          previousRefundsClaimed:
+            typeof data.previousRefundsClaimed === 'boolean'
+              ? data.previousRefundsClaimed
+                ? 'yes'
+                : 'no'
+              : keepStringOrEmpty(data.previousRefundsClaimed),
+        };
+        setAnswers((prev) => ({ ...prev, ...mapped }));
       } catch (err: any) {
         logApiError('status', undefined, err);
         setError(`status ${err?.response?.status || ''} ${err?.response?.data?.message || err.message}`);
@@ -145,19 +163,27 @@ export default function Questionnaire() {
     try {
       const payload = {
         ...answers,
-        annualRevenue: Number(answers.annualRevenue),
-        netProfit: Number(answers.netProfit),
-        numberOfEmployees: Number(answers.numberOfEmployees),
-        ownershipPercentage: Number(answers.ownershipPercentage),
-        businessIncome: Number(answers.businessIncome),
-        businessExpenses: Number(answers.businessExpenses),
-        taxPaid: Number(answers.taxPaid),
-        taxYear: Number(answers.taxYear),
-        serviceAreaPopulation: Number(answers.serviceAreaPopulation),
-        projectCost: Number(answers.projectCost),
-        previousRefundsClaimed: answers.previousRefundsClaimed === 'yes',
-        previousGrants: answers.previousGrants === 'yes',
-        sam: answers.sam === 'yes',
+        // numbers (only if present)
+        annualRevenue: toNumberOrUndefined(answers.annualRevenue),
+        netProfit: toNumberOrUndefined(answers.netProfit),
+        numberOfEmployees: toNumberOrUndefined(answers.numberOfEmployees),
+        ownershipPercentage: toNumberOrUndefined(answers.ownershipPercentage),
+        businessIncome: toNumberOrUndefined(answers.businessIncome),
+        businessExpenses: toNumberOrUndefined(answers.businessExpenses),
+        taxPaid: toNumberOrUndefined(answers.taxPaid),
+        taxYear: toNumberOrUndefined(answers.taxYear),
+        serviceAreaPopulation: toNumberOrUndefined(
+          answers.serviceAreaPopulation
+        ),
+        projectCost: toNumberOrUndefined(answers.projectCost),
+        // booleans from yes/no selects
+        previousRefundsClaimed: yesNoToBoolOrUndefined(
+          answers.previousRefundsClaimed
+        ),
+        previousGrants: yesNoToBoolOrUndefined(answers.previousGrants),
+        sam: yesNoToBoolOrUndefined(answers.sam),
+        // normalize date
+        incorporationDate: toIsoDateYMD(answers.incorporationDate),
       };
       const res = await postQuestionnaire({
         caseId: getCaseId(),
@@ -165,9 +191,14 @@ export default function Questionnaire() {
       });
       if (res.caseId) setCaseId(res.caseId);
       const hints = Array.from(
-        new Set(res.eligibility?.flatMap((e) => e.missing_fields || []) || [])
+        new Set(
+          (res.eligibility?.flatMap((e) => e.missing_fields || []) || []).map(
+            (k: string) => apiToUi[k] ?? snakeToCamel(k)
+          )
+        )
       );
       setMissingHints(hints);
+      safeLog('Missing field hints (UI keys)', hints);
       if (process.env.NODE_ENV !== 'production') {
         safeLog('Questionnaire submitted successfully');
       }
@@ -197,14 +228,17 @@ export default function Questionnaire() {
           <div className="bg-yellow-100 p-2 rounded text-sm">
             <p className="font-medium">Suggested fields to complete</p>
             <ul className="list-disc list-inside">
-              {missingHints.map((m) => (
-                <li
-                  key={m}
-                  className={answers[m as keyof typeof answers] ? 'line-through text-green-700' : ''}
-                >
-                  {m}
-                </li>
-              ))}
+              {missingHints.map((m) => {
+                const hasValue = Boolean((answers as any)[m]);
+                return (
+                  <li
+                    key={m}
+                    className={hasValue ? 'line-through text-green-700' : ''}
+                  >
+                    {m}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
