@@ -100,11 +100,9 @@ export default function EligibilityReport() {
                 {r.estimated_amount !== undefined && (
                   <div>Estimated Amount: ${r.estimated_amount}</div>
                 )}
-                {r.missing_fields?.length ? (
-                  <div className="text-xs text-yellow-700">
-                    Missing: {r.missing_fields.join(', ')}
-                  </div>
-                ) : null}
+                <div className="text-xs text-yellow-700">
+                  Missing: {r.missing_fields.length ? r.missing_fields.join(', ') : '—'}
+                </div>
                 {(r.reasoning || r.rationale) && (
                   <div className="text-xs text-gray-700">
                     {(r.reasoning || r.rationale)?.join(', ')}
