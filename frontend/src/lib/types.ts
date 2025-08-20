@@ -13,7 +13,7 @@ export interface EligibilityItem {
   eligible: boolean | null;
   score?: number;
   estimated_amount?: number;
-  missing_fields?: string[];
+  missing_fields: string[];
   next_steps?: string;
   requiredForms?: string[];
   reasoning?: string[] | string;
@@ -31,4 +31,22 @@ export interface CaseSnapshot {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export type GrantResult = {
+  program: string;
+  eligible: boolean | null;
+  score?: number;
+  estimated_amount?: number | null;
+  requiredForms?: string[];
+  reasoning_steps?: string[];
+  clarifying_questions?: string[];
+  missing_fields: string[];
+};
+
+export type ResultsEnvelope = {
+  results: GrantResult[];
+  requiredForms: string[];
+};
+
+export type EligibilityReport = ResultsEnvelope | GrantResult[];
 
