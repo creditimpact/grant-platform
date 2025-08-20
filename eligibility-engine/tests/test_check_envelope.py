@@ -1,4 +1,9 @@
 from fastapi.testclient import TestClient
+import pytest
+
+pytest.importorskip("fastapi")
+from fastapi.testclient import TestClient
+
 from api import app
 
 client = TestClient(app)

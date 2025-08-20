@@ -25,6 +25,21 @@ curl -X POST http://localhost:8000/analyze \
 curl -X POST http://localhost:8000/analyze -F "file=@samples/quarterly_report.pdf"
 ```
 
+## Field Names Emitted
+
+Parsed documents yield a `fields` object whose keys feed directly into the
+eligibility engine after normalization. Common field names include:
+
+| Field | Example |
+| ----- | ------- |
+| `ein` | `12-3456789` |
+| `employees` | `13` |
+| `revenue_drop_2020_pct` | `55%` |
+| `annual_revenue` | `$1,200,000` |
+
+Additional aliases are documented in
+`eligibility-engine/contracts/field_map.json`.
+
 ## Local Development Setup
 
 ```bash

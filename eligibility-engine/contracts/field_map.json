@@ -1,0 +1,118 @@
+{
+  "ein": {
+    "target": "employer_identification_number",
+    "type": "ein",
+    "pattern": "^\\d{2}-?\\d{7}$"
+  },
+  "employer_identification_number": {
+    "target": "employer_identification_number",
+    "type": "ein",
+    "pattern": "^\\d{2}-?\\d{7}$"
+  },
+  "employees": {
+    "target": "w2_employee_count",
+    "type": "int",
+    "min": 0
+  },
+  "w2_employee_count": {
+    "target": "w2_employee_count",
+    "type": "int",
+    "min": 0
+  },
+  "country": {
+    "target": "business_location_country",
+    "type": "string"
+  },
+  "revenue_drop_2020_pct": {
+    "target": "revenue_drop_2020_percent",
+    "type": "percent"
+  },
+  "revenue_drop_2021_pct": {
+    "target": "revenue_drop_2021_percent",
+    "type": "percent"
+  },
+  "shutdown_2020": {
+    "target": "government_shutdown_2020",
+    "type": "bool"
+  },
+  "shutdown_2021": {
+    "target": "government_shutdown_2021",
+    "type": "bool"
+  },
+  "qualified_wages_2020": {
+    "target": "qualified_wages_2020",
+    "type": "currency"
+  },
+  "qualified_wages_2021": {
+    "target": "qualified_wages_2021",
+    "type": "currency"
+  },
+  "ppp_double_dip": {
+    "target": "ppp_wages_double_dip",
+    "type": "bool"
+  },
+  "owner_is_veteran": {
+    "target": "owner_veteran",
+    "type": "bool"
+  },
+  "owner_is_spouse": {
+    "target": "owner_spouse",
+    "type": "bool"
+  },
+  "ownership_pct": {
+    "target": "ownership_percentage",
+    "type": "percent"
+  },
+  "employee_count": {
+    "target": "number_of_employees",
+    "type": "int"
+  },
+  "annual_revenue": {
+    "target": "annual_revenue",
+    "type": "currency"
+  },
+  "state": {
+    "target": "business_location_state",
+    "type": "string"
+  },
+  "economically_vulnerable": {
+    "target": "economically_vulnerable_area",
+    "type": "bool"
+  },
+  "biz_type": {
+    "target": "business_type",
+    "type": "string"
+  },
+  "service_area_population": {
+    "target": "service_area_population",
+    "type": "int"
+  },
+  "income_level": {
+    "target": "income_level",
+    "type": "string"
+  },
+  "project_type": {
+    "target": "project_type",
+    "type": "string"
+  },
+  "project_cost": {
+    "target": "project_cost",
+    "type": "currency"
+  },
+  "some_date": {
+    "target": "some_date",
+    "type": "date"
+  },
+  "bool_yes": {
+    "target": "bool_yes",
+    "type": "bool"
+  },
+  "bool_no": {
+    "target": "bool_no",
+    "type": "bool"
+  },
+  "entity_type": {
+    "target": "entity_type",
+    "type": "string"
+  }
+}
