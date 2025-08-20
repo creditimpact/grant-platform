@@ -1,17 +1,37 @@
-node_modules
-!node_modules/express-rate-limit
-!node_modules/express-rate-limit/**
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python
+**/venv/
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+
+# Env files (never commit secrets)
 .env
-uploads
-server/uploads
+.env.*
+!.env.example
+!.env.local.example
+
+# Uploads
+uploads/
+server/uploads/
+frontend/public/uploads/
+
 # Coverage outputs
 coverage/
 **/coverage.txt
 **/coverage/
+
 # Frontend build outputs
 /frontend/.next
+/frontend/out
 /frontend/node_modules
-__pycache__/
-# Ignore all env files for dev
-.env.development
-*/.env.development
+
+# Misc
+.DS_Store
+Thumbs.db

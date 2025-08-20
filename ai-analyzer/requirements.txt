@@ -1,8 +1,10 @@
 pytesseract==0.3.10
 pillow==9.5.0
-fastapi==0.95.2
+fastapi==0.115.6
 uvicorn==0.22.0
 pytest==8.0.2
 coverage==7.4.0
 flake8==6.1.0
-pydantic-settings
+pydantic==2.9.2
+pydantic-settings==2.3.4
+PyYAML==6.0.2

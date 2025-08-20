@@ -100,25 +100,40 @@ export default function EligibilityReport() {
                 {r.estimated_amount !== undefined && (
                   <div>Estimated Amount: ${r.estimated_amount}</div>
                 )}
+
+                {/* Missing fields with safe check */}
                 <div className="text-xs text-yellow-700">
-                  Missing: {r.missing_fields.length ? r.missing_fields.join(', ') : '—'}
+                  Missing:{' '}
+                  {Array.isArray(r.missing_fields) && r.missing_fields.length
+                    ? r.missing_fields.join(', ')
+                    : '—'}
                 </div>
-                {(r.reasoning || r.rationale) && (
+
+                {/* Reasoning/rationale safe check */}
+                {(Array.isArray(r.reasoning) && r.reasoning.length > 0) ||
+                (Array.isArray(r.rationale) && r.rationale.length > 0) ? (
                   <div className="text-xs text-gray-700">
-                    {(r.reasoning || r.rationale)?.join(', ')}
+                    {Array.isArray(r.reasoning)
+                      ? r.reasoning.join(', ')
+                      : Array.isArray(r.rationale)
+                      ? r.rationale.join(', ')
+                      : ''}
                   </div>
-                )}
+                ) : null}
+
                 {r.next_steps && (
-                  <div className="text-xs text-gray-700">Next: {r.next_steps}</div>
+                  <div className="text-xs text-gray-700">
+                    Next: {r.next_steps}
+                  </div>
                 )}
               </div>
             ))}
           </div>
+
+          {/* Required forms */}
           {(() => {
             const forms = Array.from(
-              new Set(
-                snapshot.eligibility.flatMap((r) => r.requiredForms || [])
-              )
+              new Set(snapshot.eligibility.flatMap((r) => r.requiredForms || []))
             );
             return forms.length ? (
               <div>
@@ -131,12 +146,17 @@ export default function EligibilityReport() {
               </div>
             ) : null;
           })()}
+
+          {/* Generated forms */}
           {snapshot.generatedForms?.length ? (
             <div>
               <h2 className="font-semibold mt-4">Generated Forms</h2>
               <ul className="list-disc list-inside">
                 {snapshot.generatedForms.map((f) => (
-                  <li key={f.name}>{f.name}{f.status ? ` - ${f.status}` : ''}</li>
+                  <li key={f.name}>
+                    {f.name}
+                    {f.status ? ` - ${f.status}` : ''}
+                  </li>
                 ))}
               </ul>
             </div>
