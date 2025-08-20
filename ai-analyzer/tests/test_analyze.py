@@ -64,3 +64,23 @@ def test_analyze_multipart_file(monkeypatch: pytest.MonkeyPatch) -> None:
     assert data["revenue"] == 5000
     assert data["source"] == "file"
 
+
+def test_analyze_multipart_invalid_type() -> None:
+    file_content = io.BytesIO(b"dummy")
+    resp = client.post(
+        "/analyze",
+        files={"file": ("test.exe", file_content, "application/octet-stream")},
+    )
+    assert resp.status_code == 400
+    assert resp.json()["error"].startswith("Invalid file type")
+
+
+def test_analyze_multipart_file_too_large() -> None:
+    big_content = io.BytesIO(b"a" * (5 * 1024 * 1024 + 1))
+    resp = client.post(
+        "/analyze",
+        files={"file": ("big.png", big_content, "image/png")},
+    )
+    assert resp.status_code == 400
+    assert resp.json()["error"] == "File too large. Maximum allowed size is 5MB."
+

@@ -12,6 +12,7 @@ ENV_FILE = os.getenv("ENV_FILE")
 ENV_PATH = ENV_FILE or Path(__file__).resolve().parent / f".env.{NODE_ENV}"
 class Settings(BaseSettings):
     NODE_ENV: str = "development"
+    MAX_FILE_SIZE_MB: int = 5
 
     model_config = SettingsConfigDict(env_file=ENV_PATH, extra="ignore")
 

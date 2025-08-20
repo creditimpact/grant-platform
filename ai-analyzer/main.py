@@ -9,6 +9,7 @@ from pydantic import BaseModel, constr
 from ocr_utils import extract_text
 from nlp_parser import extract_fields, normalize_text
 from config import settings  # type: ignore
+from upload_utils import validate_upload
 
 try:  # pragma: no cover - external dependency may be missing
     import pytesseract  # type: ignore
@@ -39,6 +40,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse:
+    detail = exc.detail
+    if isinstance(detail, dict):
+        content = detail
+    else:
+        content = {"error": detail}
+    return JSONResponse(status_code=exc.status_code, content=content)
+
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
     return {"status": "ok"}
@@ -58,6 +69,7 @@ def status() -> dict[str, str]:
 
 @app.post("/ocr-image")
 async def ocr_image(file: UploadFile = File(...)) -> dict[str, str]:
+    validate_upload(file)
     if not pytesseract or not Image:
         raise HTTPException(status_code=500, detail="Tesseract OCR not available")
     contents = await file.read()
@@ -70,7 +82,6 @@ class TextAnalyzeRequest(BaseModel):
 
 
 TEXT_LIMIT = 100_000
-ALLOWED_FILE_TYPES = {"application/pdf", "image/png", "image/jpeg"}
 
 
 @app.post("/analyze")
@@ -108,8 +119,7 @@ async def analyze(
             return await analyze_text_flow(text.strip(), source="text")
         if file is None:
             raise HTTPException(status_code=400, detail="Provide file or text")
-        if file.content_type not in ALLOWED_FILE_TYPES:
-            raise HTTPException(status_code=400, detail="Unsupported file type")
+        validate_upload(file)
         content = await file.read()
         extracted = extract_text(content)
         return await analyze_text_flow(extracted, source="file", filename=file.filename, content_type=file.content_type)
