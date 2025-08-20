@@ -42,11 +42,11 @@ To qualify, a business must:
 
 The backend exposes a unified flow that processes grant applications end‑to‑end:
 
-1. **POST `/api/submit-case`** – Frontend sends raw user data and uploaded documents. The server forwards data to the AI Analyzer (`AI_ANALYZER_URL/analyze`) to extract and normalize fields.
-2. **AI Analyzer → Eligibility Engine** – Normalized data is submitted to the Eligibility Engine (`ELIGIBILITY_ENGINE_URL/check`) for rule-based eligibility checks.
-3. **Eligibility → AI Agent** – Eligibility results and normalized data are passed to the AI Agent (`AI_AGENT_URL/form-fill`) which generates filled PDFs and summaries.
+1. **POST `/api/files/upload`** – Upload a document. The server forwards the file to the AI Analyzer (`AI_ANALYZER_URL/analyze`) to extract and normalize fields.
+2. **POST `/api/questionnaire`** – Persist user supplied answers and merge them with analyzer fields.
+3. **POST `/api/eligibility-report`** – Run the Eligibility Engine (`ELIGIBILITY_ENGINE_URL/check`) to compute program eligibility and required forms.
 4. **Digital signature & submission** – Hooks exist after form filling for optional signing and external submission.
-5. **GET `/api/status/:caseId`** – Fetch case status, eligibility results and generated documents for the applicant dashboard.
+5. **GET `/api/status/:caseId`** – Fetch case status, analyzer fields, eligibility results and generated documents for the applicant dashboard.
 
 All service calls exchange JSON payloads, are logged, and bubble up descriptive errors if a downstream service fails.
 
@@ -64,8 +64,9 @@ The frontend interacts with a simpler set of endpoints that manage a user's in�
 
 | Endpoint | Method | Description |
 | --- | --- | --- |
-| `/api/case/status` | GET | Current case status, required documents and any eligibility results |
-| `/api/case/questionnaire` | GET/POST | Retrieve or store questionnaire answers |
+| `/api/status/:caseId` | GET | Case status, analyzer fields, eligibility results and documents |
+| `/api/case/status` | GET | Dev shortcut to fetch the latest case when no `caseId` is known |
+| `/api/questionnaire` | POST | Store questionnaire answers and merge with analyzer fields |
 | `/api/files/upload` | POST | Upload a single document (fields: `file` and `key`) |
 | `/api/eligibility-report` | GET/POST | Fetch or trigger eligibility analysis |
 
@@ -154,6 +155,22 @@ curl -k -X POST https://localhost:5001/form-fill \
             "name": "Acme Corp"
         }
     }'
+```
+
+### Curl examples
+
+```bash
+# Upload a document
+curl -F "file=@./samples/payroll_q1.pdf" -F "caseId=dev-case-1" \
+  http://localhost:5000/api/files/upload
+
+# Trigger eligibility report
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"caseId":"dev-case-1"}' \
+  http://localhost:5000/api/eligibility-report
+
+# Fetch case status
+curl http://localhost:5000/api/status/dev-case-1
 ```
 
 ## Frontend

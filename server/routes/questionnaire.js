@@ -9,7 +9,7 @@ function aggregateMissing(results) {
   ];
 }
 
-router.get('/case/questionnaire', async (req, res) => {
+router.get(['/questionnaire', '/case/questionnaire'], async (req, res) => {
   const userId = 'dev-user';
   const { caseId } = req.query;
   if (!caseId) return res.status(400).json({ message: 'caseId required' });
@@ -24,13 +24,18 @@ router.get('/case/questionnaire', async (req, res) => {
       missingFieldsHint: missing,
       lastUpdated: c.questionnaire?.lastUpdated,
     },
+    analyzerFields: c.analyzer?.fields,
+    eligibility: c.eligibility?.results,
+    documents: c.documents,
+    status: c.status,
   });
 });
 
-router.post('/case/questionnaire', async (req, res) => {
+router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
   const userId = 'dev-user';
-  let { caseId, data } = req.body || {};
-  if (!data || typeof data !== 'object') {
+  let { caseId, answers, data } = req.body || {};
+  const payload = answers || data;
+  if (!payload || typeof payload !== 'object') {
     return res.status(400).json({ message: 'data required' });
   }
   let c;
@@ -43,7 +48,7 @@ router.post('/case/questionnaire', async (req, res) => {
   }
   const existingFields = (c.analyzer && c.analyzer.fields) || {};
   const merged = { ...existingFields };
-  for (const [k, v] of Object.entries(data)) {
+  for (const [k, v] of Object.entries(payload)) {
     if (
       merged[k] === undefined ||
       merged[k] === null ||
@@ -55,12 +60,24 @@ router.post('/case/questionnaire', async (req, res) => {
   const now = new Date().toISOString();
   await updateCase(caseId, {
     analyzer: { fields: merged, lastUpdated: now },
-    questionnaire: { data, lastUpdated: now },
+    questionnaire: { data: payload, lastUpdated: now },
   });
-  const missing = c.eligibility?.results ? aggregateMissing(c.eligibility.results) : [];
+  const updated = await getCase(userId, caseId);
+  const missing = updated.eligibility?.results
+    ? aggregateMissing(updated.eligibility.results)
+    : [];
   res.json({
     caseId,
-    questionnaire: { data, missingFieldsHint: missing, lastUpdated: now },
+    status: updated.status,
+    analyzer: updated.analyzer,
+    analyzerFields: updated.analyzer?.fields,
+    eligibility: updated.eligibility,
+    documents: updated.documents,
+    questionnaire: {
+      data: payload,
+      missingFieldsHint: missing,
+      lastUpdated: now,
+    },
   });
 });
 

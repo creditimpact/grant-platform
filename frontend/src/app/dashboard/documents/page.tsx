@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { getStatus, uploadFile } from '@/lib/api';
 import { getCaseId, setCaseId } from '@/lib/case-store';
 import type { CaseSnapshot, CaseDoc } from '@/lib/types';
 import { safeError } from '@/utils/logger';
@@ -17,15 +17,16 @@ export default function Documents() {
   const [snapshot, setSnapshot] = useState<CaseSnapshot | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [deltas, setDeltas] = useState<Record<string, unknown> | null>(null);
 
   const load = async () => {
     const id = getCaseId();
     if (!id) return;
     setLoading(true);
     try {
-      const res = await api.get(`/status/${id}`);
-      if (res.data.caseId) setCaseId(res.data.caseId);
-      setSnapshot(res.data);
+      const res = await getStatus(id);
+      if (res.caseId) setCaseId(res.caseId);
+      setSnapshot(res);
     } catch (err) {
       setError(formatError(`/status/${id}`, err));
       safeError('documents status', err);
@@ -47,11 +48,16 @@ export default function Documents() {
     if (id) formData.append('caseId', id);
     setLoading(true);
     try {
-      const res = await api.post('/files/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const prev = snapshot?.analyzerFields || {};
+      const res = await uploadFile(formData);
+      if (res.caseId) setCaseId(res.caseId);
+      setSnapshot(res);
+      const next = res.analyzerFields || {};
+      const added: Record<string, unknown> = {};
+      Object.entries(next).forEach(([k, v]) => {
+        if (prev[k] === undefined) added[k] = v;
       });
-      if (res.data.caseId) setCaseId(res.data.caseId);
-      setSnapshot(res.data);
+      setDeltas(Object.keys(added).length ? added : null);
       setError(undefined);
     } catch (err) {
       setError(formatError('/files/upload', err));
@@ -77,22 +83,34 @@ export default function Documents() {
       {snapshot && (
         <>
           <p className="text-sm text-gray-700">Case ID: {snapshot.caseId}</p>
-          <ul className="space-y-2">
-            {docs.map((d) => (
-              <li key={d.key || d.filename} className="border p-2 rounded">
-                <div className="font-medium">{d.filename}</div>
-                <div className="text-xs text-gray-600">
-                  {d.size} bytes · {d.contentType}
-                </div>
-                <div className="text-xs text-gray-600">Uploaded: {d.uploadedAt}</div>
-              </li>
-            ))}
-          </ul>
-          {snapshot.analyzer?.fields && (
+          {docs.length === 0 ? (
+            <p>No documents yet — upload your first document.</p>
+          ) : (
+            <ul className="space-y-2">
+              {docs.map((d) => (
+                <li key={d.key || d.filename} className="border p-2 rounded">
+                  <div className="font-medium">{d.filename}</div>
+                  <div className="text-xs text-gray-600">
+                    {d.size} bytes · {d.contentType}
+                  </div>
+                  <div className="text-xs text-gray-600">Uploaded: {d.uploadedAt}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+          {deltas && (
             <div>
-              <h2 className="font-semibold mt-4">Analyzer Fields</h2>
+              <h2 className="font-semibold mt-4">New Analyzer Fields</h2>
               <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
-                {JSON.stringify(snapshot.analyzer.fields, null, 2)}
+                {JSON.stringify(deltas, null, 2)}
+              </pre>
+            </div>
+          )}
+          {snapshot.analyzerFields && (
+            <div>
+              <h2 className="font-semibold mt-4">All Analyzer Fields</h2>
+              <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
+                {JSON.stringify(snapshot.analyzerFields, null, 2)}
               </pre>
             </div>
           )}

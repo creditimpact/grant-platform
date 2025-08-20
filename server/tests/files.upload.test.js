@@ -1,6 +1,6 @@
 const request = require('supertest');
-const nock = require('nock');
 process.env.SKIP_DB = 'true';
+global.fetch = jest.fn();
 const app = require('../index');
 const { resetStore } = require('../utils/pipelineStore');
 
@@ -8,18 +8,20 @@ describe('POST /api/files/upload', () => {
   beforeEach(() => {
     process.env.SKIP_DB = 'true';
     resetStore();
-    nock.cleanAll();
   });
 
   test('uploads valid pdf and returns case snapshot', async () => {
-    nock('http://localhost:8000').post('/analyze').reply(200, { foo: 'bar' });
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ foo: 'bar' }),
+    });
     const res = await request(app)
       .post('/api/files/upload')
       .attach('file', Buffer.from('%PDF'), 'test.pdf');
     expect(res.status).toBe(200);
     expect(res.body.caseId).toBeDefined();
     expect(res.body.documents).toHaveLength(1);
-    expect(res.body.analyzer.fields.foo).toBe('bar');
+    expect(res.body.analyzerFields.foo).toBe('bar');
   });
 
   test('rejects bad content type', async () => {
