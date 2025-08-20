@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import FormInput from '@/components/FormInput';
-import { api } from '@/lib/api';
+import { getStatus, postQuestionnaire } from '@/lib/api';
 import Stepper from '@/components/Stepper';
 import { safeError, safeLog } from '@/utils/logger';
 import { getCaseId, setCaseId } from '@/lib/case-store';
@@ -71,12 +71,15 @@ export default function Questionnaire() {
       setLoading(true);
       try {
         const id = getCaseId();
-        const res = await api.get('/case/questionnaire', {
-          params: { caseId: id },
-        });
-        if (res.data.caseId) setCaseId(res.data.caseId);
-        const data = res.data.data || {};
-        setMissingHints(res.data.missingFieldsHint || []);
+        const res = await getStatus(id);
+        if (res.caseId) setCaseId(res.caseId);
+        const data = res.questionnaire?.data || {};
+        const hints = Array.from(
+          new Set(
+            res.eligibility?.flatMap((e) => e.missing_fields || []) || []
+          )
+        );
+        setMissingHints(hints);
         const mapped = {
           ...data,
           businessType: data.businessType || data.entityType || '',
@@ -108,8 +111,8 @@ export default function Questionnaire() {
               : mapped.sam || prev.sam,
         }));
       } catch (err: any) {
-        logApiError('/case/questionnaire', undefined, err);
-        setError(`/case/questionnaire ${err?.response?.status || ''} ${err?.response?.data?.message || err.message}`);
+        logApiError('status', undefined, err);
+        setError(`status ${err?.response?.status || ''} ${err?.response?.data?.message || err.message}`);
         const saved = sessionStorage.getItem('questionnaire');
         if (saved) setAnswers(JSON.parse(saved));
       } finally {
@@ -156,20 +159,23 @@ export default function Questionnaire() {
         previousGrants: answers.previousGrants === 'yes',
         sam: answers.sam === 'yes',
       };
-      const res = await api.post('/case/questionnaire', {
+      const res = await postQuestionnaire({
         caseId: getCaseId(),
-        data: payload,
+        answers: payload,
       });
-      if (res.data.caseId) setCaseId(res.data.caseId);
-      setMissingHints(res.data.missingFieldsHint || []);
+      if (res.caseId) setCaseId(res.caseId);
+      const hints = Array.from(
+        new Set(res.eligibility?.flatMap((e) => e.missing_fields || []) || [])
+      );
+      setMissingHints(hints);
       if (process.env.NODE_ENV !== 'production') {
         safeLog('Questionnaire submitted successfully');
       }
       router.push('/dashboard/documents');
     } catch (err: any) {
-      logApiError('/case/questionnaire', answers, err);
+      logApiError('/questionnaire', answers, err);
       setError(
-        `/case/questionnaire ${err?.response?.status || ''} ${
+        `/questionnaire ${err?.response?.status || ''} ${
           err?.response?.data?.message || err.message
         }`
       );
@@ -189,10 +195,15 @@ export default function Questionnaire() {
         )}
         {missingHints.length > 0 && (
           <div className="bg-yellow-100 p-2 rounded text-sm">
-            <p className="font-medium">Missing Information</p>
+            <p className="font-medium">Suggested fields to complete</p>
             <ul className="list-disc list-inside">
               {missingHints.map((m) => (
-                <li key={m}>{m}</li>
+                <li
+                  key={m}
+                  className={answers[m as keyof typeof answers] ? 'line-through text-green-700' : ''}
+                >
+                  {m}
+                </li>
               ))}
             </ul>
           </div>

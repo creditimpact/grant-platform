@@ -1,5 +1,6 @@
 const request = require('supertest');
 process.env.SKIP_DB = 'true';
+global.fetch = undefined;
 const app = require('../index');
 const { createCase, updateCase, getCase, resetStore } = require('../utils/pipelineStore');
 
@@ -13,11 +14,18 @@ describe('questionnaire endpoints', () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { existing: 'keep', empty: '' } } });
     const res = await request(app)
-      .post('/api/case/questionnaire')
-      .send({ caseId, data: { existing: 'new', empty: 'filled', newField: 'val' } });
+      .post('/api/questionnaire')
+      .send({
+        caseId,
+        answers: { existing: 'new', empty: 'filled', newField: 'val' },
+      });
     expect(res.status).toBe(200);
     const c = await getCase('dev-user', caseId);
-    expect(c.analyzer.fields).toEqual({ existing: 'keep', empty: 'filled', newField: 'val' });
+    expect(c.analyzer.fields).toEqual({
+      existing: 'keep',
+      empty: 'filled',
+      newField: 'val',
+    });
     expect(c.questionnaire.data.newField).toBe('val');
   });
 
@@ -35,7 +43,7 @@ describe('questionnaire endpoints', () => {
       },
     });
     const res = await request(app)
-      .get('/api/case/questionnaire')
+      .get('/api/questionnaire')
       .query({ caseId });
     expect(res.status).toBe(200);
     expect(res.body.questionnaire.missingFieldsHint.sort()).toEqual(['a', 'b', 'c']);

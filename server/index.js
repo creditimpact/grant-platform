@@ -74,17 +74,19 @@ function startServer() {
   });
 }
 
-if (process.env.SKIP_DB !== 'true') {
-  connectDB()
-    .then(() => {
-      startServer();
-    })
-    .catch((err) => {
-      logger.error('Failed to connect to MongoDB', { error: err.stack });
-      process.exit(1);
-    });
-} else {
-  startServer();
+if (process.env.NODE_ENV !== 'test') {
+  if (process.env.SKIP_DB !== 'true') {
+    connectDB()
+      .then(() => {
+        startServer();
+      })
+      .catch((err) => {
+        logger.error('Failed to connect to MongoDB', { error: err.stack });
+        process.exit(1);
+      });
+  } else {
+    startServer();
+  }
 }
 
 module.exports = app;

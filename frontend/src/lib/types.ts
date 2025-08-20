@@ -14,26 +14,20 @@ export interface EligibilityItem {
   score?: number;
   estimated_amount?: number;
   missing_fields?: string[];
-  rationale?: string[];
-  reasoning?: string[];
   next_steps?: string;
   requiredForms?: string[];
-}
-
-export interface EligibilitySnapshot {
-  results: EligibilityItem[];
-  requiredForms: string[];
-  lastUpdated: string;
+  reasoning?: string[] | string;
+  rationale?: string[];
 }
 
 export interface CaseSnapshot {
   caseId: string;
-  status: CaseStatus;
+  status?: CaseStatus;
   documents?: CaseDoc[];
-  analyzer?: { fields?: Record<string, any>; lastUpdated?: string };
+  analyzerFields?: Record<string, unknown>;
   questionnaire?: { data?: Record<string, any>; lastUpdated?: string };
-  eligibility?: EligibilitySnapshot;
-  generatedForms?: Array<{ formName: string; payload: any; files?: string[]; generatedAt: string }>;
+  eligibility?: EligibilityItem[];
+  generatedForms?: Array<{ name: string; status?: string; link?: string }>;
   createdAt?: string;
   updatedAt?: string;
 }

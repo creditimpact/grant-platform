@@ -25,7 +25,15 @@ router.get('/eligibility-report', async (req, res) => {
     return res.status(404).json({ message: 'Eligibility not computed' });
   }
   const missing = aggregateMissing(c.eligibility.results);
-  res.json({ caseId, eligibility: c.eligibility, missingFieldsSummary: missing });
+  res.json({
+    caseId,
+    eligibility: c.eligibility,
+    missingFieldsSummary: missing,
+    analyzerFields: c.analyzer?.fields,
+    documents: c.documents,
+    status: c.status,
+    generatedForms: c.generatedForms,
+  });
 });
 
 router.post('/eligibility-report', async (req, res) => {
@@ -68,8 +76,17 @@ router.post('/eligibility-report', async (req, res) => {
       analyzer: { fields: base, lastUpdated: new Date().toISOString() },
     });
   }
+  const c = await getCase(userId, caseId);
   const missing = aggregateMissing(results);
-  res.json({ caseId, eligibility, missingFieldsSummary: missing });
+  res.json({
+    caseId,
+    eligibility,
+    missingFieldsSummary: missing,
+    analyzerFields: c.analyzer?.fields,
+    documents: c.documents,
+    status: c.status,
+    generatedForms: c.generatedForms,
+  });
 });
 
 module.exports = router;

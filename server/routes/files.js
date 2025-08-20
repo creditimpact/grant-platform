@@ -79,6 +79,7 @@ router.post('/files/upload', (req, res) => {
       status: c.status || 'open',
       documents,
       analyzer: { fields: mergedFields, lastUpdated: now },
+      analyzerFields: mergedFields,
     });
   });
 });
