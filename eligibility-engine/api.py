@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 import time
 import os
 from pathlib import Path
 import sys
-from typing import Any
+from typing import Any, Dict, List
+from pydantic import ValidationError
 from prometheus_client import Histogram, CONTENT_TYPE_LATEST, generate_latest
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -15,6 +16,7 @@ from common.request_id import request_id_middleware
 from grants_loader import load_grants
 from engine import analyze_eligibility
 from config import settings  # type: ignore
+from models import ResultsEnvelope, GrantResult
 
 logger = get_logger(__name__)
 
@@ -54,6 +56,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(_: Request, exc: ValidationError):
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(_: Request, exc: HTTPException):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(_: Request, exc: Exception):
+    logger.error("unhandled_exception", extra={"error": str(exc)})
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Unexpected server error. Please retry or contact support."},
+    )
+
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
     return {"status": "ok"}
@@ -75,16 +96,36 @@ def status() -> dict[str, str]:
 
 GRANTS = load_grants()
 
+
 @app.post("/check")
-async def check_eligibility(request: Request):
+async def check(payload: Dict[str, Any]) -> Any:
+    if not isinstance(payload, dict) or not payload:
+        raise HTTPException(status_code=400, detail="Request body must be a non-empty JSON object.")
+
     try:
-        data = await request.json()
-        result = analyze_eligibility(data, explain=True)
-        logger.info("eligibility_check", extra={"fields": list(data.keys())})
-        return result
-    except Exception as e:
-        logger.error("eligibility_check_failed", extra={"error": str(e)})
-        raise HTTPException(status_code=500, detail="internal error")
+        grant_results = await compute_grant_results(payload)
+        logger.info("eligibility_check", extra={"fields": list(payload.keys())})
+    except KeyError as ke:
+        logger.error("eligibility_check_failed", extra={"error": f"Missing required field: {ke}"})
+        raise HTTPException(status_code=422, detail=f"Missing required field: {ke}") from ke
+    except ValueError as ve:
+        logger.error("eligibility_check_failed", extra={"error": str(ve)})
+        raise HTTPException(status_code=400, detail=str(ve)) from ve
+
+    typed_results: List[GrantResult] = [GrantResult(**gr) for gr in grant_results]
+
+    if not settings.WRAP_RESULTS:
+        return [r.model_dump(by_alias=True, exclude_none=True) for r in typed_results]
+
+    agg_forms: List[str] = []
+    for r in typed_results:
+        if r.requiredForms:
+            for frm in r.requiredForms:
+                if frm not in agg_forms:
+                    agg_forms.append(frm)
+
+    envelope = ResultsEnvelope(results=typed_results, requiredForms=agg_forms)
+    return envelope.model_dump(by_alias=True, exclude_none=True)
 
 @app.get("/grants")
 def list_grants():
@@ -105,6 +146,10 @@ def get_grant(grant_key: str):
         if g["key"] == grant_key:
             return g
     raise HTTPException(status_code=404, detail="Grant not found")
+
+
+async def compute_grant_results(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return analyze_eligibility(payload, explain=True)
 
 if __name__ == "__main__":
     import uvicorn
