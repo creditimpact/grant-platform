@@ -8,12 +8,14 @@ export const api = axios.create({
   baseURL: `${base.replace(/\/+$/, '')}/api`,
 });
 
+// -------------------- STATUS --------------------
 export async function getStatus(caseId?: string): Promise<CaseSnapshot> {
   const url = caseId ? `/status/${caseId}` : '/case/status';
   const res = await api.get(url);
   return transformCase(res.data);
 }
 
+// -------------------- FILE UPLOAD --------------------
 export async function uploadFile(formData: FormData): Promise<CaseSnapshot> {
   const res = await api.post('/files/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -21,6 +23,7 @@ export async function uploadFile(formData: FormData): Promise<CaseSnapshot> {
   return transformCase(res.data);
 }
 
+// -------------------- QUESTIONNAIRE --------------------
 export async function postQuestionnaire(payload: {
   caseId?: string;
   answers: Record<string, any>;
@@ -29,6 +32,7 @@ export async function postQuestionnaire(payload: {
   return transformCase(res.data);
 }
 
+// -------------------- ELIGIBILITY REPORT --------------------
 export async function postEligibilityReport(payload: {
   caseId: string;
 }): Promise<CaseSnapshot> {
@@ -42,33 +46,45 @@ export async function getEligibilityReport(caseId?: string): Promise<Eligibility
     { cache: 'no-store' }
   );
   if (!r.ok) throw new Error(`eligibility-report ${r.status}`);
-  const data = (await r.json()) as EligibilityReport;
+  const data = (await r.json()) as any;
 
-  if (Array.isArray(data as any)) {
-    const results = normalizeEligibility(data as any);
-    return results as unknown as EligibilityReport;
+  // Legacy: API returned raw array
+  if (Array.isArray(data)) {
+    return {
+      results: normalizeEligibility(data),
+      requiredForms: [],
+    } as EligibilityReport;
   }
-  const envelope = data as any;
+
+  // Envelope style
+  const envelope: any = { ...data };
   if (Array.isArray(envelope.results)) {
     envelope.results = normalizeEligibility(envelope.results);
+  }
+  if (!Array.isArray(envelope.requiredForms)) {
+    envelope.requiredForms = [];
   }
   return envelope as EligibilityReport;
 }
 
+// -------------------- TRANSFORM CASE --------------------
 function transformCase(data: any): CaseSnapshot {
-  const raw = Array.isArray(data.eligibility?.results)
-    ? data.eligibility.results
-    : data.eligibility;
+  const rawResults =
+    Array.isArray(data.eligibility?.results)
+      ? data.eligibility.results
+      : Array.isArray(data.eligibility)
+      ? data.eligibility
+      : [];
+
   return {
     caseId: data.caseId,
     status: data.status,
-    documents: data.documents,
-    analyzerFields: data.analyzerFields || data.analyzer?.fields,
-    questionnaire: data.questionnaire,
-    eligibility: raw ? normalizeEligibility(raw) : undefined,
-    generatedForms: data.generatedForms,
+    documents: data.documents || [],
+    analyzerFields: data.analyzerFields || data.analyzer?.fields || {},
+    questionnaire: data.questionnaire || {},
+    eligibility: rawResults.length ? normalizeEligibility(rawResults) : [],
+    generatedForms: data.generatedForms || [],
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   };
 }
-
