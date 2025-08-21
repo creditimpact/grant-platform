@@ -8,7 +8,6 @@ export const api = axios.create({
   baseURL: `${base.replace(/\/+$/, '')}/api`,
 });
 
-// -------------------- STATUS --------------------
 export async function getStatus(caseId?: string): Promise<CaseSnapshot> {
   const url = caseId ? `/status/${caseId}` : '/case/status';
   const res = await api.get(url);
