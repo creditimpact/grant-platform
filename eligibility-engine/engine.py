@@ -1,12 +1,22 @@
 from pathlib import Path
 import json
 from typing import List, Dict, Any
+
+from fastapi import FastAPI
+
 from common.logger import get_logger
 
 from grants_loader import load_grants
 from rules_utils import check_rules, check_rule_groups, estimate_award
 
+app = FastAPI()
+
 logger = get_logger(__name__)
+
+
+@app.get("/healthz")
+def health_check() -> dict[str, str]:
+    return {"status": "ok"}
 
 
 def analyze_eligibility(
