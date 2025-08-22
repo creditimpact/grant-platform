@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStatus } from '@/lib/api';
+import { getStatus } from '@/lib/apiClient';
 import { getCaseId, setCaseId } from '@/lib/case-store';
 import type { CaseSnapshot } from '@/lib/types';
 import { safeError } from '@/utils/logger';

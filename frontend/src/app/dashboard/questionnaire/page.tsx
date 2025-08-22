@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import FormInput from '@/components/FormInput';
-import { getStatus, postQuestionnaire } from '@/lib/api';
+import { getStatus, postQuestionnaire } from '@/lib/apiClient';
 import Stepper from '@/components/Stepper';
 import { safeError, safeLog } from '@/utils/logger';
 import { getCaseId, setCaseId } from '@/lib/case-store';

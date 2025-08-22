@@ -46,22 +46,15 @@ files.forEach((file) => {
     (n) => n.type === 'ImportDeclaration'
   );
 
-  const hasApiClientImport = importDeclarations.some((d) =>
-    typeof d.source.value === 'string' && d.source.value.endsWith('apiClient')
-  );
-  if (hasApiClientImport) {
-    return; // skip file
-  }
-
   let fileChanged = false;
 
   importDeclarations.forEach((decl) => {
     const val = decl.source.value;
-    if (typeof val === 'string' && val.endsWith('/api')) {
-      const newVal = val.replace(/\/api$/, '/apiClient');
+    if (typeof val === 'string' && val === '@/lib/api') {
+      const newVal = '@/lib/apiClient';
       const quote =
-        (decl.source.extra && decl.source.extra.raw && decl.source.extra.raw[0] === '\'')
-          ? '\''
+        decl.source.extra && decl.source.extra.raw && decl.source.extra.raw[0] === "'"
+          ? "'"
           : '"';
       decl.source.value = newVal;
       if (decl.source.extra) {
