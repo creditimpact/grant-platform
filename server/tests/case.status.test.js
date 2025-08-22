@@ -25,4 +25,17 @@ describe('case status endpoint', () => {
     expect(res.body.questionnaire.data).toEqual({ foo: 'bar' });
     expect(res.body.questionnaire.missingFieldsHint).toEqual(['a']);
   });
+
+  test('returns empty status when no caseId provided', async () => {
+    const res = await request(app).get('/api/case/status');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ caseId: null, status: 'empty' });
+  });
+
+  test('init endpoint creates new case', async () => {
+    const res = await request(app).post('/api/case/init');
+    expect(res.status).toBe(200);
+    expect(res.body.caseId).toBeTruthy();
+    expect(res.body.status).toBe('open');
+  });
 });

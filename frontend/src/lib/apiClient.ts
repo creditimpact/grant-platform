@@ -9,8 +9,16 @@ export const api = axios.create({
 });
 
 export async function getStatus(caseId?: string): Promise<CaseSnapshot> {
-  const url = `/case/status${caseId ? `?caseId=${caseId}` : ''}`;
+  if (!caseId) {
+    return { caseId: null, status: 'empty' };
+  }
+  const url = `/case/status?caseId=${caseId}`;
   const res = await api.get(url);
+  return transformCase(res.data);
+}
+
+export async function initCase(): Promise<CaseSnapshot> {
+  const res = await api.post('/case/init');
   return transformCase(res.data);
 }
 

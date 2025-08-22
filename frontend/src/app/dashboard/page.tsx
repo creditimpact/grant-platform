@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { getStatus } from '@/lib/apiClient';
+import { getStatus, initCase } from '@/lib/apiClient';
 import { getCaseId, setCaseId } from '@/lib/case-store';
 import type { CaseSnapshot } from '@/lib/types';
 import { safeError } from '@/utils/logger';
@@ -13,7 +12,6 @@ function formatError(path: string, err: any) {
 }
 
 export default function Dashboard() {
-  const router = useRouter();
   const [snapshot, setSnapshot] = useState<CaseSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
@@ -24,8 +22,12 @@ export default function Dashboard() {
       try {
         const id = getCaseId();
         const res = await getStatus(id);
-        if (res.caseId) setCaseId(res.caseId);
-        setSnapshot(res);
+        if (res.caseId) {
+          setCaseId(res.caseId);
+          setSnapshot(res);
+        } else {
+          setSnapshot(null);
+        }
       } catch (err: any) {
         setError(formatError('status', err));
         safeError('dashboard status', err);
@@ -36,16 +38,33 @@ export default function Dashboard() {
     load();
   }, []);
 
+  const handleStart = async () => {
+    setLoading(true);
+    try {
+      const res = await initCase();
+      if (res.caseId) {
+        setCaseId(res.caseId);
+        setSnapshot(res);
+      }
+      setError(undefined);
+    } catch (err: any) {
+      setError(formatError('init', err));
+      safeError('case init', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!snapshot && !loading) {
     return (
       <div className="p-6 text-center space-y-4">
         <h1 className="text-2xl font-bold">Welcome</h1>
         <p>No case open.</p>
         <button
-          onClick={() => router.push('/dashboard/questionnaire')}
+          onClick={handleStart}
           className="px-4 py-2 bg-blue-600 text-white rounded"
         >
-          Open a case
+          Start Application
         </button>
       </div>
     );

@@ -1,4 +1,10 @@
-export type CaseStatus = 'open' | 'submitted' | 'processing' | 'complete' | 'error';
+export type CaseStatus =
+  | 'empty'
+  | 'open'
+  | 'submitted'
+  | 'processing'
+  | 'complete'
+  | 'error';
 
 export interface CaseDoc {
   key?: string;
@@ -19,7 +25,7 @@ export interface EligibilityItem {
 }
 
 export interface CaseSnapshot {
-  caseId: string;
+  caseId: string | null;
   status?: CaseStatus;
   documents?: CaseDoc[];
   analyzerFields?: Record<string, unknown>;
