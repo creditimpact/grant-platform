@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStatus, uploadFile } from '@/lib/apiClient';
+import { getStatus } from '@/lib/apiClient';
 import { getCaseId, setCaseId } from '@/lib/case-store';
 import type { CaseSnapshot, CaseDoc } from '@/lib/types';
 import { safeError } from '@/utils/logger';
@@ -17,7 +17,6 @@ export default function Documents() {
   const [snapshot, setSnapshot] = useState<CaseSnapshot | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
-  const [deltas, setDeltas] = useState<Record<string, unknown> | null>(null);
 
   const load = async () => {
     const id = getCaseId();
@@ -42,23 +41,21 @@ export default function Documents() {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
+    const fd = new FormData();
+    fd.append('file', file);
     const id = getCaseId();
-    if (id) formData.append('caseId', id);
+    if (id) fd.append('caseId', id);
     setLoading(true);
     try {
-      const prev = snapshot?.analyzerFields || {};
-      const res = await uploadFile(formData);
-      if (res.caseId) setCaseId(res.caseId);
-      setSnapshot(res);
-      const next = res.analyzerFields || {};
-      const added: Record<string, unknown> = {};
-      Object.entries(next).forEach(([k, v]) => {
-        if (prev[k] === undefined) added[k] = v;
+      const res = await fetch('/api/files/upload', {
+        method: 'POST',
+        body: fd,
       });
-      setDeltas(Object.keys(added).length ? added : null);
+      if (!res.ok) throw new Error(`upload ${res.status}`);
+      const data = await res.json();
+      if (data.caseId) setCaseId(data.caseId);
       setError(undefined);
+      router.push('/dashboard');
     } catch (err) {
       setError(formatError('/files/upload', err));
       safeError('upload', err);
@@ -97,14 +94,6 @@ export default function Documents() {
                 </li>
               ))}
             </ul>
-          )}
-          {deltas && (
-            <div>
-              <h2 className="font-semibold mt-4">New Analyzer Fields</h2>
-              <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
-                {JSON.stringify(deltas, null, 2)}
-              </pre>
-            </div>
           )}
           {snapshot.analyzerFields && (
             <div>

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getStatus, initCase } from '@/lib/apiClient';
+import Link from 'next/link';
+import { getStatus, initCase, postEligibilityReport } from '@/lib/apiClient';
 import { getCaseId, setCaseId } from '@/lib/case-store';
 import type { CaseSnapshot } from '@/lib/types';
 import { safeError } from '@/utils/logger';
@@ -9,6 +10,47 @@ function formatError(path: string, err: any) {
   const status = err?.response?.status;
   const message = err?.response?.data?.message || err.message;
   return `${path} ${status || ''} ${message}`;
+}
+
+function DashboardActions({
+  caseId,
+  onAfterAction,
+}: {
+  caseId: string;
+  onAfterAction: () => Promise<void> | void;
+}) {
+  async function handleGenerateReport() {
+    try {
+      await postEligibilityReport({ caseId });
+      await onAfterAction();
+    } catch (e) {
+      console.error('Generate report failed', e);
+      alert('Failed to generate report');
+    }
+  }
+
+  return (
+    <div className="mt-4 flex gap-3">
+      <Link
+        href="/dashboard/documents"
+        className="px-4 py-2 rounded bg-blue-600 text-white"
+      >
+        Upload Documents
+      </Link>
+      <Link
+        href="/dashboard/questionnaire"
+        className="px-4 py-2 rounded bg-green-600 text-white"
+      >
+        Complete Questionnaire
+      </Link>
+      <button
+        onClick={handleGenerateReport}
+        className="px-4 py-2 rounded bg-indigo-600 text-white"
+      >
+        Generate Eligibility Report
+      </button>
+    </div>
+  );
 }
 
 export default function Dashboard() {
@@ -82,6 +124,21 @@ export default function Dashboard() {
     }
   };
 
+  const refetchStatus = async () => {
+    try {
+      const id = getCaseId();
+      const res = await getStatus(id);
+      if (res.caseId) {
+        setCaseId(res.caseId);
+        setSnapshot(res);
+      }
+      setError(undefined);
+    } catch (err: any) {
+      setError(formatError('status', err));
+      safeError('dashboard refetch', err);
+    }
+  };
+
   if (!snapshot && !loading) {
     return (
       <div className="p-6 text-center space-y-4">
@@ -119,6 +176,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
           <p className="text-sm text-gray-700">Case ID: {snapshot.caseId}</p>
           <p>Status: {snapshot.status}</p>
+          <DashboardActions caseId={snapshot.caseId} onAfterAction={refetchStatus} />
           {snapshot.analyzerFields && (
             <div>
               <h2 className="font-semibold mt-4">Analyzer Fields</h2>
