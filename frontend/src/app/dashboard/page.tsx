@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [snapshot, setSnapshot] = useState<CaseSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
+  const [hasStored, setHasStored] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -36,6 +37,12 @@ export default function Dashboard() {
       }
     };
     load();
+
+    if (typeof window !== 'undefined') {
+      try {
+        setHasStored(!!localStorage.getItem('caseId'));
+      } catch {}
+    }
   }, []);
 
   const handleStart = async () => {
@@ -55,17 +62,47 @@ export default function Dashboard() {
     }
   };
 
+  const handleResume = async () => {
+    setLoading(true);
+    try {
+      const id = getCaseId(true);
+      const res = await getStatus(id);
+      if (res.caseId) {
+        setCaseId(res.caseId);
+        setSnapshot(res);
+      } else {
+        setSnapshot(null);
+      }
+      setError(undefined);
+    } catch (err: any) {
+      setError(formatError('status', err));
+      safeError('dashboard resume', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!snapshot && !loading) {
     return (
       <div className="p-6 text-center space-y-4">
         <h1 className="text-2xl font-bold">Welcome</h1>
         <p>No case open.</p>
-        <button
-          onClick={handleStart}
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          Start Application
-        </button>
+        <div className="flex justify-center gap-2">
+          <button
+            onClick={handleStart}
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Start Application
+          </button>
+          {hasStored && (
+            <button
+              onClick={handleResume}
+              className="px-4 py-2 bg-green-600 text-white rounded"
+            >
+              Resume Application
+            </button>
+          )}
+        </div>
       </div>
     );
   }

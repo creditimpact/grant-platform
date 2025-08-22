@@ -1,12 +1,18 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import EligibilityReport from '@/app/eligibility-report/page';
-import * as api from '@/lib/api';
+import { setCaseId, clearCaseId } from '@/lib/case-store';
+import * as api from '@/lib/apiClient';
 
-jest.mock('@/lib/api');
+jest.mock('@/lib/apiClient');
 
 (test as any).timeout?.(10000);
 
 describe('EligibilityReport', () => {
+  beforeEach(() => {
+    clearCaseId();
+    setCaseId('c1');
+  });
+
   it('shows generating indicator', async () => {
     (api.getStatus as jest.Mock).mockResolvedValue({ caseId: 'c1', eligibility: [] });
     let resolve: any;
