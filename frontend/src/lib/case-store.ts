@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 
 interface CaseState {
-  caseId?: string;
+  caseId: string | null;
   setCaseId: (id: string) => void;
   clearCaseId: () => void;
 }
 
 export const useCaseStore = create<CaseState>((set) => ({
-  caseId: undefined,
+  caseId: null,
   setCaseId: (id: string) => {
     set({ caseId: id });
     if (typeof window !== 'undefined') {
@@ -17,7 +17,7 @@ export const useCaseStore = create<CaseState>((set) => ({
     }
   },
   clearCaseId: () => {
-    set({ caseId: undefined });
+    set({ caseId: null });
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem('caseId');
@@ -26,10 +26,10 @@ export const useCaseStore = create<CaseState>((set) => ({
   },
 }));
 
-export function getCaseId(): string | undefined {
+export function getCaseId(loadFromStorage = false): string | null {
   const { caseId } = useCaseStore.getState();
   if (caseId) return caseId;
-  if (typeof window !== 'undefined') {
+  if (loadFromStorage && typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem('caseId');
       if (stored) {
@@ -38,7 +38,7 @@ export function getCaseId(): string | undefined {
       }
     } catch {}
   }
-  return undefined;
+  return null;
 }
 
 export function setCaseId(id: string) {
@@ -49,13 +49,4 @@ export function clearCaseId() {
   useCaseStore.getState().clearCaseId();
 }
 
-// Initialize from localStorage on the client
-if (typeof window !== 'undefined') {
-  try {
-    const stored = localStorage.getItem('caseId');
-    if (stored) {
-      useCaseStore.setState({ caseId: stored });
-    }
-  } catch {}
-}
 

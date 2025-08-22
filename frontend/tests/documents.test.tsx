@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Documents from '@/app/dashboard/documents/page';
-import * as api from '@/lib/api';
+import * as api from '@/lib/apiClient';
 
-jest.mock('@/lib/api');
+jest.mock('@/lib/apiClient');
 
 (test as any).timeout?.(10000);
 
