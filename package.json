@@ -12,5 +12,10 @@
     "morgan": "1.10.1",
     "multer": "2.0.2",
     "form-data": "4.0.4"
+  },
+  "devDependencies": {
+    "@babel/parser": "^7.25.9",
+    "glob": "^10.4.5",
+    "recast": "^0.23.9"
   }
 }
