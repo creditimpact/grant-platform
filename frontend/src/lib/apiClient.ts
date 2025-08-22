@@ -45,8 +45,8 @@ export async function getEligibilityReport(caseId?: string): Promise<Eligibility
     { cache: 'no-store' }
   );
   if (!r.ok) throw new Error(`eligibility-report ${r.status}`);
-<<<<<<< HEAD
-  const data = (await r.json()) as any;
+
+  const data = await r.json();
 
   // Legacy: API returned raw array
   if (Array.isArray(data)) {
@@ -57,28 +57,16 @@ export async function getEligibilityReport(caseId?: string): Promise<Eligibility
   }
 
   // Envelope style
-  const envelope: any = { ...data };
-=======
-  const data = await r.json();
-
-  if (Array.isArray(data)) {
-    return normalizeEligibility(data);
-  }
   const envelope = data as ResultsEnvelope;
->>>>>>> 9db82df860434f10a0084994116afaa34ab32f31
   if (Array.isArray(envelope.results)) {
     envelope.results = normalizeEligibility(envelope.results);
   } else {
     envelope.results = [];
   }
-<<<<<<< HEAD
   if (!Array.isArray(envelope.requiredForms)) {
     envelope.requiredForms = [];
   }
   return envelope as EligibilityReport;
-=======
-  return envelope;
->>>>>>> 9db82df860434f10a0084994116afaa34ab32f31
 }
 
 // -------------------- TRANSFORM CASE --------------------
@@ -93,19 +81,11 @@ function transformCase(data: any): CaseSnapshot {
   return {
     caseId: data.caseId,
     status: data.status,
-<<<<<<< HEAD
     documents: data.documents || [],
     analyzerFields: data.analyzerFields || data.analyzer?.fields || {},
     questionnaire: data.questionnaire || {},
     eligibility: rawResults.length ? normalizeEligibility(rawResults) : [],
     generatedForms: data.generatedForms || [],
-=======
-    documents: data.documents,
-    analyzerFields: data.analyzerFields || data.analyzer?.fields,
-    questionnaire: data.questionnaire,
-    eligibility: normalizeEligibility(raw),
-    generatedForms: data.generatedForms,
->>>>>>> 9db82df860434f10a0084994116afaa34ab32f31
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   };
