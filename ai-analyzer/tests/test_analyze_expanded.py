@@ -1,9 +1,5 @@
 import io
-
-import pytest
-import env_setup  # noqa: F401
-from fastapi.testclient import TestClient
-import io
+from pathlib import Path
 
 import pytest
 import env_setup  # noqa: F401
@@ -92,4 +88,25 @@ def test_analyze_multipart_file_too_large() -> None:
     )
     assert resp.status_code == 400
     assert resp.json()["error"] == "File too large. Maximum allowed size is 5MB."
+
+
+def test_analyze_pdf_sample() -> None:
+    with open(
+        Path(__file__).parent / "payroll_records_bluewave_fixed.pdf", "rb"
+    ) as f:
+        resp = client.post(
+            "/analyze",
+            files={
+                "file": (
+                    "payroll_records_bluewave_fixed.pdf",
+                    f,
+                    "application/pdf",
+                )
+            },
+        )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ein"] == "12-3456789"
+    assert data["quarterly_revenues"]["2023"]["Q1"] == 120000
+    assert data["source"] == "file"
 

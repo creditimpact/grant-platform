@@ -3,6 +3,10 @@ const { getCase, getLatestCase } = require('../utils/pipelineStore');
 
 const router = express.Router();
 
+function aggregateMissing(results) {
+  return [...new Set(results.flatMap((r) => r.missing_fields || []))];
+}
+
 async function caseStatusHandler(req, res) {
   const userId = 'dev-user';
   const caseId = req.query.caseId;
@@ -13,12 +17,20 @@ async function caseStatusHandler(req, res) {
     c = await getLatestCase(userId);
   }
   if (!c) return res.status(404).json({ message: 'Case not found' });
+  const missing = c.eligibility?.results
+    ? aggregateMissing(c.eligibility.results)
+    : [];
   res.json({
     caseId: c.caseId,
     createdAt: c.createdAt,
     status: c.status,
     analyzer: c.analyzer,
     analyzerFields: c.analyzer?.fields,
+    questionnaire: {
+      data: c.questionnaire?.data || {},
+      missingFieldsHint: missing,
+      lastUpdated: c.questionnaire?.lastUpdated,
+    },
     eligibility: c.eligibility,
     generatedForms: c.generatedForms,
     documents: c.documents,

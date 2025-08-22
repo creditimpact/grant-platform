@@ -23,7 +23,11 @@ export interface CaseSnapshot {
   status?: CaseStatus;
   documents?: CaseDoc[];
   analyzerFields?: Record<string, unknown>;
-  questionnaire?: { data?: Record<string, any>; lastUpdated?: string };
+  questionnaire?: {
+    data?: Record<string, any>;
+    missingFieldsHint?: string[];
+    lastUpdated?: string;
+  };
   eligibility?: EligibilityItem[];
   generatedForms?: Array<{ name: string; status?: string; link?: string }>;
   createdAt?: string;

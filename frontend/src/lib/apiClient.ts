@@ -9,7 +9,7 @@ export const api = axios.create({
 });
 
 export async function getStatus(caseId?: string): Promise<CaseSnapshot> {
-  const url = caseId ? `/status/${caseId}` : '/case/status';
+  const url = `/case/status${caseId ? `?caseId=${caseId}` : ''}`;
   const res = await api.get(url);
   return transformCase(res.data);
 }
@@ -78,12 +78,18 @@ function transformCase(data: any): CaseSnapshot {
       ? data.eligibility
       : [];
 
+  const questionnaire = {
+    data: data.questionnaire?.data || {},
+    missingFieldsHint: data.questionnaire?.missingFieldsHint || [],
+    lastUpdated: data.questionnaire?.lastUpdated,
+  };
+
   return {
     caseId: data.caseId,
     status: data.status,
     documents: data.documents || [],
     analyzerFields: data.analyzerFields || data.analyzer?.fields || {},
-    questionnaire: data.questionnaire || {},
+    questionnaire,
     eligibility: rawResults.length ? normalizeEligibility(rawResults) : [],
     generatedForms: data.generatedForms || [],
     createdAt: data.createdAt,

@@ -13,6 +13,10 @@ const { getServiceHeaders } = require('../utils/serviceHeaders');
 
 const router = express.Router();
 
+function aggregateMissing(results) {
+  return [...new Set(results.flatMap((r) => r.missing_fields || []))];
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, '../uploads');
@@ -127,12 +131,20 @@ router.get('/status/:caseId', async (req, res) => {
   const userId = 'dev-user';
   const c = await getCase(userId, req.params.caseId);
   if (!c) return res.status(404).json({ message: 'Case not found' });
+  const missing = c.eligibility?.results
+    ? aggregateMissing(c.eligibility.results)
+    : [];
   res.json({
     caseId: c.caseId,
     createdAt: c.createdAt,
     status: c.status,
     analyzer: c.analyzer,
     analyzerFields: c.analyzer?.fields,
+    questionnaire: {
+      data: c.questionnaire?.data || {},
+      missingFieldsHint: missing,
+      lastUpdated: c.questionnaire?.lastUpdated,
+    },
     eligibility: c.eligibility,
     generatedForms: c.generatedForms,
     documents: c.documents,
