@@ -5,6 +5,9 @@ and parses business fields such as EIN, W‑2 employee counts, quarterly revenue
 entity type. The `/analyze` endpoint accepts `application/pdf`, `image/png` and
 `image/jpeg` uploads.
 
+Set `TESSERACT_CMD` to the path of the Tesseract executable if it's not
+already available on your `PATH`.
+
 ## JSON / Text Input
 
 The `/analyze` endpoint also accepts raw text via JSON or `text/plain` payloads.
@@ -47,6 +50,8 @@ echo "" > dummy-cert
 echo "" > dummy-key
 cat > .env <<'EOF'
 NODE_ENV=development
+# optional: path to the Tesseract executable
+TESSERACT_CMD=/usr/bin/tesseract
 EOF
 
 $env:PYTHONPATH=".."

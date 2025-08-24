@@ -14,7 +14,8 @@ from upload_utils import validate_upload
 try:  # pragma: no cover - external dependency may be missing
     import pytesseract  # type: ignore
     from PIL import Image  # type: ignore
-    pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+    if settings.TESSERACT_CMD:
+        pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
 except Exception:  # pragma: no cover - gracefully handle missing libs
     pytesseract = None  # type: ignore
     Image = None  # type: ignore
