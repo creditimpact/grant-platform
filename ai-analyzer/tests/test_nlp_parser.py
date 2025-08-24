@@ -1,5 +1,5 @@
 import env_setup  # noqa: F401
-from nlp_parser import (
+from ai_analyzer.nlp_parser import (
     extract_ein,
     extract_w2_count,
     extract_quarterly_revenues,

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from fastapi import HTTPException, UploadFile
 
-from config import settings  # type: ignore
+from ai_analyzer.config import settings  # type: ignore
 
 
 FILE_TYPES_PATH = Path(__file__).resolve().parents[1] / "shared" / "file_types.json"

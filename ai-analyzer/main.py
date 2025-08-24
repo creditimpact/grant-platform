@@ -6,10 +6,10 @@ from pathlib import Path
 from typing import Optional, Any
 import io
 from pydantic import BaseModel, constr
-from ocr_utils import extract_text, OCRExtractionError
-from nlp_parser import extract_fields, normalize_text
-from config import settings  # type: ignore
-from upload_utils import validate_upload
+from ai_analyzer.ocr_utils import extract_text, OCRExtractionError
+from ai_analyzer.nlp_parser import extract_fields, normalize_text
+from ai_analyzer.config import settings  # type: ignore
+from ai_analyzer.upload_utils import validate_upload
 
 try:  # pragma: no cover - external dependency may be missing
     import pytesseract  # type: ignore

@@ -4,7 +4,7 @@ import pytest
 import env_setup  # noqa: F401
 from fastapi.testclient import TestClient
 
-from main import app
+from ai_analyzer.main import app
 
 
 client = TestClient(app)
@@ -23,7 +23,7 @@ def _patch_ocr(monkeypatch: pytest.MonkeyPatch, *, fail: bool = False) -> None:
         def open(_: io.BytesIO) -> object:  # pragma: no cover - simple stub
             return object()
 
-    for module in ("main", "ocr_utils"):
+    for module in ("ai_analyzer.main", "ai_analyzer.ocr_utils"):
         monkeypatch.setattr(f"{module}.pytesseract", DummyPytesseract)
         monkeypatch.setattr(f"{module}.Image", DummyImage)
 
