@@ -1,6 +1,9 @@
 const express = require('express');
 const multer = require('multer');
 const FormData = require('form-data');
+const path = require('path');
+
+const { extensions: allowedExtensions } = require('../../shared/file_types.json');
 const fetchFn =
   global.pipelineFetch ||
   (global.fetch
@@ -16,8 +19,9 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-function isAllowed(mimetype) {
-  return ['application/pdf', 'image/jpeg', 'image/png'].includes(mimetype);
+function isAllowed(filename) {
+  const ext = path.extname(filename).toLowerCase();
+  return allowedExtensions.includes(ext);
 }
 
 router.post('/files/upload', (req, res) => {
@@ -29,7 +33,7 @@ router.post('/files/upload', (req, res) => {
       return res.status(400).json({ message: err.message });
     }
     if (!req.file) return res.status(400).json({ message: 'file required' });
-    if (!isAllowed(req.file.mimetype)) {
+    if (!isAllowed(req.file.originalname)) {
       return res.status(400).json({ message: 'Unsupported file type' });
     }
 
