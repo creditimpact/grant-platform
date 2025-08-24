@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional, Any
 import io
 from pydantic import BaseModel, constr
-from ocr_utils import extract_text
+from ocr_utils import extract_text, OCRExtractionError
 from nlp_parser import extract_fields, normalize_text
 from config import settings  # type: ignore
 from upload_utils import validate_upload
@@ -74,8 +74,11 @@ async def ocr_image(file: UploadFile = File(...)) -> dict[str, str]:
     if not pytesseract or not Image:
         raise HTTPException(status_code=500, detail="Tesseract OCR not available")
     contents = await file.read()
-    image = Image.open(io.BytesIO(contents))
-    text = pytesseract.image_to_string(image)
+    try:
+        text = extract_text(contents)
+    except OCRExtractionError as exc:
+        logger.exception("ocr_image failed")
+        raise HTTPException(status_code=500, detail="Failed to extract text") from exc
     return {"text": text}
 
 class TextAnalyzeRequest(BaseModel):
@@ -119,7 +122,11 @@ async def analyze(
             raise HTTPException(status_code=400, detail="Provide file or text")
         validate_upload(file)
         content = await file.read()
-        extracted = extract_text(content)
+        try:
+            extracted = extract_text(content)
+        except OCRExtractionError as exc:
+            logger.exception("extract_text failed")
+            raise HTTPException(status_code=500, detail="Failed to extract text") from exc
         return await analyze_text_flow(extracted, source="file", filename=file.filename, content_type=file.content_type)
 
     raise HTTPException(status_code=400, detail="Unsupported Content-Type")

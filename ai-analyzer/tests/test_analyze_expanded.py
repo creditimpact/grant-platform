@@ -55,8 +55,8 @@ def test_analyze_text_oversize() -> None:
 def test_analyze_multipart_file(monkeypatch: pytest.MonkeyPatch) -> None:
     def mock_extract_text(_: bytes) -> str:
         return "Q1 2023 revenue $5000; EIN 11-1111111"
-
     monkeypatch.setattr("ocr_utils.extract_text", mock_extract_text)
+    monkeypatch.setattr("main.extract_text", mock_extract_text)
 
     file_content = io.BytesIO(b"dummy")
     resp = client.post(
@@ -88,6 +88,22 @@ def test_analyze_multipart_file_too_large() -> None:
     )
     assert resp.status_code == 400
     assert resp.json()["error"] == "File too large. Maximum allowed size is 5MB."
+
+
+def test_analyze_corrupted_pdf(monkeypatch: pytest.MonkeyPatch) -> None:
+    class DummyPdfplumber:
+        @staticmethod
+        def open(_: io.BytesIO) -> object:
+            raise RuntimeError("bad pdf")
+
+    monkeypatch.setattr("ocr_utils.pdfplumber", DummyPdfplumber)
+
+    file_content = io.BytesIO(b"%PDF-1.4 corrupted")
+    resp = client.post(
+        "/analyze",
+        files={"file": ("test.pdf", file_content, "application/pdf")},
+    )
+    assert resp.status_code == 500
 
 
 def test_analyze_pdf_sample() -> None:
