@@ -18,27 +18,16 @@
   "veteran_owned_business_grant": {
     "required_fields": [
       "owner_veteran",
-      "owner_spouse",
-      "ownership_percentage",
-      "number_of_employees",
-      "annual_revenue",
-      "business_location_state",
-      "economically_vulnerable_area",
-      "business_type"
+      "owner_spouse_veteran",
+      "ownership_percentage"
     ],
     "optional_fields": []
   },
   "erc": {
     "required_fields": [
-      "business_location_country",
       "w2_employee_count",
-      "revenue_drop_2020_percent",
-      "revenue_drop_2021_percent",
-      "government_shutdown_2020",
-      "government_shutdown_2021",
-      "qualified_wages_2020",
-      "qualified_wages_2021",
-      "ppp_wages_double_dip"
+      "revenue_drop_percent",
+      "gov_shutdown"
     ],
     "optional_fields": []
   },
@@ -70,10 +59,7 @@
   "rural_development_grant": {
     "required_fields": [
       "entity_type",
-      "service_area_population",
-      "income_level",
-      "project_type",
-      "project_cost"
+      "rural_area"
     ],
     "optional_fields": []
   },

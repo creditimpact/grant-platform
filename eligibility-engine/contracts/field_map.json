@@ -59,6 +59,10 @@
     "target": "owner_spouse",
     "type": "bool"
   },
+  "owner_spouse_veteran": {
+    "target": "owner_spouse_veteran",
+    "type": "bool"
+  },
   "ownership_pct": {
     "target": "ownership_percentage",
     "type": "percent"
@@ -98,6 +102,35 @@
   "project_cost": {
     "target": "project_cost",
     "type": "currency"
+  },
+  "revenue_drop_percent": {
+    "target": "revenue_drop_percent",
+    "type": "percent"
+  },
+  "gov_shutdown": {
+    "target": "gov_shutdown",
+    "type": "bool"
+  },
+  "w2_part_time_count": {
+    "target": "w2_part_time_count",
+    "type": "int",
+    "min": 0
+  },
+  "payroll_total": {
+    "target": "payroll_total",
+    "type": "currency"
+  },
+  "received_ppp": {
+    "target": "received_ppp",
+    "type": "bool"
+  },
+  "rural_area": {
+    "target": "rural_area",
+    "type": "bool"
+  },
+  "opportunity_zone": {
+    "target": "opportunity_zone",
+    "type": "bool"
   },
   "some_date": {
     "target": "some_date",
