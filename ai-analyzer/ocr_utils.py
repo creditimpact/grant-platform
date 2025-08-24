@@ -28,7 +28,7 @@ def extract_text(file_bytes: bytes) -> str:
     Raises:
         OCRExtractionError: If PDF or image OCR fails.
     """
-    if file_bytes[:4] == b"%PDF" and pdfplumber:
+    if pdfplumber and file_bytes.lstrip()[:4] == b"%PDF":
         try:  # pragma: no cover - depends on external library
             with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
                 text = "\n".join(page.extract_text() or "" for page in pdf.pages)

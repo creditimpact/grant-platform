@@ -1,10 +1,11 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form
+from fastapi import FastAPI, UploadFile, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import sys
 from pathlib import Path
 from typing import Optional, Any
 import io
+import cgi
 from pydantic import BaseModel, constr
 from ai_analyzer.ocr_utils import extract_text, OCRExtractionError
 from ai_analyzer.nlp_parser import extract_fields, normalize_text
@@ -69,13 +70,31 @@ def status() -> dict[str, str]:
 
 
 @app.post("/ocr-image")
-async def ocr_image(file: UploadFile = File(...)) -> dict[str, str]:
-    validate_upload(file)
+async def ocr_image(request: Request) -> dict[str, str]:
     if not pytesseract or not Image:
         raise HTTPException(status_code=500, detail="Tesseract OCR not available")
-    contents = await file.read()
+
+    ctype = request.headers.get("content-type", "")
+    if "multipart/form-data" not in ctype:
+        raise HTTPException(status_code=400, detail="Unsupported Content-Type")
+
+    body = await request.body()
+    env = {
+        "REQUEST_METHOD": "POST",
+        "CONTENT_TYPE": ctype,
+        "CONTENT_LENGTH": str(len(body)),
+    }
+    form = cgi.FieldStorage(fp=io.BytesIO(body), environ=env, keep_blank_values=True)
+    field = form["file"] if "file" in form else None
+    if field is None or not getattr(field, "filename", None):
+        raise HTTPException(status_code=400, detail="Provide file or text")
+
+    filename = field.filename
+    file_bytes = field.file.read()
+    upload = UploadFile(io.BytesIO(file_bytes), filename=filename)
+    validate_upload(upload)
     try:
-        text = extract_text(contents)
+        text = extract_text(file_bytes)
     except OCRExtractionError as exc:
         logger.exception("ocr_image failed")
         raise HTTPException(status_code=500, detail="Failed to extract text") from exc
@@ -86,11 +105,7 @@ class TextAnalyzeRequest(BaseModel):
 
 
 @app.post("/analyze")
-async def analyze(
-    request: Request,
-    file: Optional[UploadFile] = File(None),
-    text: Optional[str] = Form(None),
-):
+async def analyze(request: Request):
     ctype = request.headers.get("content-type", "")
 
     if "application/json" in ctype:
@@ -114,20 +129,39 @@ async def analyze(
         return await analyze_text_flow(body_text, source="text")
 
     if "multipart/form-data" in ctype:
-        if text and text.strip():
-            if len(text.encode("utf-8")) > settings.MAX_TEXT_LEN:
+        body = await request.body()
+        env = {
+            "REQUEST_METHOD": "POST",
+            "CONTENT_TYPE": ctype,
+            "CONTENT_LENGTH": str(len(body)),
+        }
+        form = cgi.FieldStorage(fp=io.BytesIO(body), environ=env, keep_blank_values=True)
+        text_val = None
+        upload_bytes = None
+        filename = None
+        content_type_file = None
+        if "text" in form and not getattr(form["text"], "filename", None):
+            text_val = form["text"].value
+        if "file" in form:
+            field = form["file"]
+            if getattr(field, "filename", None):
+                filename = field.filename
+                content_type_file = field.type
+                upload_bytes = field.file.read()
+        if text_val and text_val.strip():
+            if len(text_val.encode("utf-8")) > settings.MAX_TEXT_LEN:
                 raise HTTPException(status_code=400, detail="Text exceeds limit")
-            return await analyze_text_flow(text.strip(), source="text")
-        if file is None:
+            return await analyze_text_flow(text_val.strip(), source="text")
+        if upload_bytes is None:
             raise HTTPException(status_code=400, detail="Provide file or text")
-        validate_upload(file)
-        content = await file.read()
+        upload = UploadFile(io.BytesIO(upload_bytes), filename=filename)
+        validate_upload(upload)
         try:
-            extracted = extract_text(content)
+            extracted = extract_text(upload_bytes)
         except OCRExtractionError as exc:
             logger.exception("extract_text failed")
             raise HTTPException(status_code=500, detail="Failed to extract text") from exc
-        return await analyze_text_flow(extracted, source="file", filename=file.filename, content_type=file.content_type)
+        return await analyze_text_flow(extracted, source="file", filename=filename, content_type=content_type_file)
 
     raise HTTPException(status_code=400, detail="Unsupported Content-Type")
 
@@ -182,7 +216,7 @@ async def analyze_text_flow(
     }
     extra = {"source": source}
     if filename:
-        extra["filename"] = filename
+        extra["upload_filename"] = filename
     if content_type:
         extra["content_type"] = content_type
     logger.info("analyze", extra=extra)
