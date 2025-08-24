@@ -22,6 +22,11 @@ export async function initCase(): Promise<CaseSnapshot> {
   return transformCase(res.data);
 }
 
+export async function getRequiredDocuments(caseId: string): Promise<string[]> {
+  const res = await api.get(`/case/required-documents?caseId=${caseId}`);
+  return res.data.required;
+}
+
 // -------------------- FILE UPLOAD --------------------
 export async function uploadFile(formData: FormData): Promise<CaseSnapshot> {
   const res = await api.post('/files/upload', formData, {

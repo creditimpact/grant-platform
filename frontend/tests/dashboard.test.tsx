@@ -11,6 +11,7 @@ describe('Dashboard wizard', () => {
     localStorage.clear();
     clearCaseId();
     (api.getStatus as jest.Mock).mockResolvedValue({ caseId: null, status: 'empty' });
+    (api.getRequiredDocuments as jest.Mock).mockResolvedValue([]);
   });
 
   it('advances from start to upload after questionnaire', async () => {
