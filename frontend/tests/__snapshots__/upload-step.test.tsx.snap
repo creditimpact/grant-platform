@@ -1,0 +1,58 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UploadStep renders required documents 1`] = `
+<DocumentFragment>
+  <div
+    class="space-y-4"
+  >
+    <h2
+      class="text-2xl font-bold"
+    >
+      Upload Documents
+    </h2>
+    <ul
+      class="space-y-2"
+    >
+      <li
+        class="flex items-center space-x-2 text-sm"
+      >
+        <span>
+          ⬜ Tax Returns
+        </span>
+        <input
+          data-testid="upload-Tax_Returns"
+          type="file"
+        />
+      </li>
+      <li
+        class="flex items-center space-x-2 text-sm"
+      >
+        <span>
+          ⬜ Payroll Records
+        </span>
+        <input
+          data-testid="upload-Payroll_Records"
+          type="file"
+        />
+      </li>
+    </ul>
+    <div
+      class="flex justify-between"
+    >
+      <button
+        class="px-3 py-2 rounded bg-gray-200"
+        type="button"
+      >
+        Back
+      </button>
+      <button
+        class="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+        disabled=""
+        type="button"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</DocumentFragment>
+`;

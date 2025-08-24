@@ -1,5 +1,6 @@
 const express = require('express');
 const { createCase, getCase } = require('../utils/pipelineStore');
+const { getRequiredDocuments } = require('../utils/requiredDocuments');
 
 const router = express.Router();
 
@@ -61,6 +62,16 @@ router.post('/case/init', async (req, res) => {
     documents: c.documents,
     normalized: c.normalized,
   });
+});
+
+router.get('/case/required-documents', async (req, res) => {
+  const { caseId } = req.query;
+  const userId = 'dev-user';
+  if (!caseId) return res.status(400).json({ error: 'caseId required' });
+  const c = await getCase(userId, caseId);
+  if (!c) return res.status(404).json({ error: 'Case not found' });
+  const requiredDocs = getRequiredDocuments(c);
+  res.json({ required: requiredDocs });
 });
 
 module.exports = router;

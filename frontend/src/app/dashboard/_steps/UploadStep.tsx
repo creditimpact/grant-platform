@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { uploadFile } from '@/lib/apiClient';
+import { useEffect, useState } from 'react';
+import { uploadFile, getRequiredDocuments } from '@/lib/apiClient';
 import type { CaseDoc, CaseSnapshot } from '@/lib/types';
 
 export default function UploadStep({
@@ -18,15 +18,22 @@ export default function UploadStep({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [required, setRequired] = useState<string[]>([]);
+
+  useEffect(() => {
+    getRequiredDocuments(caseId).then(setRequired).catch(() => setRequired([]));
+  }, [caseId]);
 
   const handleUpload = async (
+    reqDoc: string,
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const fd = new FormData();
     fd.append('file', file);
-    if (caseId) fd.append('caseId', caseId);
+    fd.append('caseId', caseId);
+    fd.append('key', reqDoc);
     setLoading(true);
     setError(undefined);
     try {
@@ -40,22 +47,33 @@ export default function UploadStep({
     }
   };
 
-  const hasDocs = docs && docs.length > 0;
+  const allUploaded =
+    required.length > 0 &&
+    required.every((r) => docs.some((d) => d.key === r));
 
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Upload Documents</h2>
       {error && <div className="bg-red-100 text-red-800 p-2 rounded">{error}</div>}
-      <input type="file" onChange={handleUpload} disabled={loading} />
-      {docs.length > 0 && (
-        <ul className="space-y-1">
-          {docs.map((d) => (
-            <li key={d.key || d.filename} className="text-sm">
-              {d.filename}
+      <ul className="space-y-2">
+        {required.map((r) => {
+          const uploaded = docs.some((d) => d.key === r);
+          const slug = r.replace(/[^a-z0-9]/gi, '_');
+          return (
+            <li key={r} className="flex items-center space-x-2 text-sm">
+              <span>{uploaded ? '✅' : '⬜'} {r}</span>
+              {!uploaded && (
+                <input
+                  type="file"
+                  data-testid={`upload-${slug}`}
+                  onChange={(e) => handleUpload(r, e)}
+                  disabled={loading}
+                />
+              )}
             </li>
-          ))}
-        </ul>
-      )}
+          );
+        })}
+      </ul>
       <div className="flex justify-between">
         <button
           type="button"
@@ -67,7 +85,7 @@ export default function UploadStep({
         <button
           type="button"
           onClick={onNext}
-          disabled={!hasDocs}
+          disabled={!allUploaded}
           className="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
         >
           Next
