@@ -5,7 +5,7 @@ import pytest
 import env_setup  # noqa: F401
 from fastapi.testclient import TestClient
 
-from main import app
+from ai_analyzer.main import app
 
 
 client = TestClient(app)
@@ -55,8 +55,9 @@ def test_analyze_text_oversize() -> None:
 def test_analyze_multipart_file(monkeypatch: pytest.MonkeyPatch) -> None:
     def mock_extract_text(_: bytes) -> str:
         return "Q1 2023 revenue $5000; EIN 11-1111111"
-    monkeypatch.setattr("ocr_utils.extract_text", mock_extract_text)
-    monkeypatch.setattr("main.extract_text", mock_extract_text)
+
+    monkeypatch.setattr("ai_analyzer.ocr_utils.extract_text", mock_extract_text)
+    monkeypatch.setattr("ai_analyzer.main.extract_text", mock_extract_text)
 
     file_content = io.BytesIO(b"dummy")
     resp = client.post(
