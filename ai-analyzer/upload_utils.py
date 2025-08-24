@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import json
 from pathlib import Path
 
 from fastapi import HTTPException, UploadFile
@@ -10,17 +11,9 @@ from fastapi import HTTPException, UploadFile
 from config import settings  # type: ignore
 
 
-ALLOWED_EXTENSIONS = {
-    ".jpg",
-    ".jpeg",
-    ".png",
-    ".bmp",
-    ".tiff",
-    ".gif",
-    ".pdf",
-    ".txt",
-    ".docx",
-}
+FILE_TYPES_PATH = Path(__file__).resolve().parents[1] / "shared" / "file_types.json"
+with open(FILE_TYPES_PATH) as f:
+    ALLOWED_EXTENSIONS = set(json.load(f)["extensions"])
 
 
 def validate_upload(file: UploadFile) -> None:

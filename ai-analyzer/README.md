@@ -2,8 +2,8 @@
 
 This FastAPI microservice extracts text from uploaded documents using Tesseract OCR
 and parses business fields such as EIN, W‑2 employee counts, quarterly revenues and
-entity type. The `/analyze` endpoint accepts `application/pdf`, `image/png` and
-`image/jpeg` uploads.
+entity type. The `/analyze` endpoint accepts `.pdf`, `.docx`, `.txt`, `.png`, `.jpeg`,
+`.jpg` and `.bmp` uploads.
 
 Set `TESSERACT_CMD` to the path of the Tesseract executable if it's not
 already available on your `PATH`.

@@ -2,6 +2,10 @@
 
 This document defines the canonical schema for fields produced by the AI Analyzer and consumed by the Eligibility Engine. It provides a single source of truth so developers and tests stay aligned.
 
+## Supported Upload Formats
+
+Both the Server API and AI Analyzer accept the following file extensions: `.pdf`, `.docx`, `.txt`, `.png`, `.jpeg`, `.jpg`, `.bmp`.
+
 ## Canonical Fields
 
 The following table enumerates all canonical keys understood by the eligibility engine. Each field lists its data type, normalization rules, whether it is required by any grant program, and where it currently originates.

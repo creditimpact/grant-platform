@@ -5,6 +5,8 @@ Multipart form fields:
 - `file` – document to analyze
 - optional `caseId`
 
+Supported file extensions: `.pdf`, `.docx`, `.txt`, `.png`, `.jpeg`, `.jpg`, `.bmp`.
+
 Response: case snapshot including `caseId`, `documents` array and any extracted `analyzerFields`.
 
 ### `POST /api/questionnaire`
