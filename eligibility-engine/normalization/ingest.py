@@ -1,9 +1,4 @@
 import json
-import os
-import re
-from datetime import datetime
-import json
-import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -25,23 +20,32 @@ def normalize_payload(analyzer_payload: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def fill_aliases(payload: Dict[str, Any], field_map: Dict[str, Any]) -> Dict[str, Any]:
+    """Map all known aliases to their canonical targets.
+
+    The field map now defines each canonical field once and lists any
+    acceptable aliases. This helper builds a reverse lookup so payload keys
+    produced by the analyzer or UI are rewritten to the canonical key.
+    """
+
+    alias_map: Dict[str, str] = {}
+    for target, info in field_map.items():
+        alias_map[target] = target
+        for alias in info.get("aliases", []):
+            alias_map[alias] = target
+
     result: Dict[str, Any] = {}
     for key, value in payload.items():
-        mapping = field_map.get(key)
-        target = mapping["target"] if mapping else key
+        target = alias_map.get(key, key)
         result[target] = value
     return result
 
 
 def coerce_types_and_units(payload: Dict[str, Any], field_map: Dict[str, Any]) -> Dict[str, Any]:
-    # Build map from target to type info
-    target_info: Dict[str, Any] = {}
-    for src, info in field_map.items():
-        target_info.setdefault(info["target"], info)
+    """Coerce values to the types declared in the field map."""
 
     result: Dict[str, Any] = {}
     for key, value in payload.items():
-        info = target_info.get(key, {})
+        info = field_map.get(key, {})
         result[key] = _coerce_value(value, info, key)
     return result
 
@@ -60,10 +64,23 @@ def _coerce_value(value: Any, info: Dict[str, Any], key: str) -> Any:
             return v
     if t == "currency":
         if isinstance(v, str):
-            v = re.sub(r"[^0-9.-]", "", v)
+            s = v.strip().lower().replace("$", "").replace(",", "")
+            if s.startswith("(") and s.endswith(")"):
+                s = s[1:-1]
+            multiplier = 1
+            if s.endswith("m"):
+                multiplier = 1_000_000
+                s = s[:-1]
+            elif s.endswith("k"):
+                multiplier = 1_000
+                s = s[:-1]
+            try:
+                return int(float(s) * multiplier)
+            except ValueError:
+                return 0
         try:
             return int(float(v))
-        except ValueError:
+        except (ValueError, TypeError):
             return 0
     if t == "percent":
         if isinstance(v, str):

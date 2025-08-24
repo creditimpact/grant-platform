@@ -1,151 +1,211 @@
 {
-  "ein": {
-    "target": "employer_identification_number",
-    "type": "ein",
-    "pattern": "^\\d{2}-?\\d{7}$"
-  },
   "employer_identification_number": {
+    "aliases": ["ein"],
     "target": "employer_identification_number",
     "type": "ein",
-    "pattern": "^\\d{2}-?\\d{7}$"
-  },
-  "employees": {
-    "target": "w2_employee_count",
-    "type": "int",
-    "min": 0
+    "normalize": {
+      "pattern": "^\\d{2}-?\\d{7}$"
+    }
   },
   "w2_employee_count": {
+    "aliases": ["employees"],
     "target": "w2_employee_count",
     "type": "int",
-    "min": 0
+    "normalize": {
+      "min": 0
+    }
   },
-  "country": {
+  "business_location_country": {
+    "aliases": ["country", "location_country"],
     "target": "business_location_country",
     "type": "string"
   },
-  "revenue_drop_2020_pct": {
+  "business_location_state": {
+    "aliases": ["state", "location_state"],
+    "target": "business_location_state",
+    "type": "string"
+  },
+  "revenue_drop_2020_percent": {
+    "aliases": ["revenue_drop_2020_pct"],
     "target": "revenue_drop_2020_percent",
     "type": "percent"
   },
-  "revenue_drop_2021_pct": {
+  "revenue_drop_2021_percent": {
+    "aliases": ["revenue_drop_2021_pct"],
     "target": "revenue_drop_2021_percent",
     "type": "percent"
   },
-  "shutdown_2020": {
+  "government_shutdown_2020": {
+    "aliases": ["shutdown_2020"],
     "target": "government_shutdown_2020",
     "type": "bool"
   },
-  "shutdown_2021": {
+  "government_shutdown_2021": {
+    "aliases": ["shutdown_2021"],
     "target": "government_shutdown_2021",
     "type": "bool"
   },
   "qualified_wages_2020": {
+    "aliases": [],
     "target": "qualified_wages_2020",
     "type": "currency"
   },
   "qualified_wages_2021": {
+    "aliases": [],
     "target": "qualified_wages_2021",
     "type": "currency"
   },
-  "ppp_double_dip": {
+  "ppp_wages_double_dip": {
+    "aliases": ["ppp_double_dip"],
     "target": "ppp_wages_double_dip",
     "type": "bool"
   },
-  "owner_is_veteran": {
+  "owner_veteran": {
+    "aliases": ["owner_is_veteran", "veteran_owned"],
     "target": "owner_veteran",
     "type": "bool"
   },
-  "owner_is_spouse": {
+  "owner_spouse": {
+    "aliases": ["owner_is_spouse"],
     "target": "owner_spouse",
     "type": "bool"
   },
   "owner_spouse_veteran": {
+    "aliases": [],
     "target": "owner_spouse_veteran",
     "type": "bool"
   },
-  "ownership_pct": {
+  "ownership_percentage": {
+    "aliases": ["ownership_pct"],
     "target": "ownership_percentage",
     "type": "percent"
   },
-  "employee_count": {
+  "number_of_employees": {
+    "aliases": ["employee_count"],
     "target": "number_of_employees",
     "type": "int"
   },
   "annual_revenue": {
+    "aliases": [],
     "target": "annual_revenue",
     "type": "currency"
   },
-  "state": {
-    "target": "business_location_state",
-    "type": "string"
-  },
-  "economically_vulnerable": {
+  "economically_vulnerable_area": {
+    "aliases": ["economically_vulnerable"],
     "target": "economically_vulnerable_area",
     "type": "bool"
   },
-  "biz_type": {
+  "business_type": {
+    "aliases": ["biz_type"],
     "target": "business_type",
     "type": "string"
   },
   "service_area_population": {
+    "aliases": [],
     "target": "service_area_population",
     "type": "int"
   },
   "income_level": {
+    "aliases": [],
     "target": "income_level",
     "type": "string"
   },
   "project_type": {
+    "aliases": [],
     "target": "project_type",
     "type": "string"
   },
   "project_cost": {
+    "aliases": [],
     "target": "project_cost",
     "type": "currency"
   },
   "revenue_drop_percent": {
+    "aliases": [],
     "target": "revenue_drop_percent",
     "type": "percent"
   },
   "gov_shutdown": {
+    "aliases": [],
     "target": "gov_shutdown",
     "type": "bool"
   },
   "w2_part_time_count": {
+    "aliases": [],
     "target": "w2_part_time_count",
     "type": "int",
-    "min": 0
+    "normalize": {
+      "min": 0
+    }
   },
   "payroll_total": {
+    "aliases": [],
     "target": "payroll_total",
     "type": "currency"
   },
   "received_ppp": {
+    "aliases": [],
     "target": "received_ppp",
     "type": "bool"
   },
   "rural_area": {
+    "aliases": [],
     "target": "rural_area",
     "type": "bool"
   },
   "opportunity_zone": {
+    "aliases": [],
     "target": "opportunity_zone",
     "type": "bool"
   },
   "some_date": {
+    "aliases": [],
     "target": "some_date",
     "type": "date"
   },
   "bool_yes": {
+    "aliases": [],
     "target": "bool_yes",
     "type": "bool"
   },
   "bool_no": {
+    "aliases": [],
     "target": "bool_no",
     "type": "bool"
   },
   "entity_type": {
+    "aliases": [],
     "target": "entity_type",
     "type": "string"
+  },
+  "quarterly_revenues": {
+    "aliases": [],
+    "target": "quarterly_revenues",
+    "type": "mapping"
+  },
+  "year_founded": {
+    "aliases": [],
+    "target": "year_founded",
+    "type": "int"
+  },
+  "minority_owned": {
+    "aliases": [],
+    "target": "minority_owned",
+    "type": "bool"
+  },
+  "female_owned": {
+    "aliases": [],
+    "target": "female_owned",
+    "type": "bool"
+  },
+  "ppp_reference": {
+    "aliases": [],
+    "target": "ppp_reference",
+    "type": "bool"
+  },
+  "ertc_reference": {
+    "aliases": [],
+    "target": "ertc_reference",
+    "type": "bool"
   }
 }
