@@ -1,13 +1,11 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Dashboard from '@/app/dashboard/page';
-import { getCaseId, clearCaseId } from '@/lib/case-store';
+import { clearCaseId } from '@/lib/case-store';
 import * as api from '@/lib/apiClient';
 
 jest.mock('@/lib/apiClient');
 
-(test as any).timeout?.(10000);
-
-describe('Dashboard', () => {
+describe('Dashboard wizard', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     localStorage.clear();
@@ -15,52 +13,29 @@ describe('Dashboard', () => {
     (api.getStatus as jest.Mock).mockResolvedValue({ caseId: null, status: 'empty' });
   });
 
-  it('shows start button on fresh load', async () => {
-    render(<Dashboard />);
-    expect(await screen.findByText('Start Application')).toBeInTheDocument();
-    expect(screen.queryByText('Resume Application')).not.toBeInTheDocument();
-  });
-
-  it('starts a new application', async () => {
+  it('advances from start to upload after questionnaire', async () => {
     (api.initCase as jest.Mock).mockResolvedValue({
       caseId: 'c1',
-      status: 'open',
-      analyzerFields: {},
+      documents: [],
+      questionnaire: {},
+      eligibility: [],
+    });
+    (api.postQuestionnaire as jest.Mock).mockResolvedValue({
+      caseId: 'c1',
+      documents: [],
+      questionnaire: { lastUpdated: 'now', data: {} },
       eligibility: [],
     });
 
     render(<Dashboard />);
-    const start = await screen.findByText('Start Application');
+    const start = await screen.findByRole('button', { name: 'Start Application' });
     fireEvent.click(start);
-    expect(await screen.findByText(/Case ID: c1/)).toBeInTheDocument();
-    expect(getCaseId()).toBe('c1');
-  });
 
-  it('resumes a saved application', async () => {
-    localStorage.setItem('caseId', 'c1');
-    (api.getStatus as jest.Mock).mockResolvedValueOnce({ caseId: null, status: 'empty' });
-    (api.getStatus as jest.Mock).mockResolvedValueOnce({
-      caseId: 'c1',
-      status: 'open',
-      analyzerFields: { field1: 'value' },
-      eligibility: [
-        {
-          name: 'Program A',
-          eligible: true,
-          missing_fields: ['foo'],
-          next_steps: 'Do something',
-        },
-      ],
-    });
+    expect(await screen.findByRole('heading', { name: 'Questionnaire' })).toBeInTheDocument();
 
-    render(<Dashboard />);
-    const resume = await screen.findByText('Resume Application');
-    fireEvent.click(resume);
-    expect(await screen.findByText(/Case ID: c1/)).toBeInTheDocument();
-    expect(getCaseId()).toBe('c1');
-    expect(screen.getByText('Program A')).toBeInTheDocument();
-    expect(screen.getByText('foo')).toBeInTheDocument();
-    expect(screen.getByText(/Next: Do something/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Next'));
+    await waitFor(() => expect(api.postQuestionnaire).toHaveBeenCalled());
+
+    expect(await screen.findByText('Upload Documents')).toBeInTheDocument();
   });
 });
-

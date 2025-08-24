@@ -9,7 +9,7 @@ describe('field map utilities', () => {
     const fields = ['business_type', 'unknown_field'];
     const mapped = fields.map((f) => apiToUi[f] ?? snakeToCamel(f));
     expect(mapped).toMatchInlineSnapshot(`
-Array [
+[
   "businessType",
   "unknownField",
 ]
