@@ -8,7 +8,7 @@
     }
   },
   "w2_employee_count": {
-    "aliases": ["employees"],
+    "aliases": ["employees", "w-2 employees", "w2 employees"],
     "target": "w2_employee_count",
     "type": "int",
     "normalize": {

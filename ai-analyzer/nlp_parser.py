@@ -7,7 +7,9 @@ def normalize_text(text: str) -> str:
     """Return text with collapsed whitespace and printable characters only."""
     if not text:
         return ""
-    text = "".join(ch for ch in text if ch.isprintable())
+    # Preserve separation between lines and discard non-printable characters.
+    text = text.replace("\n", " ")
+    text = "".join(ch if ch.isprintable() else " " for ch in text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
