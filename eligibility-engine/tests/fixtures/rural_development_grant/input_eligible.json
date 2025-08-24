@@ -1,7 +1,4 @@
 {
   "entity_type": "nonprofit",
-  "service_area_population": "4000",
-  "income_level": "low",
-  "project_type": "community_facilities",
-  "project_cost": "$100,000"
+  "rural_area": "yes"
 }

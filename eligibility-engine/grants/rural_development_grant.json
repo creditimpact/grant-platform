@@ -1,53 +1,13 @@
 {
   "name": "Rural Development Grant",
   "year": 2025,
-  "description": "USDA Rural Development funding for infrastructure, business and community projects in eligible rural areas",
-  "required_fields": [
-    "entity_type",
-    "service_area_population",
-    "income_level",
-    "project_type",
-    "project_cost"
-  ],
-  "eligibility_categories": {
-    "__mode__": "any",
-    "community_facilities": {
-      "project_type": "community_facilities",
-      "entity_type": ["public_entity", "municipality", "local_authority", "tribal_government", "nonprofit"],
-      "service_area_population_max": 50000
-    },
-    "rbdg": {
-      "project_type": "rbdg",
-      "entity_type": ["public_entity", "tribal_government", "nonprofit"],
-      "service_area_population_max": 50000
-    },
-    "rcdg": {
-      "project_type": "rcdg",
-      "entity_type": ["nonprofit", "university"],
-      "service_area_population_max": 50000
-    },
-    "redlg": {
-      "project_type": "redlg",
-      "entity_type": ["public_entity", "utility", "cooperative", "tribal_government"],
-      "service_area_population_max": 50000
-    }
+  "description": "USDA funding for projects in eligible rural areas",
+  "required_fields": ["entity_type", "rural_area"],
+  "eligibility_rules": {
+    "entity_type": ["llc", "c_corp", "s_corp", "sole_proprietor", "nonprofit"],
+    "rural_area": true
   },
-  "estimated_award": {
-    "type": "population_subsidy",
-    "base_amount_field": "project_cost",
-    "population_field": "service_area_population",
-    "income_field": "income_level",
-    "project_type_field": "project_type",
-    "tiers": [
-      {"max_population": 5000, "income_level": "low", "percent": 75},
-      {"max_population": 20000, "income_level": "low", "percent": 55},
-      {"max_population": 50000, "percent": 35}
-    ],
-    "caps": {
-      "rcdg": 200000,
-      "redlg": 300000
-    }
-  },
+  "estimated_award": {"type": "base", "base": 75000},
   "tags": ["federal", "rural"],
   "requiredForms": [
     "form_sf424",
@@ -57,14 +17,10 @@
     "form_RD_400_8"
   ],
   "ui_questions": [
-    "What type of organization are you?",
-    "What is the population of the service area?",
-    "What is the community income level?",
-    "What type of project are you pursuing?",
-    "What is the total project cost?",
-    "In which state will the project take place?"
+    "What is your business entity type?",
+    "Is your business located in a rural area?"
   ],
-  "complexity_level": "high",
-  "human_summary": "USDA Rural Development grants covering community facilities, business development, cooperatives and infrastructure projects",
-  "risk_notes": "Applicants must provide required federal forms and registrations including DUNS, SAM and CAGE codes"
+  "complexity_level": "medium",
+  "human_summary": "USDA Rural Development grants for businesses operating in rural communities",
+  "risk_notes": "Applicants must provide required federal forms and registrations"
 }

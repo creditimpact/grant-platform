@@ -48,13 +48,34 @@ router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
   }
   const existingFields = (c.analyzer && c.analyzer.fields) || {};
   const merged = { ...existingFields };
+  const keyMap = {
+    entityType: 'entity_type',
+    employees: 'w2_employee_count',
+    w2EmployeeCount: 'w2_employee_count',
+    w2PartTimeCount: 'w2_part_time_count',
+    payrollTotal: 'payroll_total',
+    receivedPpp: 'received_ppp',
+    revenueDropPercent: 'revenue_drop_percent',
+    govShutdown: 'gov_shutdown',
+    ownershipPercentage: 'ownership_percentage',
+    ownerVeteran: 'owner_veteran',
+    ownerSpouseVeteran: 'owner_spouse_veteran',
+    ownerGender: 'owner_gender',
+    ownerEthnicity: 'owner_ethnicity',
+    yearEstablished: 'year_established',
+    businessName: 'business_name',
+    state: 'state',
+    ruralArea: 'rural_area',
+    opportunityZone: 'opportunity_zone',
+  };
   for (const [k, v] of Object.entries(payload)) {
+    const key = keyMap[k] || k;
     if (
-      merged[k] === undefined ||
-      merged[k] === null ||
-      merged[k] === ''
+      merged[key] === undefined ||
+      merged[key] === null ||
+      merged[key] === ''
     ) {
-      merged[k] = v;
+      merged[key] = v;
     }
   }
   const now = new Date().toISOString();
