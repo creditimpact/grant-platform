@@ -6,6 +6,7 @@ from nlp_parser import (
     extract_entity_type,
     extract_payroll_total,
     parse_money,
+    extract_fields,
 )
 
 
@@ -86,3 +87,40 @@ def test_extract_payroll_total_edge_parentheses() -> None:
     value, conf, _ = extract_payroll_total(text)
     assert value == 120000
     assert conf >= 0.8
+
+
+def test_ppp_and_double_dip_detection() -> None:
+    text = "Our PPP loan was forgiven and PPP used for wages caused a double dip."
+    fields, conf, _ = extract_fields(text)
+    assert fields["received_ppp"] is True
+    assert fields["ppp_wages_double_dip"] is True
+    assert conf["received_ppp"] > 0
+    assert conf["ppp_wages_double_dip"] > 0
+
+
+def test_ownership_and_revenue_drop_edge() -> None:
+    text = "Ownership stake 100% with revenue drop 50% last year."
+    fields, _, _ = extract_fields(text)
+    assert fields["ownership_percentage"] == 100
+    assert fields["revenue_drop_percent"] == 50.0
+
+
+def test_revenue_drop_words() -> None:
+    text = "Gross receipts decline twenty percent in 2021."
+    fields, _, _ = extract_fields(text)
+    assert fields["revenue_drop_percent"] == 20.0
+
+
+def test_rural_and_opportunity_zone_detection() -> None:
+    text = "Located in a RurAl development and an OPPORTUNITY ZONE."
+    fields, _, _ = extract_fields(text)
+    assert fields["rural_area"] is True
+    assert fields["opportunity_zone"] is True
+
+
+def test_negative_unrelated_numbers() -> None:
+    text = "We increased production by 20% and bought 50% more materials."
+    fields, _, _ = extract_fields(text)
+    assert "revenue_drop_percent" not in fields
+    assert "ownership_percentage" not in fields
+    assert "received_ppp" not in fields

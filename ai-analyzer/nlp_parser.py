@@ -29,6 +29,56 @@ def parse_money(value: str) -> int:
         return int(match.group()) if match else 0
 
 
+_NUMBER_WORDS = {
+    "zero": 0,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "fifteen": 15,
+    "sixteen": 16,
+    "seventeen": 17,
+    "eighteen": 18,
+    "nineteen": 19,
+    "twenty": 20,
+    "thirty": 30,
+    "forty": 40,
+    "fifty": 50,
+    "sixty": 60,
+    "seventy": 70,
+    "eighty": 80,
+    "ninety": 90,
+    "hundred": 100,
+}
+
+
+def parse_percent(value: str) -> float:
+    """Parse a percentage string or word into a float 0-100."""
+    val = value.strip().lower().replace("%", "")
+    try:
+        return float(val)
+    except ValueError:
+        parts = re.split(r"[-\s]", val)
+        total = 0.0
+        for part in parts:
+            if part in _NUMBER_WORDS:
+                total += _NUMBER_WORDS[part]
+        if total:
+            return total
+        m = re.search(r"\d+(?:\.\d+)?", val)
+        return float(m.group()) if m else 0.0
+
+
 _STATE_MAP = {
     "alabama": "AL",
     "alaska": "AK",
@@ -320,6 +370,58 @@ def extract_credit_refs(text: str) -> Tuple[Optional[bool], float, Optional[bool
     return ppp, ppp_conf, ertc, ertc_conf
 
 
+def extract_ppp_wages_double_dip(text: str) -> Tuple[Optional[bool], float]:
+    if re.search(r"ppp.{0,40}wages|double dip", text, re.I):
+        return True, 0.9
+    return None, 0.0
+
+
+def extract_received_ppp(text: str) -> Tuple[Optional[bool], float]:
+    if re.search(r"ppp loan|paycheck protection program|ppp forgiven", text, re.I):
+        return True, 0.9
+    return None, 0.0
+
+
+def extract_ownership_percentage(text: str) -> Tuple[Optional[int], float]:
+    patterns = [
+        r"(?:ownership|stake)\D{0,20}([\w-]+)\s*(?:%|percent)",
+        r"([\w-]+)\s*(?:%|percent)\D{0,20}(?:ownership|stake)",
+    ]
+    for pattern in patterns:
+        m = re.search(pattern, text, re.I)
+        if m:
+            pct = parse_percent(m.group(1))
+            pct = max(0, min(int(pct), 100))
+            return pct, 0.85
+    return None, 0.0
+
+
+def extract_rural_area(text: str) -> Tuple[Optional[bool], float]:
+    if re.search(r"rural|rural development", text, re.I):
+        return True, 0.85
+    return None, 0.0
+
+
+def extract_opportunity_zone(text: str) -> Tuple[Optional[bool], float]:
+    if re.search(r"opportunity zone|economically disadvantaged area", text, re.I):
+        return True, 0.85
+    return None, 0.0
+
+
+def extract_revenue_drop_percent(text: str) -> Tuple[Optional[float], float]:
+    patterns = [
+        r"(?:revenue|gross receipts).{0,40}?(?:drop|decline|decrease).{0,10}?([\w-]+\s*(?:%|percent))",
+        r"([\w-]+\s*(?:%|percent)).{0,20}?(?:drop|decline|decrease).{0,40}?(?:revenue|gross receipts)",
+    ]
+    for pattern in patterns:
+        m = re.search(pattern, text, re.I)
+        if m:
+            pct = parse_percent(m.group(1))
+            pct = max(0.0, min(pct, 100.0))
+            return pct, 0.85
+    return None, 0.0
+
+
 def extract_fields(text: str, *, enable_secondary: bool = True) -> Tuple[Dict[str, Any], Dict[str, float], List[Dict[str, Any]]]:
     fields: Dict[str, Any] = {}
     confidence: Dict[str, float] = {}
@@ -376,6 +478,36 @@ def extract_fields(text: str, *, enable_secondary: bool = True) -> Tuple[Dict[st
             if v is not None:
                 fields[k] = v
         confidence.update(own_conf)
+
+        own_pct, own_pct_conf = extract_ownership_percentage(text)
+        if own_pct is not None:
+            fields["ownership_percentage"] = own_pct
+            confidence["ownership_percentage"] = own_pct_conf
+
+        ppp_dd, ppp_dd_conf = extract_ppp_wages_double_dip(text)
+        if ppp_dd is not None:
+            fields["ppp_wages_double_dip"] = ppp_dd
+            confidence["ppp_wages_double_dip"] = ppp_dd_conf
+
+        received, received_conf = extract_received_ppp(text)
+        if received is not None:
+            fields["received_ppp"] = received
+            confidence["received_ppp"] = received_conf
+
+        rural, rural_conf = extract_rural_area(text)
+        if rural is not None:
+            fields["rural_area"] = rural
+            confidence["rural_area"] = rural_conf
+
+        opp, opp_conf = extract_opportunity_zone(text)
+        if opp is not None:
+            fields["opportunity_zone"] = opp
+            confidence["opportunity_zone"] = opp_conf
+
+        rev_drop, rev_drop_conf = extract_revenue_drop_percent(text)
+        if rev_drop is not None:
+            fields["revenue_drop_percent"] = rev_drop
+            confidence["revenue_drop_percent"] = rev_drop_conf
 
         ppp, ppp_conf, ertc, ertc_conf = extract_credit_refs(text)
         if ppp is not None:
