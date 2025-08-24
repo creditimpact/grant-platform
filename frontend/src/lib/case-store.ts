@@ -1,13 +1,28 @@
 import { create } from 'zustand';
 
-interface CaseState {
-  caseId: string | null;
-  setCaseId: (id: string) => void;
-  clearCaseId: () => void;
+export enum FlowStep {
+  Start = 0,
+  Questionnaire = 1,
+  Upload = 2,
+  Eligibility = 3,
+  Summary = 4,
 }
 
-export const useCaseStore = create<CaseState>((set) => ({
+interface CaseState {
+  caseId: string | null;
+  currentStep: FlowStep;
+  completed: Record<FlowStep, boolean>;
+  setCaseId: (id: string) => void;
+  clearCaseId: () => void;
+  setStep: (step: FlowStep) => void;
+  markDone: (step: FlowStep) => void;
+  reset: () => void;
+}
+
+export const useCaseStore = create<CaseState>((set, get) => ({
   caseId: null,
+  currentStep: FlowStep.Start,
+  completed: {},
   setCaseId: (id: string) => {
     set({ caseId: id });
     if (typeof window !== 'undefined') {
@@ -18,6 +33,21 @@ export const useCaseStore = create<CaseState>((set) => ({
   },
   clearCaseId: () => {
     set({ caseId: null });
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('caseId');
+      } catch {}
+    }
+  },
+  setStep: (step: FlowStep) => {
+    const { currentStep } = get();
+    if (step > currentStep + 1) return; // guard skipping ahead
+    set({ currentStep: step });
+  },
+  markDone: (step: FlowStep) =>
+    set((state) => ({ completed: { ...state.completed, [step]: true } })),
+  reset: () => {
+    set({ caseId: null, currentStep: FlowStep.Start, completed: {} });
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem('caseId');

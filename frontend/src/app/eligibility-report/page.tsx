@@ -62,10 +62,10 @@ export default function EligibilityReport() {
       <div className="p-6 text-center space-y-4">
         <p>No case found. Upload documents first.</p>
         <button
-          onClick={() => router.push('/dashboard/documents')}
+          onClick={() => router.push('/dashboard')}
           className="px-4 py-2 bg-blue-600 text-white rounded"
         >
-          Go to Documents
+          Go to Dashboard
         </button>
       </div>
     );
