@@ -42,24 +42,39 @@ The following table enumerates all canonical keys understood by the eligibility 
 | some_date | string | Generic date placeholder | ISO‑8601 date | No | `"2024-01-31"` | Field Map |
 | w2_employee_count | integer | Count of W‑2 employees | Convert to integer \>=0 | Yes | `25` | Both |
 | w2_part_time_count | integer | Number of part‑time W‑2 employees | Convert to integer \>=0 | No | `5` | Field Map |
+| quarterly_revenues | mapping | Nested map of yearly and quarterly revenues | Keys `YYYY` -> `Q1..Q4`; amounts normalized as currency | No | `{ "2023": { "Q1": 10000 } }` | Analyzer |
+| year_founded | integer | Year the company was founded | Accept 1800..current year | No | `2008` | Analyzer |
+| minority_owned | boolean | Business identified as minority‑owned | Parse yes/no | No | `true` | Analyzer |
+| female_owned | boolean | Business identified as woman‑owned | Parse yes/no | No | `true` | Analyzer |
+| ppp_reference | boolean | PPP loan is referenced in documents | Parse yes/no | No | `true` | Analyzer |
+| ertc_reference | boolean | ERTC reference detected in documents | Parse yes/no | No | `true` | Analyzer |
+
+## Field Synonyms & Canonical Keys
+
+| Aliases | Canonical Key |
+| --- | --- |
+| `ein` | `employer_identification_number` |
+| `employees` | `w2_employee_count` |
+| `employee_count` | `number_of_employees` |
+| `state`, `location_state` | `business_location_state` |
+| `country`, `location_country` | `business_location_country` |
+| `owner_is_veteran`, `veteran_owned` | `owner_veteran` |
+| `owner_is_spouse` | `owner_spouse` |
+| `revenue_drop_2020_pct` | `revenue_drop_2020_percent` |
+| `revenue_drop_2021_pct` | `revenue_drop_2021_percent` |
+| `shutdown_2020` | `government_shutdown_2020` |
+| `shutdown_2021` | `government_shutdown_2021` |
+| `ppp_double_dip` | `ppp_wages_double_dip` |
+| `ownership_pct` | `ownership_percentage` |
+| `biz_type` | `business_type` |
+| `economically_vulnerable` | `economically_vulnerable_area` |
 
 ## Analyzer-Only Fields
 
-These fields are currently emitted by the AI Analyzer but are not mapped in `field_map.json`.
-
-| Field | Type | Description | When Populated | Example |
-| --- | --- | --- | --- | --- |
-| quarterly_revenues | object | Nested map of yearly and quarterly revenues | When specific quarter revenue amounts are detected | `{ "2020": { "Q1": 10000 } }` |
-| year_founded | integer | Year the company was founded | When founding year is mentioned | `2008` |
-| minority_owned | boolean | Business identified as minority‑owned | When text mentions minority ownership | `true` |
-| female_owned | boolean | Business identified as woman‑owned | When text mentions female ownership | `true` |
-| veteran_owned | boolean | Business identified as veteran‑owned | When text mentions veteran ownership | `false` |
-| ppp_reference | boolean | PPP loan is referenced in documents | When OCR finds PPP keywords | `true` |
-| ertc_reference | boolean | ERTC is referenced in documents | When OCR finds ERTC keywords | `true` |
+All fields currently emitted by the AI Analyzer are represented in `field_map.json`.
 
 ## Discrepancies and Notes
 
-* **Analyzer-only fields:** The analyzer emits `quarterly_revenues`, `year_founded`, `minority_owned`, `female_owned`, `veteran_owned`, `ppp_reference`, and `ertc_reference`, but these do not appear in `field_map.json`. If the eligibility engine needs them, they should be added to the field map.
 * **Engine-only fields:** Many canonical fields such as `gov_shutdown`, `revenue_drop_percent`, and ownership attributes are defined in `field_map.json` but are not currently produced by the analyzer.
 
 ### Optional and Secondary Fields
