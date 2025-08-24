@@ -38,9 +38,9 @@ The following table enumerates all canonical keys understood by the eligibility 
 | qualified_wages_2020 | integer | Qualified wages for 2020 | Strip `$`/`,` and store whole USD | No | `150000` | Field Map |
 | qualified_wages_2021 | integer | Qualified wages for 2021 | Strip `$`/`,` and store whole USD | No | `200000` | Field Map |
 | received_ppp | boolean | Business received a PPP loan | Parse yes/no | No | `true` | Field Map |
-| revenue_drop_2020_percent | integer | Revenue drop in 2020 | Accept 0‑100; strip `%` | No | `40` | Field Map |
-| revenue_drop_2021_percent | integer | Revenue drop in 2021 | Accept 0‑100; strip `%` | No | `25` | Field Map |
-| revenue_drop_percent | integer | Overall revenue drop used for ERC | Accept 0‑100; strip `%` | Yes | `30` | Field Map |
+| revenue_drop_2020_percent | float | Revenue drop in 2020 | Accept 0‑100; strip `%`; store as float | No | `40.0` | Field Map |
+| revenue_drop_2021_percent | float | Revenue drop in 2021 | Accept 0‑100; strip `%`; store as float | No | `25.0` | Field Map |
+| revenue_drop_percent | float | Overall revenue drop used for ERC | Accept 0‑100; strip `%`; store as float | Yes | `30.0` | Field Map |
 | rural_area | boolean | Located in a rural area | Parse yes/no | Yes | `false` | Field Map |
 | service_area_population | integer | Population of service area | Convert to integer \>=0 | No | `25000` | Field Map |
 | some_date | string | Generic date placeholder | ISO‑8601 date | No | `"2024-01-31"` | Field Map |
@@ -79,7 +79,7 @@ All fields currently emitted by the AI Analyzer are represented in `field_map.js
 
 ## Discrepancies and Notes
 
-* **Engine-only fields:** Many canonical fields such as `gov_shutdown`, `revenue_drop_percent`, and ownership attributes are defined in `field_map.json` but are not currently produced by the analyzer.
+* **Engine-only fields:** Some canonical fields such as `gov_shutdown` are defined in `field_map.json` but are not currently produced by the analyzer.
 
 ### Optional and Secondary Fields
 
@@ -95,11 +95,14 @@ Fields like `ppp_reference`, `ertc_reference`, `government_shutdown_2020`, `gove
   "business_location_state": "CA",
   "business_location_country": "US",
   "entity_type": "llc",
-  "revenue_drop_percent": 35,
+  "revenue_drop_percent": 35.0,
   "gov_shutdown": false,
   "owner_veteran": true,
   "ownership_percentage": 100,
   "received_ppp": true,
+  "ppp_wages_double_dip": false,
+  "rural_area": false,
+  "opportunity_zone": true,
   "ppp_reference": true,
   "quarterly_revenues": {
     "2020": { "Q1": 200000, "Q2": 150000 },
