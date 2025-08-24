@@ -58,6 +58,9 @@ ELIGIBILITY_ENGINE_URL=https://eligibility-engine:4001
 AI_AGENT_URL=https://ai-agent:5001
 ```
 
+The AI analyzer optionally reads `TESSERACT_CMD` to locate the Tesseract OCR binary
+if it isn't on the system `PATH`.
+
 ### Case Management API
 
 The frontend interacts with a simpler set of endpoints that manage a user's inâ€‘progress case:
@@ -114,6 +117,8 @@ The frontend interacts with a simpler set of endpoints that manage a user's inâ€
    ```bash
    cd ai-analyzer
    pip install -r requirements.txt
+   # optional: specify path to the Tesseract binary
+   export TESSERACT_CMD=/usr/bin/tesseract
    python -m uvicorn main:app --port 8000
    ```
 3. Start the AI agent service
