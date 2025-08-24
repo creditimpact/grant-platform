@@ -191,6 +191,86 @@ def extract_annual_revenue(text: str) -> Tuple[Optional[int], float]:
     return parse_money(m.group(1)), 0.8
 
 
+def extract_payroll_total(text: str) -> Tuple[Optional[int], float, List[Dict[str, Any]]]:
+    """Extract the company's annual payroll total from text.
+
+    Looks for lines containing payroll keywords and currency amounts. Supports
+    formats like ``$1,234,567.89``, ``950k``, ``2.3M`` and ``($120,000)`` while
+    tolerating common OCR mistakes (``O`` for ``0``). Returns the most likely
+    annual total, a confidence score, and ambiguity information when multiple
+    candidates are present.
+    """
+
+    lines = [normalize_text(l) for l in text.splitlines() if l.strip()]
+    candidates: List[Dict[str, Any]] = []
+    amount_re = re.compile(r"\$?\(?[0-9O][0-9O,\.]*[kKmM]?\)?")
+
+    for line in lines:
+        if re.search(r"per[-\s]?employee|budget|estimate", line, re.I):
+            continue
+        if not re.search(
+            r"(?i)(total\s+payroll|payroll\s+total|gross\s+payroll|total\s+wages|total\s+compensation)",
+            line,
+        ):
+            continue
+        has_total_payroll = bool(
+            re.search(r"(?i)total\W{0,10}payroll|payroll\W{0,10}total", line)
+        )
+        is_annual = not re.search(
+            r"(?i)Q[1-4]|quarter|monthly|month|per\s+month", line
+        )
+        conf = 0.8
+        if not is_annual:
+            conf -= 0.15
+        for amt in amount_re.findall(line):
+            amt_norm = amt.replace("O", "0").replace("o", "0")
+            amt_norm = amt_norm.replace("(", "").replace(")", "")
+            value = parse_money(amt_norm)
+            if value == 0:
+                continue
+            cand_conf = conf
+            if value < 10_000:
+                cand_conf = min(cand_conf, 0.4)
+            candidates.append(
+                {
+                    "value": value,
+                    "confidence": cand_conf,
+                    "has_total_payroll": has_total_payroll,
+                    "is_annual": is_annual,
+                }
+            )
+
+    if not candidates:
+        return None, 0.0, []
+
+    candidates.sort(
+        key=lambda c: (
+            1 if c["is_annual"] else 0,
+            c["value"],
+            1 if c["has_total_payroll"] else 0,
+        ),
+        reverse=True,
+    )
+    best = candidates[0]
+
+    ambiguities: List[Dict[str, Any]] = []
+    if len(candidates) > 1:
+        second = candidates[1]
+        if best["value"] <= second["value"] * 1.1:
+            ambiguities.append(
+                {
+                    "field": "payroll_total",
+                    "candidates": [
+                        {"value": c["value"], "confidence": c["confidence"]}
+                        for c in candidates
+                    ],
+                    "reason": "multiple payroll totals found",
+                }
+            )
+
+    return best["value"], best["confidence"], ambiguities
+
+
 def extract_location(text: str) -> Tuple[Optional[str], float, Optional[str], float]:
     state_conf = 0.0
     country_conf = 0.0
@@ -276,6 +356,12 @@ def extract_fields(text: str, *, enable_secondary: bool = True) -> Tuple[Dict[st
         if annual:
             fields["annual_revenue"] = annual
             confidence["annual_revenue"] = annual_conf
+
+        payroll, payroll_conf, payroll_amb = extract_payroll_total(text)
+        if payroll:
+            fields["payroll_total"] = payroll
+            confidence["payroll_total"] = payroll_conf
+        ambiguities.extend(payroll_amb)
 
         state, state_conf, country, country_conf = extract_location(text)
         if state:

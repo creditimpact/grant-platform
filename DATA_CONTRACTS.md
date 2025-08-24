@@ -27,7 +27,7 @@ The following table enumerates all canonical keys understood by the eligibility 
 | owner_spouse_veteran | boolean | Owner's spouse is a veteran | Parse yes/no | Yes | `true` | Field Map |
 | owner_veteran | boolean | Business owner is a veteran | Parse yes/no | Yes | `true` | Field Map |
 | ownership_percentage | integer | Percent of business owned by applicant | Accept 0‑100; strip `%` | Yes | `100` | Field Map |
-| payroll_total | integer | Total payroll for relevant period | Strip `$`/`,` and store whole USD | No | `1200000` | Field Map |
+| payroll_total | integer | Company-wide payroll for the most recent year | Remove `$`, commas, parentheses; expand `k/m`; store whole USD | No | `1234567` | Field Map |
 | ppp_wages_double_dip | boolean | PPP wages reused for credits | Parse yes/no | No | `false` | Field Map |
 | project_cost | integer | Cost of proposed project | Strip `$`/`,` and store whole USD | Yes | `250000` | Field Map |
 | project_type | string | Type of project (e.g., solar, r&D) | Lowercase string | Yes | `"solar_installation"` | Field Map |

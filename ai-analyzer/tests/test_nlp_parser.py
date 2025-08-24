@@ -4,6 +4,7 @@ from nlp_parser import (
     extract_w2_count,
     extract_quarterly_revenues,
     extract_entity_type,
+    extract_payroll_total,
     parse_money,
 )
 
@@ -50,3 +51,38 @@ def test_entity_type_mapping() -> None:
 def test_parse_money_helpers() -> None:
     assert parse_money("1.2M") == 1200000
     assert parse_money("55k") == 55000
+
+
+def test_extract_payroll_total_positive_formats() -> None:
+    text = (
+        "Total Payroll: $1,234,567.89\n"
+        "Gross Payroll Total ... $950k\n"
+        "TOTAL WAGES (ANNUAL) $2.3M"
+    )
+    value, conf, amb = extract_payroll_total(text)
+    assert value == 2300000
+    assert conf >= 0.8
+    assert not amb
+
+
+def test_extract_payroll_total_table() -> None:
+    text = "Q1 Payroll $100k\nQ2 Payroll $120k\nTotal Payroll $230k"
+    value, _, _ = extract_payroll_total(text)
+    assert value == 230000
+
+
+def test_extract_payroll_total_negative_cases() -> None:
+    text = (
+        "Payroll per employee: $50,000\n"
+        "Estimated payroll budget: $1M"
+    )
+    value, conf, _ = extract_payroll_total(text)
+    assert value is None
+    assert conf == 0.0
+
+
+def test_extract_payroll_total_edge_parentheses() -> None:
+    text = "Total Payroll ($120,000)"
+    value, conf, _ = extract_payroll_total(text)
+    assert value == 120000
+    assert conf >= 0.8

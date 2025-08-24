@@ -39,9 +39,18 @@ eligibility engine after normalization. Common field names include:
 | `employees` | `13` |
 | `revenue_drop_2020_pct` | `55%` |
 | `annual_revenue` | `$1,200,000` |
+| `payroll_total` | `$950k` |
 
 Additional aliases are documented in
 `eligibility-engine/contracts/field_map.json`.
+
+### Payroll Total Extraction
+
+The analyzer detects company‑wide payroll totals using phrases like "Total Payroll",
+"Payroll Total", "Gross Payroll", "Total Wages" and "Total Compensation". Amounts
+may appear in forms such as `$1,234,567.89`, `950k`, `2.3M` or with parentheses
+`($120,000)`. All values are normalized to whole USD before being returned as
+`payroll_total`.
 
 ## Local Development Setup
 
