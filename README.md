@@ -53,7 +53,7 @@ All service calls exchange JSON payloads, are logged, and bubble up descriptive 
 Environment variables configuring service locations:
 
 ```
-AI_ANALYZER_URL=https://ai-analyzer:8000
+AI_ANALYZER_URL=http://localhost:8002
 ELIGIBILITY_ENGINE_URL=https://eligibility-engine:4001
 AI_AGENT_URL=https://ai-agent:5001
 ```
@@ -119,7 +119,7 @@ The frontend interacts with a simpler set of endpoints that manage a user's inâ€
    pip install -r requirements.txt
    # optional: specify path to the Tesseract binary
    export TESSERACT_CMD=/usr/bin/tesseract
-   python -m uvicorn main:app --port 8000
+   python -m uvicorn main:app --port 8002
    ```
 3. Start the AI agent service
    ```bash
@@ -138,6 +138,28 @@ The frontend interacts with a simpler set of endpoints that manage a user's inâ€
    cd eligibility-engine
    python -m pytest
    ```
+
+### Analyzer upload smoke test
+
+1. Start services:
+   - Analyzer: `uvicorn main:app --port 8002 --reload` (in `ai-analyzer/`)
+   - Server: `npm start` (in `server/`)
+   - (Optional) Frontend: `npm run dev` (in `frontend/`)
+
+2. Health checks:
+   - Analyzer: `curl http://localhost:8002/healthz` â†’ `{"status":"ok"}`
+   - Server:   `curl http://localhost:5000/healthz` â†’ `{"status":"ok"}`
+
+3. Upload a PDF:
+
+   ```bash
+   curl -X POST "http://localhost:5000/api/files/upload" \\
+     -F "file=@/absolute/path/to/sample.pdf" \\
+     -F "caseId=case-local-smoke" \\
+     -F "key=Bank Statements"
+   ```
+
+   Expected: HTTP 200 with JSON containing `analyzerFields` or at minimum `raw_text_preview`.
 
 The `ai-agent` service can parse free-form notes and uploaded documents, infer missing fields
 and provide human readable summaries. Eligibility results now include a `next_steps` field
