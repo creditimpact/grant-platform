@@ -1,6 +1,5 @@
 const express = require('express');
 const multer = require('multer');
-const FormData = require('form-data');
 const path = require('path');
 
 const { extensions: allowedExtensions } = require('../../shared/file_types.json');
@@ -49,24 +48,17 @@ router.post('/files/upload', (req, res) => {
     const analyzerBase = process.env.AI_ANALYZER_URL || 'http://localhost:8000';
     const analyzerUrl = `${analyzerBase.replace(/\/$/, '')}/analyze`;
     const form = new FormData();
-    form.append('file', req.file.buffer, {
-      filename: req.file.originalname,
-      contentType: req.file.mimetype,
-    });
+    form.append('file', new Blob([req.file.buffer]), req.file.originalname);
     if (caseId) form.append('caseId', caseId);
     if (key) form.append('key', key);
-
-    // form-data does not stream correctly with the native fetch in newer Node versions.
-    // Convert the form to a Buffer and supply explicit headers including Content-Length.
-    const formBuffer = form.getBuffer();
-    const formHeaders = { ...form.getHeaders(), 'Content-Length': formBuffer.length };
 
     let resp;
     try {
       resp = await fetchFn(analyzerUrl, {
         method: 'POST',
-        body: formBuffer,
-        headers: { ...formHeaders, ...getServiceHeaders('AI_ANALYZER', req) },
+        body: form,
+        duplex: 'half',
+        headers: getServiceHeaders('AI_ANALYZER', req),
       });
     } catch (error) {
       return res
