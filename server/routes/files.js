@@ -49,11 +49,22 @@ router.post('/files/upload', (req, res) => {
     const analyzerBase = process.env.AI_ANALYZER_URL || 'http://localhost:8000';
     const analyzerUrl = `${analyzerBase.replace(/\/$/, '')}/analyze`;
     const form = new FormData();
-    form.append('file', req.file.buffer, { filename: req.file.originalname });
+    form.append('file', req.file.buffer, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
+    if (caseId) form.append('caseId', caseId);
+    if (key) form.append('key', key);
+
+    // form-data does not stream correctly with the native fetch in newer Node versions.
+    // Convert the form to a Buffer and supply explicit headers including Content-Length.
+    const formBuffer = form.getBuffer();
+    const formHeaders = { ...form.getHeaders(), 'Content-Length': formBuffer.length };
+
     const resp = await fetchFn(analyzerUrl, {
       method: 'POST',
-      body: form,
-      headers: { ...form.getHeaders(), ...getServiceHeaders('AI_ANALYZER', req) },
+      body: formBuffer,
+      headers: { ...formHeaders, ...getServiceHeaders('AI_ANALYZER', req) },
     });
     if (!resp.ok) {
       const text = await resp.text();
