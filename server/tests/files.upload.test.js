@@ -29,6 +29,7 @@ describe('POST /api/files/upload', () => {
       .post('/api/files/upload')
       .attach('file', Buffer.from('hello'), 'test.txt');
     expect(res.status).toBe(400);
+    expect(res.body).toEqual({ message: 'Unsupported file type' });
   });
 
   test('rejects oversized file', async () => {
