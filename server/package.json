@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "jest --runInBand",
+    "test": "jest",
     "verify:mongo": "node scripts/verify-mongo-tls.js",
     "profile:flame": "clinic flame -- node index.js",
     "profile:doctor": "clinic doctor -- node index.js",
