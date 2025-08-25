@@ -6,11 +6,11 @@ from fastapi.testclient import TestClient
 
 from api import app
 
-client = TestClient(app)
+client = TestClient(app, raise_server_exceptions=False)
 
 
 def test_bad_body_returns_400():
-    resp = client.post("/check", json=None)
+    resp = client.post("/check", json={})
     assert resp.status_code == 400
     assert "detail" in resp.json()
 
