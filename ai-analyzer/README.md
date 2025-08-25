@@ -67,11 +67,20 @@ $env:PYTHONPATH=".."
 python -m uvicorn main:app --port 8000
 ```
 
-## Running tests
+## Tests & Lint
 
-Install the dependencies and run the test suite:
-
-```bash
+```powershell
+# Windows (PowerShell)
+python -m venv .\venv
+.\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-pytest
+
+# Run tests
+pytest -q
+
+# Lint (flake8)
+flake8
+
+# Run service locally
+uvicorn ai_analyzer.main:app --host 0.0.0.0 --port 8000
 ```
