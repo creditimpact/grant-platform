@@ -44,7 +44,7 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
     }));
     await updateCase(caseId, { documents: docMeta });
 
-    const analyzerBase = process.env.AI_ANALYZER_URL || 'http://localhost:8000';
+    const analyzerBase = process.env.AI_ANALYZER_URL || 'http://localhost:8002';
     const analyzerUrl = `${analyzerBase.replace(/\/$/, '')}/analyze`;
     let extracted = {};
     for (const file of req.files) {

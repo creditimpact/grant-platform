@@ -47,7 +47,7 @@ All Vault connections must use **HTTPS**; the platform will refuse to start if
 | OPENAI_API_KEY | OpenAI API key | `sk-...` | yes | - |
 | FRONTEND_URL | Allowed frontend origin | `https://localhost:3000` | yes | - |
 | ELIGIBILITY_ENGINE_URL | Eligibility engine URL | `https://localhost:4001` | yes | - |
-| AI_ANALYZER_URL | Analyzer URL | `https://localhost:4002` | yes | - |
+| AI_ANALYZER_URL | Analyzer URL | `http://localhost:8002` | yes | - |
 | AI_AGENT_URL | Agent URL | `https://localhost:5001` | yes | - |
 | MONGO_URI | MongoDB connection string | `mongodb://mongo:27017/grants?authSource=admin&tls=true` | yes | - |
 | MONGO_USER | Mongo username | `user` | yes | - |
