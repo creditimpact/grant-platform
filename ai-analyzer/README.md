@@ -3,7 +3,9 @@
 This FastAPI microservice extracts text from uploaded documents using Tesseract OCR
 and parses business fields such as EIN, W‑2 employee counts, quarterly revenues and
 entity type. The `/analyze` endpoint accepts `.pdf`, `.docx`, `.txt`, `.png`, `.jpeg`,
-`.jpg` and `.bmp` uploads.
+`.jpg` and `.bmp` uploads. A separate `/analyze-ai` endpoint can be enabled with
+`USE_AI_ANALYZER=true` and an `OPENAI_API_KEY`; it sends OCR text to OpenAI for
+richer field extraction.
 
 Set `TESSERACT_CMD` to the path of the Tesseract executable if it's not
 already available on your `PATH`.
@@ -27,6 +29,10 @@ curl -X POST http://localhost:8000/analyze \
 # File upload
 curl -X POST http://localhost:8000/analyze -F "file=@samples/quarterly_report.pdf"
 ```
+
+## OpenAI-Powered Extraction
+
+Set `USE_AI_ANALYZER=true` and provide `OPENAI_API_KEY` to enable the `/analyze-ai` endpoint. It accepts the same inputs as `/analyze` but uses OpenAI to fill a structured JSON response.
 
 ## Field Names Emitted
 

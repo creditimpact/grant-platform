@@ -7,9 +7,11 @@ vars = {
     "AI_ANALYZER_API_KEY": "test-key",
     "TLS_CERT_PATH": str(dummy),
     "TLS_KEY_PATH": str(dummy),
+    "USE_AI_ANALYZER": "true",
+    "OPENAI_API_KEY": "test-key",
     "SECURITY_ENFORCEMENT_LEVEL": "dev",
     "DISABLE_VAULT": "true",
     "ENABLE_RATE_LIMIT": "false",
 }
-for k,v in vars.items():
+for k, v in vars.items():
     os.environ.setdefault(k, v)
