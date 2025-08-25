@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import sys
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any
 import io
 import cgi
 from pydantic import BaseModel, constr
@@ -23,8 +23,8 @@ except Exception:  # pragma: no cover - gracefully handle missing libs
 
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CURRENT_DIR.parent))
-from common.logger import get_logger
-from common.request_id import request_id_middleware
+from common.logger import get_logger  # noqa: E402
+from common.request_id import request_id_middleware  # noqa: E402
 
 logger = get_logger(__name__)
 
@@ -44,7 +44,9 @@ app.add_middleware(
 
 
 @app.exception_handler(HTTPException)
-async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse:
+async def http_exception_handler(
+    _: Request, exc: HTTPException
+) -> JSONResponse:
     detail = exc.detail
     if isinstance(detail, dict):
         content = detail
@@ -52,17 +54,21 @@ async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse
         content = {"error": detail}
     return JSONResponse(status_code=exc.status_code, content=content)
 
+
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
     return {"status": "ok"}
+
 
 @app.get("/readyz")
 def readyz() -> JSONResponse:
     return JSONResponse(status_code=200, content={"status": "ready"})
 
+
 @app.get("/")
 def root() -> dict[str, str]:
     return {"status": "ok"}
+
 
 @app.get("/status")
 def status() -> dict[str, str]:
@@ -72,7 +78,9 @@ def status() -> dict[str, str]:
 @app.post("/ocr-image")
 async def ocr_image(request: Request) -> dict[str, str]:
     if not pytesseract or not Image:
-        raise HTTPException(status_code=500, detail="Tesseract OCR not available")
+        raise HTTPException(
+            status_code=500, detail="Tesseract OCR not available"
+        )
 
     ctype = request.headers.get("content-type", "")
     if "multipart/form-data" not in ctype:
@@ -84,7 +92,9 @@ async def ocr_image(request: Request) -> dict[str, str]:
         "CONTENT_TYPE": ctype,
         "CONTENT_LENGTH": str(len(body)),
     }
-    form = cgi.FieldStorage(fp=io.BytesIO(body), environ=env, keep_blank_values=True)
+    form = cgi.FieldStorage(
+        fp=io.BytesIO(body), environ=env, keep_blank_values=True
+    )
     field = form["file"] if "file" in form else None
     if field is None or not getattr(field, "filename", None):
         raise HTTPException(status_code=400, detail="Provide file or text")
@@ -97,11 +107,18 @@ async def ocr_image(request: Request) -> dict[str, str]:
         text = extract_text(file_bytes)
     except OCRExtractionError as exc:
         logger.exception("ocr_image failed")
-        raise HTTPException(status_code=500, detail="Failed to extract text") from exc
+        raise HTTPException(
+            status_code=500, detail="Failed to extract text"
+        ) from exc
     return {"text": text}
 
+
 class TextAnalyzeRequest(BaseModel):
-    text: constr(strip_whitespace=True, min_length=1, max_length=settings.MAX_TEXT_LEN)
+    text: constr(
+        strip_whitespace=True,
+        min_length=1,
+        max_length=settings.MAX_TEXT_LEN,
+    )
 
 
 @app.post("/analyze")
@@ -111,12 +128,17 @@ async def analyze(request: Request):
     if "application/json" in ctype:
         try:
             payload = await request.json()
-        except Exception as exc:  # pragma: no cover - FastAPI handles body parsing
-            raise HTTPException(status_code=422, detail="Invalid JSON") from exc
+        except Exception as exc:  # pragma: no cover
+            # FastAPI handles body parsing
+            raise HTTPException(
+                status_code=422, detail="Invalid JSON"
+            ) from exc
         try:
             req = TextAnalyzeRequest(**payload)
         except Exception as exc:
-            raise HTTPException(status_code=422, detail="Invalid JSON shape") from exc
+            raise HTTPException(
+                status_code=422, detail="Invalid JSON shape"
+            ) from exc
         return await analyze_text_flow(req.text, source="text")
 
     if "text/plain" in ctype:
@@ -135,7 +157,9 @@ async def analyze(request: Request):
             "CONTENT_TYPE": ctype,
             "CONTENT_LENGTH": str(len(body)),
         }
-        form = cgi.FieldStorage(fp=io.BytesIO(body), environ=env, keep_blank_values=True)
+        form = cgi.FieldStorage(
+            fp=io.BytesIO(body), environ=env, keep_blank_values=True
+        )
         text_val = None
         upload_bytes = None
         filename = None
@@ -150,7 +174,9 @@ async def analyze(request: Request):
                 upload_bytes = field.file.read()
         if text_val and text_val.strip():
             if len(text_val.encode("utf-8")) > settings.MAX_TEXT_LEN:
-                raise HTTPException(status_code=400, detail="Text exceeds limit")
+                raise HTTPException(
+                    status_code=400, detail="Text exceeds limit"
+                )
             return await analyze_text_flow(text_val.strip(), source="text")
         if upload_bytes is None:
             raise HTTPException(status_code=400, detail="Provide file or text")
@@ -160,8 +186,15 @@ async def analyze(request: Request):
             extracted = extract_text(upload_bytes)
         except OCRExtractionError as exc:
             logger.exception("extract_text failed")
-            raise HTTPException(status_code=500, detail="Failed to extract text") from exc
-        return await analyze_text_flow(extracted, source="file", filename=filename, content_type=content_type_file)
+            raise HTTPException(
+                status_code=500, detail="Failed to extract text"
+            ) from exc
+        return await analyze_text_flow(
+            extracted,
+            source="file",
+            filename=filename,
+            content_type=content_type_file,
+        )
 
     raise HTTPException(status_code=400, detail="Unsupported Content-Type")
 
