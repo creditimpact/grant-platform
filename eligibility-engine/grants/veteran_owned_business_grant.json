@@ -21,5 +21,6 @@
   ],
   "complexity_level": "low",
   "human_summary": "Grant for businesses majority-owned by veterans or their spouses",
-  "risk_notes": "Excludes non-qualified ownership structures"
+  "risk_notes": "Excludes non-qualified ownership structures",
+  "requiredForms": ["form_sf424"]
 }
