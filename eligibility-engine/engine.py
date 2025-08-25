@@ -30,7 +30,7 @@ def analyze_eligibility(
     for grant in grants:
         logger.debug("Evaluating grant %s", grant.get("name"))
         grant_tags = set(grant.get("tags", []))
-        tag_score = len(user_tags & grant_tags) if user_tags else 0
+        tag_score = {tag: 1 for tag in user_tags & grant_tags} if user_tags else {}
         missing = [f for f in grant.get("required_fields", []) if f not in user_data]
         if missing:
             logger.debug("%s missing fields: %s", grant.get("name"), missing)
