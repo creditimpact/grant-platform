@@ -61,17 +61,27 @@ router.post('/files/upload', (req, res) => {
     const formBuffer = form.getBuffer();
     const formHeaders = { ...form.getHeaders(), 'Content-Length': formBuffer.length };
 
-    const resp = await fetchFn(analyzerUrl, {
-      method: 'POST',
-      body: formBuffer,
-      headers: { ...formHeaders, ...getServiceHeaders('AI_ANALYZER', req) },
-    });
-    if (!resp.ok) {
-      const text = await resp.text();
+    let resp;
+    try {
+      resp = await fetchFn(analyzerUrl, {
+        method: 'POST',
+        body: formBuffer,
+        headers: { ...formHeaders, ...getServiceHeaders('AI_ANALYZER', req) },
+      });
+    } catch (error) {
       return res
         .status(502)
-        .json({ message: `AI analyzer error ${resp.status}`, details: text });
+        .json({ message: 'Failed to reach AI analyzer', details: error.message });
     }
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      res.status(resp.status);
+      const ct = resp.headers.get('content-type');
+      if (ct) res.set('content-type', ct);
+      return res.send(text);
+    }
+
     const fields = await resp.json();
     const c = await getCase(userId, caseId);
     const existingFields = (c.analyzer && c.analyzer.fields) || {};
