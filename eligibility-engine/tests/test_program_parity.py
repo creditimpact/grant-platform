@@ -18,6 +18,8 @@ def _load_input(program_dir: Path):
 def test_program_fixtures_parity():
     fixtures_dir = Path(__file__).parent / 'fixtures'
     for program_dir in fixtures_dir.iterdir():
+        if not program_dir.is_dir():
+            continue
         input_payload = _load_input(program_dir)
         expected = _load_expected(program_dir)
         normalized = normalize_payload(input_payload)

@@ -11,7 +11,7 @@ class GrantResult(BaseModel):
     missing_fields: Optional[List[str]] = None
     next_steps: Optional[str] = None
     requiredForms: Optional[List[str]] = None
-    tag_score: Optional[Dict[str, Any]] = None
+    tag_score: Dict[str, Any] = Field(default_factory=dict)
     reasoning_steps: Optional[List[str]] = None
     llm_summary: Optional[str] = None
     debug: Optional[Dict[str, Any]] = None
