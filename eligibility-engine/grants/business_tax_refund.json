@@ -35,4 +35,6 @@
   "complexity_level": "high",
   "human_summary": "Refund for eligible businesses that paid tax and meet income and expense thresholds",
   "risk_notes": "Must not have claimed similar refunds previously to avoid duplicate claims"
+  ,
+  "requiredForms": ["941-X"]
 }

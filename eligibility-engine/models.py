@@ -6,6 +6,7 @@ class GrantResult(BaseModel):
     name: str
     eligible: Optional[bool] = None
     score: int = 0
+    certainty_level: Optional[str] = None
     estimated_amount: Optional[float] = None
     reasoning: Optional[List[str]] = None
     missing_fields: Optional[List[str]] = None

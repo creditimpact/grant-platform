@@ -134,5 +134,6 @@
   ],
   "complexity_level": "medium",
   "human_summary": "Nine city-level programs offering grants to urban small businesses impacted by COVID-19 or structural damage.",
-  "risk_notes": "Applicants must submit city applications and supporting financial documentation."
+  "risk_notes": "Applicants must submit city applications and supporting financial documentation.",
+  "requiredForms": ["form_424A"]
 }
