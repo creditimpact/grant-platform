@@ -27,6 +27,43 @@ def test_extract_ein_multiple() -> None:
     assert amb and amb[0]["field"] == "ein"
 
 
+def test_extract_ein_no_dash() -> None:
+    value, conf, _, _ = extract_ein("EIN 123456789")
+    assert value == "12-3456789"
+    assert conf > 0.5
+
+
+def test_extract_ein_with_space() -> None:
+    value, _, _, _ = extract_ein("Employer ID: 12 3456789")
+    assert value == "12-3456789"
+
+
+def test_extract_ein_label_and_noise() -> None:
+    value, _, _, _ = extract_ein("Acct # ABC; EIN: 12 3456789 (valid)")
+    assert value == "12-3456789"
+
+
+def test_extract_ein_standard() -> None:
+    value, _, _, _ = extract_ein("EIN: 12-3456789")
+    assert value == "12-3456789"
+
+
+def test_extract_ein_dashless_in_longer_text() -> None:
+    text = "Founded 2019. Contact 2125550199. EIN 123456789. Thanks."
+    value, _, _, _ = extract_ein(text)
+    assert value == "12-3456789"
+
+
+def test_extract_ein_too_short() -> None:
+    value, _, _, _ = extract_ein("EIN 12345678")
+    assert value is None
+
+
+def test_extract_ein_too_long() -> None:
+    value, _, _, _ = extract_ein("EIN 1234567890")
+    assert value is None
+
+
 def test_w2_not_1099() -> None:
     text = "W-2 employees: 15 and 1099 contractors 3"
     count, conf = extract_w2_count(text)

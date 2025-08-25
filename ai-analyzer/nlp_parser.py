@@ -1,3 +1,4 @@
+import logging
 import re
 from datetime import datetime
 from typing import Any, Dict, Tuple, List, Optional
@@ -149,7 +150,19 @@ def normalize_country(value: str) -> Optional[str]:
     return None
 
 
-_EIN_RE = re.compile(r"\b(?:EIN[:\s]*)?(\d{2}[- ]?\d{7})\b", re.I)
+_EIN_RE = re.compile(
+    r"""
+    (?<!\d)                # not preceded by a digit
+    (?:ein[\s:\-]*)?       # optional 'EIN' label
+    (\d{2})                # first two digits
+    [-\s\u2000-\u200B]*   # optional spaces/dashes (incl. unicode spaces)
+    (\d{7})                # last seven digits
+    (?!\d)                 # not followed by a digit
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+_RAW_EIN_RE = re.compile(r"(?<!\d)(\d{9})(?!\d)")
+
 _W2_RE = re.compile(r"\bW-?2(?:\s+employees?\b|\s+count\b|\b)\D{0,10}(\d{1,5})", re.I)
 _QUARTER_PATTERNS = [
     re.compile(r"(Q[1-4]|Quarter\s*[1-4])\D{0,10}(20\d{2})\D{0,20}([\$0-9,\.]+[kKmM]?)", re.I),
@@ -168,26 +181,45 @@ _ENTITY_MAP = {
 
 
 def extract_ein(text: str) -> Tuple[Optional[str], float, List[str], List[Dict[str, Any]]]:
-    candidates = [m.group(1) for m in _EIN_RE.finditer(text)]
-    normalized_candidates = [c.replace(" ", "-").replace("-", "", 1) for c in candidates]
-    normalized_candidates = [f"{c[:2]}-{c[2:]}" for c in normalized_candidates]
+    raw_candidates: List[Tuple[str, str]] = []
+    for m in _EIN_RE.finditer(text):
+        digits = "".join(m.groups())
+        raw_candidates.append((digits, m.group(0)))
+    if not raw_candidates:
+        m = _RAW_EIN_RE.search(text)
+        if m:
+            raw_candidates.append((m.group(1), m.group(1)))
+
+    normalized_candidates: List[str] = []
+    first_original: Optional[str] = None
+    for digits, original in raw_candidates:
+        normalized = f"{digits[:2]}-{digits[2:]}"
+        normalized_candidates.append(normalized)
+        if first_original is None:
+            first_original = original
+
     value = normalized_candidates[0] if normalized_candidates else None
     conf = 0.0
     ambiguities: List[Dict[str, Any]] = []
     if value:
+        if first_original and re.sub(r"[^0-9-]", "", first_original.strip()) != value:
+            logging.getLogger(__name__).debug(
+                "normalized EIN from '%s' to '%s'", first_original.strip(), value
+            )
         conf = 0.8
-        for m in _EIN_RE.finditer(text):
-            if m.group(1).replace(" ", "-") == value:
-                before = text[max(0, m.start() - 10):m.start()].lower()
-                if "ein" in before or "employer identification" in before:
-                    conf += 0.1
-                break
+        m = _EIN_RE.search(text)
+        if m:
+            before = text[max(0, m.start() - 10):m.start()].lower()
+            if "ein" in before or "employer identification" in before:
+                conf += 0.1
         if len(set(normalized_candidates)) > 1:
-            ambiguities.append({
-                "field": "ein",
-                "candidates": list(dict.fromkeys(normalized_candidates)),
-                "reason": "multiple EIN-like strings found",
-            })
+            ambiguities.append(
+                {
+                    "field": "ein",
+                    "candidates": list(dict.fromkeys(normalized_candidates)),
+                    "reason": "multiple EIN-like strings found",
+                }
+            )
         conf = min(conf, 1.0)
     return value, conf, normalized_candidates, ambiguities
 
