@@ -45,8 +45,13 @@ router.post('/files/upload', (req, res) => {
       caseId = await createCase(userId);
     }
 
-    const analyzerBase = process.env.AI_ANALYZER_URL || 'http://localhost:8000';
-    const analyzerUrl = `${analyzerBase.replace(/\/$/, '')}/analyze`;
+    const analyzerBase = (process.env.AI_ANALYZER_URL || 'http://localhost:8002').replace(/\/$/, '');
+    const analyzerUrl = `${analyzerBase}/analyze`;
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[files.upload] analyzerUrl=${analyzerUrl}`);
+    }
+
     const form = new FormData();
     form.append('file', new Blob([req.file.buffer]), req.file.originalname);
     if (caseId) form.append('caseId', caseId);
