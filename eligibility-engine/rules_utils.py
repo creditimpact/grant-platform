@@ -200,6 +200,8 @@ def check_rules(data: Dict[str, Any], rules: Dict[str, Any]):
     if debug["missing_fields"]:
         return {
             "eligible": None,
+            "status": "conditional",
+            "certainty": "medium",
             "score": 0,
             "reasoning": reasoning,
             "debug": debug,
@@ -209,6 +211,8 @@ def check_rules(data: Dict[str, Any], rules: Dict[str, Any]):
     eligible = passed_count == total
     return {
         "eligible": eligible,
+        "status": "eligible" if eligible else "ineligible",
+        "certainty": "high",
         "score": score,
         "reasoning": reasoning,
         "debug": debug,
@@ -274,8 +278,16 @@ def check_rule_groups(data: Dict[str, Any], groups: Dict[str, Dict[str, Any]]):
         selected_forms = forms.get(selected_group, [])
 
     score = int(sum(scores) / len(scores)) if scores else 0
+    if aggregated_debug["missing_fields"]:
+        status = "conditional"
+        certainty = "medium"
+    else:
+        status = "eligible" if eligibility else "ineligible"
+        certainty = "high"
     return {
         "eligible": eligibility,
+        "status": status,
+        "certainty": certainty,
         "score": score,
         "reasoning": aggregated_reasoning,
         "debug": aggregated_debug,

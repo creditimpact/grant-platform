@@ -63,5 +63,6 @@
   "notes": "Application fees may apply for some programs. SAM.gov or SF-424 registrations are not required.",
   "complexity_level": "medium",
   "human_summary": "Competitive grants for U.S. businesses with at least 51% minority female ownership, under 50 employees, and less than $3M in revenue.",
-  "risk_notes": ""
+  "risk_notes": "",
+  "requiredForms": ["form_sf424"]
 }
