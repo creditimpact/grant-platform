@@ -1,6 +1,11 @@
 import axios from 'axios';
 import { normalizeEligibility } from './normalize';
-import type { CaseSnapshot, EligibilityReport, ResultsEnvelope } from './types';
+import type {
+  CaseSnapshot,
+  EligibilityReport,
+  GeneratedForm,
+  ResultsEnvelope,
+} from './types';
 
 const base = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5000';
 
@@ -81,6 +86,14 @@ export async function getEligibilityReport(caseId?: string): Promise<Eligibility
 }
 
 // -------------------- TRANSFORM CASE --------------------
+function toGeneratedForms(arr: any): GeneratedForm[] {
+  return (Array.isArray(arr) ? arr : []).map((f: any) => ({
+    name: f.name ?? f.formKey ?? '',
+    url: f.url ?? f.link ?? '',
+    grantId: f.grantId ?? f.grant_id ?? undefined,
+  }));
+}
+
 function transformCase(data: any): CaseSnapshot {
   const rawResults =
     Array.isArray(data.eligibility?.results)
@@ -102,7 +115,7 @@ function transformCase(data: any): CaseSnapshot {
     analyzerFields: data.analyzerFields || data.analyzer?.fields || {},
     questionnaire,
     eligibility: rawResults.length ? normalizeEligibility(rawResults) : [],
-    generatedForms: data.generatedForms || [],
+    generatedForms: toGeneratedForms(data.generatedForms),
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   };

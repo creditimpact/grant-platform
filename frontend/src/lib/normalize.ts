@@ -50,6 +50,13 @@ export function normalizeEligibility(
       reasoning: toArray(item.reasoning ?? item.reasoning_steps),
       next_steps: item.next_steps ?? undefined,
       requiredForms: toArray(item.requiredForms),
+      generatedForms: Array.isArray(item.generatedForms)
+        ? item.generatedForms.map((f: any) => ({
+            name: f.name ?? f.formKey ?? '',
+            url: f.url ?? f.link ?? '',
+            grantId: f.grantId ?? f.grant_id ?? undefined,
+          }))
+        : undefined,
       ...(eligibility_percent !== undefined
         ? { eligibility_percent }
         : {}),

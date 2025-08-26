@@ -26,6 +26,13 @@ export interface EligibilityItem {
   status?: 'eligible' | 'conditional' | 'ineligible';
   rationale?: string;
   certainty_level?: number;
+  generatedForms?: GeneratedForm[];
+}
+
+export interface GeneratedForm {
+  name: string;
+  url: string;
+  grantId?: string;
 }
 
 export interface CaseSnapshot {
@@ -39,7 +46,7 @@ export interface CaseSnapshot {
     lastUpdated?: string;
   };
   eligibility?: EligibilityItem[];
-  generatedForms?: Array<{ name: string; status?: string; link?: string }>;
+  generatedForms?: GeneratedForm[];
   createdAt?: string;
   updatedAt?: string;
 }

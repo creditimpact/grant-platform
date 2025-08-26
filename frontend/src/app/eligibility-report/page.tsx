@@ -147,9 +147,14 @@ export default function EligibilityReport() {
               <h2 className="font-semibold mt-4">Generated Forms</h2>
               <ul className="list-disc list-inside">
                 {snapshot.generatedForms.map((f) => (
-                  <li key={f.name}>
-                    {f.name}
-                    {f.status ? ` - ${f.status}` : ''}
+                  <li key={f.url}>
+                    <a
+                      href={f.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {`View draft ${f.name}`}
+                    </a>
                   </li>
                 ))}
               </ul>
