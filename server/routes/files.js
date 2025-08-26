@@ -61,6 +61,13 @@ router.post('/files/upload', (req, res) => {
     if (caseId) form.append('caseId', caseId);
     if (key) form.append('key', key);
 
+    if (process.env.NODE_ENV !== 'production') {
+      for (const [key] of form) {
+        console.log(`[files.upload] form field: ${key}`);
+      }
+      console.log('[files.upload] form headers:', form.getHeaders());
+    }
+
     let resp;
     try {
       resp = await fetchFn(analyzerUrl, {
