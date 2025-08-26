@@ -22,6 +22,10 @@ export interface EligibilityItem {
   reasoning?: string[];
   next_steps?: string;
   requiredForms?: string[];
+  eligibility_percent?: number;
+  status?: 'eligible' | 'conditional' | 'ineligible';
+  rationale?: string;
+  certainty_level?: number;
 }
 
 export interface CaseSnapshot {

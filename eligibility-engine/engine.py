@@ -72,9 +72,6 @@ def analyze_eligibility(
             )
             required_forms = grant.get("requiredForms", [])
 
-        if rule_result.get("status") == "ineligible":
-            continue
-
         if isinstance(award_info, dict):
             amount = award_info.get("amount", 0)
         else:
@@ -96,6 +93,22 @@ def analyze_eligibility(
         else:
             missing_fields = []
 
+        status = rule_result.get("status", "ineligible")
+        if status == "eligible":
+            rationale = "Meets all eligibility criteria"
+        elif status == "conditional":
+            missing = rule_result["debug"].get("missing_fields", [])
+            rationale = (
+                f"Missing required fields: {', '.join(missing)}"
+                if missing
+                else "Additional information required"
+            )
+        else:
+            fail_msgs = [msg for msg in reasoning if msg.startswith("❌")]
+            rationale = (
+                fail_msgs[0].replace("❌ ", "") if fail_msgs else "Did not meet mandatory criteria"
+            )
+
         result = {
             "name": grant.get("name"),
             "eligible": rule_result["eligible"],
@@ -108,7 +121,9 @@ def analyze_eligibility(
             "tag_score": tag_score,
             "reasoning_steps": [],
             "llm_summary": "",
-            "next_steps": "" if rule_result.get("status") == "eligible" else "Review eligibility criteria",
+            "next_steps": "" if status == "eligible" else "Review eligibility criteria",
+            "status": status,
+            "rationale": rationale[:200],
         }
         if required_forms:
             result["requiredForms"] = required_forms
@@ -139,6 +154,8 @@ def analyze_eligibility(
                 "reasoning_steps": [],
                 "llm_summary": "",
                 "debug": {"fallback": True},
+                "status": "conditional",
+                "rationale": "Fallback grant based on partial information",
             }
         )
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Literal
 from pydantic import BaseModel, Field
 
 
@@ -16,6 +16,8 @@ class GrantResult(BaseModel):
     reasoning_steps: Optional[List[str]] = None
     llm_summary: Optional[str] = None
     debug: Optional[Dict[str, Any]] = None
+    status: Literal["eligible", "conditional", "ineligible"]
+    rationale: str = Field(min_length=3, max_length=200)
 
 
 class ResultsEnvelope(BaseModel):
