@@ -16,7 +16,7 @@ describe('pipeline submit-case', () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test('renders draft when agent lacks pdf', async () => {
+  test('renders draft from filled_form', async () => {
     global.fetch
       .mockResolvedValueOnce({
         ok: true,

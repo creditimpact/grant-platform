@@ -71,4 +71,3 @@ class FormFillRequest(BaseModel):
 class FormFillResponse(BaseModel):
     filled_form: Dict[str, Any]
     reasoning: Reasoning
-    pdf: Optional[str] = None
