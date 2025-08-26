@@ -24,6 +24,9 @@ app.use(cors());
 app.use(express.json());
 app.use(requestId);
 
+const draftsDir = process.env.DRAFTS_DIR || '/tmp/forms';
+app.use('/forms', express.static(draftsDir));
+
 if (metricsMiddleware) app.use(metricsMiddleware);
 
 app.use(

@@ -10,8 +10,19 @@ const { validate, schemas } = require('../middleware/validate');
 const { getLatestTemplate } = require('../utils/formTemplates');
 const { validateAgainstSchema } = require('../middleware/formValidation');
 const { getServiceHeaders } = require('../utils/serviceHeaders');
+const { saveDraft } = require('../utils/drafts');
 
 const router = express.Router();
+
+const formNames = {
+  form_424A: '424A Application',
+  form_6765: 'Form 6765',
+  form_8974: 'Form 8974',
+  form_RD_400_1: 'RD 400-1',
+  form_RD_400_4: 'RD 400-4',
+  form_RD_400_8: 'RD 400-8',
+  form_sf424: 'SF-424 Application',
+};
 
 function aggregateMissing(results) {
   return [...new Set(results.flatMap((r) => r.missing_fields || []))];
@@ -122,31 +133,17 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
         return res.status(400).json({ errors: validationErrors });
       }
 
-      const draftsDir = process.env.DRAFTS_DIR || '/tmp/forms';
-      const filePath = path.join(draftsDir, caseId, `${formName}.pdf`);
-      try {
-        await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-        await fs.promises.writeFile(
-          filePath,
-          agentData.pdf ? Buffer.from(agentData.pdf, 'base64') : JSON.stringify(formData)
-        );
-      } catch (err) {
-        logger.error('form_fill_file_write_failed', {
-          formId: formName,
-          caseId,
-          error: err.stack,
-        });
-      }
-      const baseUrl = process.env.DRAFTS_BASE_URL;
-      const url = baseUrl
-        ? `${baseUrl.replace(/\/$/, '')}/drafts/${caseId}/${formName}.pdf`
-        : filePath;
+      const buffer = agentData.pdf
+        ? Buffer.from(agentData.pdf, 'base64')
+        : Buffer.from(JSON.stringify(formData));
+      const url = await saveDraft(caseId, formName, buffer, req);
       filledForms.push({
+        formId: formName,
         formKey: formName,
         version,
         data: formData,
         url,
-        name: formName,
+        name: formNames[formName] || formName,
       });
     }
     await updateCase(caseId, { status: 'forms_filled', generatedForms: filledForms });

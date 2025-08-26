@@ -23,7 +23,9 @@ describe('SummaryStep generate forms', () => {
     const btn = screen.getByRole('button', { name: /generate forms/i });
     fireEvent.click(btn);
     expect(api.postFormFill).toHaveBeenCalledWith('c1', ['941-X']);
-    const link = await screen.findByRole('link', { name: /941-x draft/i });
+    const link = await screen.findByRole('link', {
+      name: /view draft \(941-x draft\)/i,
+    });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('target', '_blank');
   });

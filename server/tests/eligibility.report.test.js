@@ -105,10 +105,13 @@ describe('eligibility report endpoints', () => {
       .send({ caseId });
     expect(res.status).toBe(200);
     expect(res.body.generatedForms).toHaveLength(1);
-    expect(res.body.generatedForms[0].formKey).toBe('form_424A');
+    expect(res.body.generatedForms[0].formId).toBe('form_424A');
+    expect(res.body.generatedForms[0].name).toBeTruthy();
     expect(res.body.generatedForms[0].url).toBeTruthy();
     const stored = await getCase('dev-user', caseId);
     expect(stored.generatedForms).toHaveLength(1);
+    expect(stored.generatedForms[0].formId).toBe('form_424A');
+    expect(stored.generatedForms[0].name).toBeTruthy();
     expect(stored.generatedForms[0].url).toBeTruthy();
   });
 

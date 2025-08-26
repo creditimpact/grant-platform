@@ -10,6 +10,7 @@ const caseSchema = new mongoose.Schema({
   generatedForms: {
     type: [
       {
+        formId: String,
         formKey: String,
         version: Number,
         data: mongoose.Schema.Types.Mixed,
