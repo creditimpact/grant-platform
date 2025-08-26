@@ -1,6 +1,14 @@
 'use client';
 import type { CaseSnapshot } from '@/lib/types';
 
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export default function SummaryStep({
   snapshot,
   onRestart,
@@ -25,12 +33,40 @@ export default function SummaryStep({
       {snapshot.eligibility && snapshot.eligibility.length > 0 && (
         <div>
           <h3 className="font-semibold">Eligibility Results</h3>
-          <ul className="list-disc list-inside text-sm">
-            {snapshot.eligibility.map((r) => (
-              <li key={r.name}>
-                {r.name}: {r.eligible === null ? 'Unknown' : r.eligible ? 'Yes' : 'No'}
-              </li>
-            ))}
+          <ul className="list-disc list-inside text-sm space-y-2">
+            {snapshot.eligibility.map((r) => {
+              const grantForms = [
+                ...(r.generatedForms || []),
+                ...((snapshot.generatedForms || []).filter(
+                  (f) => f.grantId === r.name,
+                )),
+              ];
+              return (
+                <li key={r.name}>
+                  <div>
+                    {r.name}: {r.eligible === null ? 'Unknown' : r.eligible ? 'Yes' : 'No'}
+                  </div>
+                  {typeof r.estimated_amount === 'number' && (
+                    <div aria-label="Estimated amount">{formatCurrency(r.estimated_amount)}</div>
+                  )}
+                  {grantForms.length > 0 && (
+                    <ul aria-label="Generated forms" className="list-disc list-inside ml-4">
+                      {grantForms.map((f) => (
+                        <li key={f.url}>
+                          <a
+                            href={f.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {`View draft ${f.name}`}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
