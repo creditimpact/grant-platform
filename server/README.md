@@ -28,3 +28,7 @@ Fetch the full case snapshot for the given case.
 
 ### `GET /api/case/status`
 Development shortcut to fetch the latest case when no `caseId` is known.
+
+## PDF Templates
+
+See [pdfTemplates.md](pdfTemplates.md) for details on defining PDF form templates.
