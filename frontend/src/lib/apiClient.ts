@@ -85,12 +85,36 @@ export async function getEligibilityReport(caseId?: string): Promise<Eligibility
   return envelope as EligibilityReport;
 }
 
+// -------------------- FORM FILL --------------------
+export interface PostFormFillResponse {
+  generatedForms: GeneratedForm[];
+}
+
+export async function postFormFill(
+  caseId: string,
+  forms: string[],
+): Promise<PostFormFillResponse> {
+  const res = await fetch('/api/case/form-fill', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ caseId, forms }),
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.message ?? `form-fill failed (${res.status})`);
+  }
+  const data = await res.json();
+  return { generatedForms: toGeneratedForms(data.generatedForms) };
+}
+
 // -------------------- TRANSFORM CASE --------------------
 function toGeneratedForms(arr: any): GeneratedForm[] {
   return (Array.isArray(arr) ? arr : []).map((f: any) => ({
-    name: f.name ?? f.formKey ?? '',
+    formId: f.formId ?? f.formKey ?? '',
+    name: f.name ?? f.formId ?? f.formKey ?? '',
     url: f.url ?? f.link ?? '',
-    grantId: f.grantId ?? f.grant_id ?? undefined,
+    version: f.version ?? f.formVersion ?? undefined,
   }));
 }
 
@@ -110,6 +134,7 @@ function transformCase(data: any): CaseSnapshot {
 
   return {
     caseId: data.caseId,
+    requiredForms: Array.isArray(data.requiredForms) ? data.requiredForms : undefined,
     status: data.status,
     documents: data.documents || [],
     analyzerFields: data.analyzerFields || data.analyzer?.fields || {},
