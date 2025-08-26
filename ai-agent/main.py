@@ -80,7 +80,13 @@ async def check(request_model: AgentCheckRequest) -> AgentCheckResponse:
     if request_model.profile:
         payload.update(request_model.profile.model_dump(exclude_none=True))
     if request_model.analyzer_fields:
-        payload.update(request_model.analyzer_fields)
+        filled_keys: list[str] = []
+        for k, v in request_model.analyzer_fields.items():
+            if k not in payload or payload[k] in (None, ""):
+                payload[k] = v
+                filled_keys.append(k)
+        if filled_keys:
+            logger.debug("analyzer_backfill", extra={"keys": filled_keys})
 
     normalized_profile, norm_steps = normalize_dates_in_mapping(payload)
 
