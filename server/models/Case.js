@@ -13,6 +13,8 @@ const caseSchema = new mongoose.Schema({
         formKey: String,
         version: Number,
         data: mongoose.Schema.Types.Mixed,
+        url: String,
+        name: String,
       },
     ],
     default: [],

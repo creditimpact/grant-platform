@@ -16,6 +16,8 @@ const generatedFormSchema = new mongoose.Schema(
     formName: String,
     payload: mongoose.Schema.Types.Mixed,
     files: [String],
+    url: String,
+    name: String,
     generatedAt: { type: Date, default: Date.now },
   },
   { _id: false }

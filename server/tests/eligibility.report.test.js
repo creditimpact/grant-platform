@@ -106,8 +106,10 @@ describe('eligibility report endpoints', () => {
     expect(res.status).toBe(200);
     expect(res.body.generatedForms).toHaveLength(1);
     expect(res.body.generatedForms[0].formKey).toBe('form_424A');
+    expect(res.body.generatedForms[0].url).toBeTruthy();
     const stored = await getCase('dev-user', caseId);
     expect(stored.generatedForms).toHaveLength(1);
+    expect(stored.generatedForms[0].url).toBeTruthy();
   });
 
   test('continues when a form-fill fails', async () => {

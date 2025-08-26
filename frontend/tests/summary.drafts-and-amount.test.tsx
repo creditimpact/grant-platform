@@ -29,5 +29,28 @@ describe('SummaryStep', () => {
     expect(screen.getByText('$25,000')).toBeInTheDocument();
     const link = screen.getByRole('link', { name: /941-X draft/i });
     expect(link).toHaveAttribute('href', 'https://example.com/forms/941x.pdf');
+    expect(link).toHaveAttribute('target', '_blank');
+  });
+
+  it('shows fallback when url missing', () => {
+    const snapshot: CaseSnapshot = {
+      caseId: 'c1',
+      documents: [],
+      eligibility: [
+        {
+          name: 'ERC',
+          eligible: true,
+          missing_fields: [],
+          generatedForms: [
+            { formId: '941-X', name: '941-X draft', url: '' },
+          ],
+        },
+      ],
+    };
+
+    render(<SummaryStep snapshot={snapshot} onRestart={() => {}} />);
+
+    expect(screen.getByText(/Draft unavailable/i)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /941-X draft/i })).toBeNull();
   });
 });

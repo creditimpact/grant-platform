@@ -121,7 +121,33 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
         await updateCase(caseId, { status: 'error', error: 'validation_failed' });
         return res.status(400).json({ errors: validationErrors });
       }
-      filledForms.push({ formKey: formName, version, data: formData });
+
+      const draftsDir = process.env.DRAFTS_DIR || '/tmp/forms';
+      const filePath = path.join(draftsDir, caseId, `${formName}.pdf`);
+      try {
+        await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+        await fs.promises.writeFile(
+          filePath,
+          agentData.pdf ? Buffer.from(agentData.pdf, 'base64') : JSON.stringify(formData)
+        );
+      } catch (err) {
+        logger.error('form_fill_file_write_failed', {
+          formId: formName,
+          caseId,
+          error: err.stack,
+        });
+      }
+      const baseUrl = process.env.DRAFTS_BASE_URL;
+      const url = baseUrl
+        ? `${baseUrl.replace(/\/$/, '')}/drafts/${caseId}/${formName}.pdf`
+        : filePath;
+      filledForms.push({
+        formKey: formName,
+        version,
+        data: formData,
+        url,
+        name: formName,
+      });
     }
     await updateCase(caseId, { status: 'forms_filled', generatedForms: filledForms });
 
