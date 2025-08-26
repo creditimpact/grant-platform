@@ -10,6 +10,7 @@ const fetchFn =
     : (...args) => import('node-fetch').then(({ default: f }) => f(...args)));
 const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
 const { getServiceHeaders } = require('../utils/serviceHeaders');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -90,7 +91,15 @@ router.post('/files/upload', (req, res) => {
     const fields = await resp.json();
     const c = await getCase(userId, caseId);
     const existingFields = (c.analyzer && c.analyzer.fields) || {};
-    const mergedFields = { ...fields, ...existingFields };
+    const overriddenKeys = Object.keys(fields).filter((k) => k in existingFields);
+    if (overriddenKeys.length) {
+      const logFn = logger.debug ? logger.debug.bind(logger) : logger.info.bind(logger);
+      logFn('merge: analyzer overrides existing fields', {
+        overriddenKeys,
+        requestId: req.headers['x-request-id'],
+      });
+    }
+    const mergedFields = { ...existingFields, ...fields };
     const now = new Date().toISOString();
     const docMeta = {
       key,
