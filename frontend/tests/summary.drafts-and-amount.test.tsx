@@ -15,6 +15,7 @@ describe('SummaryStep', () => {
           estimated_amount: 25000,
           generatedForms: [
             {
+              formId: '941-X',
               name: '941-X draft',
               url: 'https://example.com/forms/941x.pdf',
             },

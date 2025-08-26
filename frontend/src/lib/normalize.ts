@@ -52,9 +52,10 @@ export function normalizeEligibility(
       requiredForms: toArray(item.requiredForms),
       generatedForms: Array.isArray(item.generatedForms)
         ? item.generatedForms.map((f: any) => ({
-            name: f.name ?? f.formKey ?? '',
+            formId: f.formId ?? f.formKey ?? '',
+            name: f.name ?? f.formId ?? f.formKey ?? '',
             url: f.url ?? f.link ?? '',
-            grantId: f.grantId ?? f.grant_id ?? undefined,
+            version: f.version ?? f.formVersion ?? undefined,
           }))
         : undefined,
       ...(eligibility_percent !== undefined
