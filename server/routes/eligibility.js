@@ -1,4 +1,6 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const fetchFn =
   global.pipelineFetch ||
   (global.fetch
@@ -187,7 +189,35 @@ router.post('/eligibility-report', async (req, res) => {
           });
           return;
         }
-        filledForms.push({ formKey: formName, version, data: formData });
+
+        const draftsDir = process.env.DRAFTS_DIR || '/tmp/forms';
+        const filePath = path.join(draftsDir, caseId, `${formName}.pdf`);
+        try {
+          await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+          await fs.promises.writeFile(
+            filePath,
+            agentData.pdf
+              ? Buffer.from(agentData.pdf, 'base64')
+              : JSON.stringify(formData)
+          );
+        } catch (err) {
+          logger.error('form_fill_file_write_failed', {
+            formId: formName,
+            requestId: req.id,
+            error: err.stack,
+          });
+        }
+        const baseUrl = process.env.DRAFTS_BASE_URL;
+        const url = baseUrl
+          ? `${baseUrl.replace(/\/$/, '')}/drafts/${caseId}/${formName}.pdf`
+          : filePath;
+        filledForms.push({
+          formKey: formName,
+          version,
+          data: formData,
+          url,
+          name: formName,
+        });
       } catch (err) {
         logger.error('form_fill_failed', {
           formId: formName,
