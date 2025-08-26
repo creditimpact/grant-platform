@@ -11,6 +11,7 @@ const { getLatestTemplate } = require('../utils/formTemplates');
 const { validateAgainstSchema } = require('../middleware/formValidation');
 const { getServiceHeaders } = require('../utils/serviceHeaders');
 const { saveDraft } = require('../utils/drafts');
+const { renderPdf } = require('../utils/pdfRenderer');
 
 const router = express.Router();
 
@@ -133,9 +134,41 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
         return res.status(400).json({ errors: validationErrors });
       }
 
+      logger.info('form_fill_received', {
+        hasPdf: Boolean(agentData.pdf),
+        formId: formName,
+        caseId,
+        requestId: req.id,
+      });
+
+      const renderMode = process.env.DRAFTS_RENDER_MODE || 'server';
+      let buffer;
+      if (renderMode === 'agent' && agentData.pdf) {
+        const b = Buffer.from(agentData.pdf, 'base64');
+        if (b.length > 0 && b.slice(0, 5).toString() === '%PDF-') {
+          buffer = b;
+        }
+      }
+      if (!buffer) {
+        try {
+          logger.info('pdf_render_started', {
+            formId: formName,
+            caseId,
+            requestId: req.id,
+          });
+          buffer = await renderPdf({ formId: formName, filledForm: formData });
+        } catch (err) {
+          logger.error('pdf_render_failed', {
+            formId: formName,
+            caseId,
+            error: err.stack,
+            requestId: req.id,
+          });
+          buffer = undefined;
+        }
+      }
       let url;
-      if (agentData.pdf) {
-        const buffer = Buffer.from(agentData.pdf, 'base64');
+      if (buffer) {
         url = await saveDraft(caseId, formName, buffer, req);
       }
       filledForms.push({

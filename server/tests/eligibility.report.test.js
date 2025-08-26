@@ -118,7 +118,7 @@ describe('eligibility report endpoints', () => {
     expect(stored.generatedForms[0].url).toBeTruthy();
   });
 
-  test('skips url when agent does not return pdf', async () => {
+  test('renders pdf when agent does not return pdf', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
     global.fetch
@@ -138,9 +138,9 @@ describe('eligibility report endpoints', () => {
       .post('/api/eligibility-report')
       .send({ caseId });
     expect(res.status).toBe(200);
-    expect(res.body.generatedForms[0].url).toBeUndefined();
+    expect(res.body.generatedForms[0].url).toBeTruthy();
     const stored = await getCase('dev-user', caseId);
-    expect(stored.generatedForms[0].url).toBeUndefined();
+    expect(stored.generatedForms[0].url).toBeTruthy();
   });
 
   test('continues when a form-fill fails', async () => {
