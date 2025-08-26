@@ -57,14 +57,32 @@ router.post('/eligibility-report', async (req, res) => {
   });
   if (!resp.ok) {
     const text = await resp.text();
+    console.error('[eligibility] engine non-200', resp.status, text);
     return res
       .status(502)
-      .json({ message: `Eligibility engine error ${resp.status}`, details: text });
+      .json({ message: 'Eligibility engine error', details: text });
   }
-  const results = await resp.json();
-  const requiredForms = [
-    ...new Set(results.flatMap((r) => r.requiredForms || [])),
-  ];
+
+  const body = await resp.json();
+
+  // Normalize results to an array
+  const results = Array.isArray(body)
+    ? body
+    : Array.isArray(body?.results)
+        ? body.results
+        : [];
+
+  // Envelope-level required forms
+  const envForms = Array.isArray(body?.requiredForms) ? body.requiredForms : [];
+
+  // Flatten result-level required forms
+  const perResultForms = results.flatMap((r) =>
+    Array.isArray(r?.requiredForms) ? r.requiredForms : []
+  );
+
+  // Final aggregation (unique, preserve order)
+  const requiredForms = [...new Set([...envForms, ...perResultForms])];
+
   const eligibility = {
     results,
     requiredForms,
@@ -78,6 +96,12 @@ router.post('/eligibility-report', async (req, res) => {
   }
   const c = await getCase(userId, caseId);
   const missing = aggregateMissing(results);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[eligibility] normalized results', {
+      count: results.length,
+      requiredForms,
+    });
+  }
   res.json({
     caseId,
     eligibility,
