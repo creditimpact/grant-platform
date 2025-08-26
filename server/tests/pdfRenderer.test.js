@@ -5,5 +5,6 @@ test('renderPdf returns valid PDF buffer', async () => {
   expect(Buffer.isBuffer(buf)).toBe(true);
   expect(buf.length).toBeGreaterThan(0);
   expect(buf.slice(0, 5).toString()).toBe('%PDF-');
+  expect(buf.includes('%%EOF')).toBe(true);
 });
 

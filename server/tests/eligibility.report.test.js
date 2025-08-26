@@ -99,8 +99,7 @@ describe('eligibility report endpoints', () => {
       .mockResolvedValue({
         ok: true,
         json: async () => ({
-          filled_form: { some: 'data' },
-          pdf: 'JVBERi0xLjEKMSAwIG9iago8PD4+CmVuZG9iagpzdGFydHhyZWYKMAolJUVPRg==',
+          filled_form: { some: 'data' }
         }),
       });
     const res = await request(app)
@@ -118,9 +117,11 @@ describe('eligibility report endpoints', () => {
     expect(stored.generatedForms[0].url).toBeTruthy();
   });
 
-  test('renders pdf when agent does not return pdf', async () => {
+  test('omits url when pdf render fails', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
+    const pdfRenderer = require('../utils/pdfRenderer');
+    const spy = jest.spyOn(pdfRenderer, 'renderPdf').mockRejectedValueOnce(new Error('boom'));
     global.fetch
       .mockResolvedValueOnce({
         ok: true,
@@ -138,9 +139,10 @@ describe('eligibility report endpoints', () => {
       .post('/api/eligibility-report')
       .send({ caseId });
     expect(res.status).toBe(200);
-    expect(res.body.generatedForms[0].url).toBeTruthy();
-    const stored = await getCase('dev-user', caseId);
-    expect(stored.generatedForms[0].url).toBeTruthy();
+    expect(res.body.generatedForms[0].url).toBeFalsy();
+    const log = logger.logs.find((l) => l.message === 'pdf_render_failed');
+    expect(log).toBeDefined();
+    spy.mockRestore();
   });
 
   test('continues when a form-fill fails', async () => {
