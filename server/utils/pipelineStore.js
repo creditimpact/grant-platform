@@ -16,6 +16,7 @@ async function createCase(userId, caseId) {
       eligibility: { results: [], requiredForms: [], lastUpdated: null },
       documents: [],
       generatedForms: [],
+      incompleteForms: [],
       normalized: {},
       createdAt: now,
       updatedAt: now,
