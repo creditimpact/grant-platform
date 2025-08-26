@@ -25,6 +25,7 @@ describe('SummaryStep generate forms', () => {
     expect(api.postFormFill).toHaveBeenCalledWith('c1', ['941-X']);
     const link = await screen.findByRole('link', { name: /941-x draft/i });
     expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('target', '_blank');
   });
 
   it('shows error on failure', async () => {

@@ -68,14 +68,18 @@ export default function SummaryStep({
                 {r.generatedForms && r.generatedForms.length > 0 && (
                   <ul aria-label="Generated forms" className="list-disc list-inside ml-4">
                     {r.generatedForms.map((f) => (
-                      <li key={f.url}>
-                        <a
-                          href={f.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {`View draft ${f.name}`}
-                        </a>
+                      <li key={f.formId || f.name}>
+                        {f.url ? (
+                          <a
+                            href={f.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {`View draft ${f.name}`}
+                          </a>
+                        ) : (
+                          <span>Draft unavailable ({f.name})</span>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -90,14 +94,18 @@ export default function SummaryStep({
           <h3 className="font-semibold">Generated Forms</h3>
           <ul className="list-disc list-inside text-sm">
             {snap.generatedForms.map((f) => (
-              <li key={f.url}>
-                <a
-                  href={f.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {`View draft ${f.name}`}
-                </a>
+              <li key={f.formId || f.name}>
+                {f.url ? (
+                  <a
+                    href={f.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {`View draft ${f.name}`}
+                  </a>
+                ) : (
+                  <span>Draft unavailable ({f.name})</span>
+                )}
               </li>
             ))}
           </ul>
