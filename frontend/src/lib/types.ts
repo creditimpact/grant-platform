@@ -30,13 +30,15 @@ export interface EligibilityItem {
 }
 
 export interface GeneratedForm {
+  formId: string;
   name: string;
   url: string;
-  grantId?: string;
+  version?: string;
 }
 
 export interface CaseSnapshot {
   caseId: string | null;
+  requiredForms?: string[];
   status?: CaseStatus;
   documents?: CaseDoc[];
   analyzerFields?: Record<string, unknown>;
