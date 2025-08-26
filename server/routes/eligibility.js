@@ -7,6 +7,8 @@ const fetchFn =
 const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
 const { getServiceHeaders } = require('../utils/serviceHeaders');
 const logger = require('../utils/logger');
+const { getLatestTemplate } = require('../utils/formTemplates');
+const { validateAgainstSchema } = require('../middleware/formValidation');
 
 const router = express.Router();
 
@@ -41,10 +43,12 @@ router.post('/eligibility-report', async (req, res) => {
   const userId = 'dev-user';
   let { caseId, payload = {} } = req.body || {};
   let base = payload;
+  let analyzerFields = {};
   if (caseId) {
     const c = await getCase(userId, caseId);
     if (!c) return res.status(404).json({ message: 'Case not found' });
-    base = { ...(c.analyzer?.fields || {}), ...payload };
+    analyzerFields = c.analyzer?.fields || {};
+    base = { ...analyzerFields, ...payload };
   } else {
     caseId = await createCase(userId);
   }
@@ -109,6 +113,62 @@ router.post('/eligibility-report', async (req, res) => {
       analyzer: { fields: base, lastUpdated: new Date().toISOString() },
     });
   }
+  const agentBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
+  const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
+  const filledForms = [];
+  const logFn = logger.debug ? logger.debug.bind(logger) : logger.info.bind(logger);
+  await Promise.all(
+    requiredForms.map(async (formName) => {
+      logFn('form_fill_attempt', { formId: formName, requestId: req.id });
+      try {
+        const agentResp = await fetchFn(agentUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...getServiceHeaders('AI_AGENT', req),
+          },
+          body: JSON.stringify({
+            form_name: formName,
+            user_payload: base,
+            analyzer_fields: analyzerFields,
+          }),
+        });
+        if (!agentResp.ok) {
+          const text = await agentResp.text();
+          logger.error('form_fill_failed', {
+            formId: formName,
+            requestId: req.id,
+            status: agentResp.status,
+            error: text,
+          });
+          return;
+        }
+        const agentData = await agentResp.json();
+        const tmpl = await getLatestTemplate(formName);
+        const version = tmpl ? tmpl.version : 1;
+        const formData = agentData.filled_form || agentData;
+        const validationErrors = tmpl
+          ? validateAgainstSchema(formData, tmpl.schema)
+          : [];
+        if (validationErrors.length) {
+          logger.error('form_fill_validation_failed', {
+            formId: formName,
+            requestId: req.id,
+            errors: validationErrors,
+          });
+          return;
+        }
+        filledForms.push({ formKey: formName, version, data: formData });
+      } catch (err) {
+        logger.error('form_fill_failed', {
+          formId: formName,
+          requestId: req.id,
+          error: err.stack,
+        });
+      }
+    })
+  );
+  await updateCase(caseId, { generatedForms: filledForms });
   const c = await getCase(userId, caseId);
   const missing = aggregateMissing(results);
   if (process.env.NODE_ENV !== 'production') {
