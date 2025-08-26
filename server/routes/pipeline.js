@@ -107,6 +107,7 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
     const agentBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
     const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
     const filledForms = [];
+    const incompleteForms = [];
     for (const formName of requiredForms) {
       const agentResp = await fetchFn(agentUrl, {
         method: 'POST',
@@ -130,8 +131,22 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
       const formData = agentData.filled_form || agentData;
       const validationErrors = tmpl ? validateAgainstSchema(formData, tmpl.schema) : [];
       if (validationErrors.length) {
-        await updateCase(caseId, { status: 'error', error: 'validation_failed' });
-        return res.status(400).json({ errors: validationErrors });
+        const missingFields = validationErrors
+          .filter((e) => e.message === 'required')
+          .map((e) => e.field);
+        logger.error('form_fill_validation_failed', {
+          formId: formName,
+          requestId: req.id,
+          errors: validationErrors,
+        });
+        incompleteForms.push({
+          formId: formName,
+          formKey: formName,
+          version,
+          missingFields,
+          name: formNames[formName] || formName,
+        });
+        continue;
       }
       logger.info('form_fill_received', {
         formId: formName,
@@ -178,9 +193,18 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
         name: formNames[formName] || formName,
       });
     }
-    await updateCase(caseId, { status: 'forms_filled', generatedForms: filledForms });
+    await updateCase(caseId, {
+      status: incompleteForms.length ? 'incomplete' : 'forms_filled',
+      generatedForms: filledForms,
+      incompleteForms,
+    });
 
-    res.json({ caseId, eligibility, generatedForms: filledForms });
+    res.json({
+      caseId,
+      eligibility,
+      generatedForms: filledForms,
+      incompleteForms,
+    });
   } catch (err) {
     for (const f of req.files || []) fs.unlink(f.path, () => {});
     await updateCase(caseId, { status: 'error', error: err.message });
@@ -208,6 +232,7 @@ router.get('/status/:caseId', async (req, res) => {
     },
     eligibility: c.eligibility,
     generatedForms: c.generatedForms,
+    incompleteForms: c.incompleteForms,
     documents: c.documents,
     normalized: c.normalized,
   });

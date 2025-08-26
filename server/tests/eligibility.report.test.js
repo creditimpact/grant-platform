@@ -145,6 +145,44 @@ describe('eligibility report endpoints', () => {
     spy.mockRestore();
   });
 
+  test('records incomplete form when required fields missing', async () => {
+    const caseId = await createCase('dev-user');
+    await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
+    const pdfRenderer = require('../utils/pdfRenderer');
+    const renderSpy = jest.spyOn(pdfRenderer, 'renderPdf');
+    const formTemplates = require('../utils/formTemplates');
+    jest
+      .spyOn(formTemplates, 'getLatestTemplate')
+      .mockResolvedValue({
+        version: 1,
+        schema: { required: ['foo'], properties: { foo: { type: 'string' } } },
+      });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [],
+          requiredForms: ['424A'],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ filled_form: {} }),
+      });
+    const res = await request(app)
+      .post('/api/eligibility-report')
+      .send({ caseId });
+    expect(res.status).toBe(200);
+    expect(res.body.generatedForms).toHaveLength(0);
+    expect(res.body.incompleteForms).toHaveLength(1);
+    expect(res.body.incompleteForms[0].missingFields).toEqual(['foo']);
+    expect(renderSpy).not.toHaveBeenCalled();
+    const log = logger.logs.find((l) => l.message === 'form_fill_validation_failed');
+    expect(log).toBeDefined();
+    renderSpy.mockRestore();
+    formTemplates.getLatestTemplate.mockRestore();
+  });
+
   test('continues when a form-fill fails', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });

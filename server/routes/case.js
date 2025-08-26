@@ -32,6 +32,7 @@ async function caseStatusHandler(req, res) {
     },
     eligibility: c.eligibility,
     generatedForms: c.generatedForms,
+    incompleteForms: c.incompleteForms,
     documents: c.documents,
     normalized: c.normalized,
   });
@@ -59,6 +60,7 @@ router.post('/case/init', async (req, res) => {
     },
     eligibility: c.eligibility,
     generatedForms: c.generatedForms,
+    incompleteForms: c.incompleteForms,
     documents: c.documents,
     normalized: c.normalized,
   });

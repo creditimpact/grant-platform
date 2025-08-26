@@ -68,6 +68,7 @@ router.get('/eligibility-report', async (req, res) => {
     documents: c.documents,
     status: c.status,
     generatedForms: c.generatedForms,
+    incompleteForms: c.incompleteForms,
   });
 });
 
@@ -157,6 +158,7 @@ router.post('/eligibility-report', async (req, res) => {
   const agentBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
   const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
   const filledForms = [];
+  const incompleteForms = [];
   const logFn = logger.debug ? logger.debug.bind(logger) : logger.info.bind(logger);
   await Promise.all(
     mappedForms.map(async (formName) => {
@@ -192,10 +194,20 @@ router.post('/eligibility-report', async (req, res) => {
           ? validateAgainstSchema(formData, tmpl.schema)
           : [];
         if (validationErrors.length) {
+          const missingFields = validationErrors
+            .filter((e) => e.message === 'required')
+            .map((e) => e.field);
           logger.error('form_fill_validation_failed', {
             formId: formName,
             requestId: req.id,
             errors: validationErrors,
+          });
+          incompleteForms.push({
+            formId: formName,
+            formKey: formName,
+            version,
+            missingFields,
+            name: formNames[formName] || formName,
           });
           return;
         }
@@ -252,7 +264,7 @@ router.post('/eligibility-report', async (req, res) => {
       }
     })
   );
-  await updateCase(caseId, { generatedForms: filledForms });
+  await updateCase(caseId, { generatedForms: filledForms, incompleteForms });
   const c = await getCase(userId, caseId);
   const missing = aggregateMissing(results);
   if (process.env.NODE_ENV !== 'production') {
@@ -269,6 +281,7 @@ router.post('/eligibility-report', async (req, res) => {
     documents: c.documents,
     status: c.status,
     generatedForms: c.generatedForms,
+    incompleteForms: c.incompleteForms,
   });
 });
 
