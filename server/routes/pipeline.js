@@ -133,10 +133,11 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
         return res.status(400).json({ errors: validationErrors });
       }
 
-      const buffer = agentData.pdf
-        ? Buffer.from(agentData.pdf, 'base64')
-        : Buffer.from(JSON.stringify(formData));
-      const url = await saveDraft(caseId, formName, buffer, req);
+      let url;
+      if (agentData.pdf) {
+        const buffer = Buffer.from(agentData.pdf, 'base64');
+        url = await saveDraft(caseId, formName, buffer, req);
+      }
       filledForms.push({
         formId: formName,
         formKey: formName,

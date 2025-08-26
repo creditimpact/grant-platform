@@ -98,7 +98,10 @@ describe('eligibility report endpoints', () => {
       })
       .mockResolvedValue({
         ok: true,
-        json: async () => ({ filled_form: { some: 'data' } }),
+        json: async () => ({
+          filled_form: { some: 'data' },
+          pdf: 'JVBERi0xLjEKMSAwIG9iago8PD4+CmVuZG9iagpzdGFydHhyZWYKMAolJUVPRg==',
+        }),
       });
     const res = await request(app)
       .post('/api/eligibility-report')
@@ -113,6 +116,31 @@ describe('eligibility report endpoints', () => {
     expect(stored.generatedForms[0].formId).toBe('form_424A');
     expect(stored.generatedForms[0].name).toBeTruthy();
     expect(stored.generatedForms[0].url).toBeTruthy();
+  });
+
+  test('skips url when agent does not return pdf', async () => {
+    const caseId = await createCase('dev-user');
+    await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            { program: 'p1', requiredForms: ['424A'], missing_fields: [] },
+          ],
+        }),
+      })
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({ filled_form: { some: 'data' } }),
+      });
+    const res = await request(app)
+      .post('/api/eligibility-report')
+      .send({ caseId });
+    expect(res.status).toBe(200);
+    expect(res.body.generatedForms[0].url).toBeUndefined();
+    const stored = await getCase('dev-user', caseId);
+    expect(stored.generatedForms[0].url).toBeUndefined();
   });
 
   test('continues when a form-fill fails', async () => {
