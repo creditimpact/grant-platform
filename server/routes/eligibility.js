@@ -12,6 +12,26 @@ const { validateAgainstSchema } = require('../middleware/formValidation');
 
 const router = express.Router();
 
+const supportedForms = new Set([
+  'form_424A',
+  'form_6765',
+  'form_8974',
+  'form_RD_400_1',
+  'form_RD_400_4',
+  'form_RD_400_8',
+  'form_sf424',
+]);
+
+const formMap = {
+  '424A': 'form_424A',
+  '6765': 'form_6765',
+  '8974': 'form_8974',
+  'RD-400-1': 'form_RD_400_1',
+  'RD-400-4': 'form_RD_400_4',
+  'RD-400-8': 'form_RD_400_8',
+  'SF-424': 'form_sf424',
+};
+
 function aggregateMissing(results) {
   return [
     ...new Set(results.flatMap((r) => r.missing_fields || [])),
@@ -101,10 +121,19 @@ router.post('/eligibility-report', async (req, res) => {
 
   // Final aggregation (unique, preserve order)
   const requiredForms = [...new Set([...envForms, ...perResultForms])];
+  const mappedForms = [];
+  for (const f of requiredForms) {
+    const normalized = formMap[f] || f;
+    if (supportedForms.has(normalized)) {
+      mappedForms.push(normalized);
+    } else {
+      logger.warn('unsupported_form', { formId: f, requestId: req.id });
+    }
+  }
 
   const eligibility = {
     results,
-    requiredForms,
+    requiredForms: mappedForms,
     lastUpdated: new Date().toISOString(),
   };
   await updateCase(caseId, { eligibility });
@@ -118,7 +147,7 @@ router.post('/eligibility-report', async (req, res) => {
   const filledForms = [];
   const logFn = logger.debug ? logger.debug.bind(logger) : logger.info.bind(logger);
   await Promise.all(
-    requiredForms.map(async (formName) => {
+    mappedForms.map(async (formName) => {
       logFn('form_fill_attempt', { formId: formName, requestId: req.id });
       try {
         const agentResp = await fetchFn(agentUrl, {
@@ -174,7 +203,7 @@ router.post('/eligibility-report', async (req, res) => {
   if (process.env.NODE_ENV !== 'production') {
     console.log('[eligibility] normalized results', {
       count: results.length,
-      requiredForms,
+      requiredForms: mappedForms,
     });
   }
   res.json({
