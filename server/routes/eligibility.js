@@ -6,6 +6,7 @@ const fetchFn =
     : (...args) => import('node-fetch').then(({ default: f }) => f(...args)));
 const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
 const { getServiceHeaders } = require('../utils/serviceHeaders');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -50,11 +51,25 @@ router.post('/eligibility-report', async (req, res) => {
 
   const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
   const engineUrl = `${engineBase.replace(/\/$/, '')}/check`;
-  const resp = await fetchFn(engineUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getServiceHeaders('ELIGIBILITY_ENGINE', req) },
-    body: JSON.stringify(base),
-  });
+  let resp;
+  try {
+    resp = await fetchFn(engineUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getServiceHeaders('ELIGIBILITY_ENGINE', req),
+      },
+      body: JSON.stringify(base),
+    });
+  } catch (err) {
+    logger.error('eligibility_engine_unreachable', {
+      error: err.stack,
+      requestId: req.id,
+    });
+    return res
+      .status(502)
+      .json({ message: 'Eligibility engine unreachable' });
+  }
   if (!resp.ok) {
     const text = await resp.text();
     console.error('[eligibility] engine non-200', resp.status, text);
