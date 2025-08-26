@@ -2,12 +2,14 @@ const request = require('supertest');
 process.env.SKIP_DB = 'true';
 const app = require('../index');
 const { createCase, updateCase, resetStore } = require('../utils/pipelineStore');
+const logger = require('../utils/logger');
 
 describe('eligibility report endpoints', () => {
   beforeEach(() => {
     process.env.SKIP_DB = 'true';
     resetStore();
     global.fetch = jest.fn();
+    logger.logs.length = 0;
   });
 
   test('POST aggregates required forms from array response', async () => {
@@ -91,5 +93,23 @@ describe('eligibility report endpoints', () => {
     expect(res.status).toBe(502);
     expect(res.body.message).toBe('Eligibility engine error');
     expect(res.body.details).toBeDefined();
+  });
+
+  test('returns 502 when engine is unreachable', async () => {
+    const caseId = await createCase('dev-user');
+    await updateCase(caseId, { analyzer: { fields: {} } });
+    global.fetch.mockRejectedValueOnce(new Error('network down'));
+    const res = await request(app)
+      .post('/api/eligibility-report')
+      .send({ caseId });
+    expect(res.status).toBe(502);
+    expect(res.body).toEqual({
+      message: 'Eligibility engine unreachable',
+    });
+    const logEntry = logger.logs.find(
+      (l) => l.message === 'eligibility_engine_unreachable'
+    );
+    expect(logEntry).toBeDefined();
+    expect(logEntry.requestId).toBe(res.headers['x-request-id']);
   });
 });
