@@ -37,9 +37,53 @@ const pdfTemplates = {
       applicant_name: { page: 0, x: 50, y: 700, fontSize: 12 },
     },
   },
-  form_RD_400_1: { base: 'form_RD_400_1.pdf', mode: 'absolute', coords: {} },
-  form_RD_400_4: { base: 'form_RD_400_4.pdf', mode: 'absolute', coords: {} },
-  form_RD_400_8: { base: 'form_RD_400_8.pdf', mode: 'absolute', coords: {} },
+  // RD 400 series templates currently use absolute positioning for rendering
+  form_RD_400_1: {
+    base: 'form_RD_400_1.pdf',
+    mode: 'absolute',
+    coords: {
+      recipient_name: { page: 0, x: 100, y: 700 },
+      recipient_title: { page: 0, x: 100, y: 680 },
+      usda_representative: { page: 0, x: 100, y: 660 },
+      agreement_date: { page: 0, x: 430, y: 700 },
+    },
+    checkboxes: {
+      loan: { page: 0, x: 100, y: 640 },
+      grant: { page: 0, x: 140, y: 640 },
+      loan_guaranty: { page: 0, x: 180, y: 640 },
+      other_assistance: { page: 0, x: 220, y: 640 },
+    },
+  },
+  form_RD_400_4: {
+    base: 'form_RD_400_4.pdf',
+    mode: 'absolute',
+    coords: {
+      recipient_name: { page: 0, x: 90, y: 710 },
+      recipient_address: { page: 0, x: 90, y: 690 },
+      assurance_date: { page: 0, x: 400, y: 650 },
+      recipient_title: { page: 0, x: 90, y: 630 },
+    },
+    checkboxes: {
+      corporate: { page: 0, x: 90, y: 610 },
+      individual: { page: 0, x: 150, y: 610 },
+    },
+  },
+  form_RD_400_8: {
+    base: 'form_RD_400_8.pdf',
+    mode: 'absolute',
+    coords: {
+      date_of_review: { page: 0, x: 90, y: 720 },
+      state: { page: 0, x: 260, y: 720 },
+      county: { page: 0, x: 400, y: 720 },
+      case_number: { page: 0, x: 90, y: 700 },
+      borrower_name: { page: 0, x: 90, y: 680 },
+      borrower_address: { page: 0, x: 90, y: 660 },
+    },
+    checkboxes: {
+      source_of_funds_direct: { page: 0, x: 260, y: 700 },
+      source_of_funds_insured: { page: 0, x: 310, y: 700 },
+    },
+  },
 };
 
 module.exports = { getLatestTemplate, getTemplate, cacheTemplate, cache, pdfTemplates };
