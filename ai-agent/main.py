@@ -139,7 +139,12 @@ async def form_fill(request_model: FormFillRequest) -> FormFillResponse:
             {"form": request_model.form_name, "data": normalized_data},
         )
 
-    return FormFillResponse(filled_form=filled, reasoning=reasoning)
+    dummy_pdf = (
+        "JVBERi0xLjEKMSAwIG9iago8PD4+CmVuZG9iagpzdGFydHhyZWYKMAolJUVPRg=="
+    )
+    return FormFillResponse(
+        filled_form=filled, reasoning=reasoning, pdf=dummy_pdf
+    )
 
 
 @app.post("/preview-form")

@@ -17,3 +17,6 @@ def test_user_values_win_and_reasoning_logs_sources():
     steps = data["reasoning"]["reasoning_steps"]
     assert any("kept user value" in s and "employer_identification_number" in s for s in steps)
     assert any("filled" in s and "reporting_quarter" in s for s in steps)
+    import base64
+    pdf_bytes = base64.b64decode(data["pdf"])
+    assert pdf_bytes[:5] == b"%PDF-"

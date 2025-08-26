@@ -16,7 +16,7 @@ describe('pipeline submit-case', () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test('does not create draft when agent lacks pdf', async () => {
+  test('renders draft when agent lacks pdf', async () => {
     global.fetch
       .mockResolvedValueOnce({
         ok: true,
@@ -34,8 +34,8 @@ describe('pipeline submit-case', () => {
       .field('phone', '1234567');
 
     expect(res.status).toBe(200);
-    expect(res.body.generatedForms[0].url).toBeUndefined();
+    expect(res.body.generatedForms[0].url).toBeTruthy();
     const filePath = path.join(tmpDir, res.body.caseId, 'form_424A.pdf');
-    expect(fs.existsSync(filePath)).toBe(false);
+    expect(fs.existsSync(filePath)).toBe(true);
   });
 });
