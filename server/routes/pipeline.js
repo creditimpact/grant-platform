@@ -133,43 +133,41 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
         await updateCase(caseId, { status: 'error', error: 'validation_failed' });
         return res.status(400).json({ errors: validationErrors });
       }
-
       logger.info('form_fill_received', {
-        hasPdf: Boolean(agentData.pdf),
         formId: formName,
+        hasFilledForm: true,
         caseId,
         requestId: req.id,
       });
 
-      const renderMode = process.env.DRAFTS_RENDER_MODE || 'server';
       let buffer;
-      if (renderMode === 'agent' && agentData.pdf) {
-        const b = Buffer.from(agentData.pdf, 'base64');
-        if (b.length > 0 && b.slice(0, 5).toString() === '%PDF-') {
-          buffer = b;
-        }
-      }
-      if (!buffer) {
-        try {
-          logger.info('pdf_render_started', {
-            formId: formName,
-            caseId,
-            requestId: req.id,
-          });
-          buffer = await renderPdf({ formId: formName, filledForm: formData });
-        } catch (err) {
-          logger.error('pdf_render_failed', {
-            formId: formName,
-            caseId,
-            error: err.stack,
-            requestId: req.id,
-          });
-          buffer = undefined;
-        }
-      }
       let url;
-      if (buffer) {
+      try {
+        logger.info('pdf_render_started', {
+          formId: formName,
+          caseId,
+          requestId: req.id,
+        });
+        buffer = await renderPdf({ formId: formName, filledForm: formData });
+        const valid =
+          buffer.length > 0 &&
+          buffer.slice(0, 5).toString() === '%PDF-' &&
+          buffer.includes('%%EOF');
+        if (!valid) throw new Error('invalid_pdf');
+        logger.info('pdf_render_succeeded', {
+          formId: formName,
+          caseId,
+          size: buffer.length,
+          requestId: req.id,
+        });
         url = await saveDraft(caseId, formName, buffer, req);
+      } catch (err) {
+        logger.error('pdf_render_failed', {
+          formId: formName,
+          caseId,
+          error: err.stack || String(err),
+          requestId: req.id,
+        });
       }
       filledForms.push({
         formId: formName,

@@ -13,11 +13,12 @@ async function saveDraft(caseId, formId, buffer, req) {
     return undefined;
   }
   const pdfSignature = buffer.slice(0, 5).toString() === '%PDF-';
-  if (!pdfSignature) {
+  const eofSignature = buffer.includes('%%EOF');
+  if (!pdfSignature || !eofSignature) {
     logger.warn('draft_invalid_pdf', {
       caseId,
       formId,
-      reason: 'invalid_signature',
+      reason: !pdfSignature ? 'invalid_signature' : 'missing_eof',
       requestId: req.id,
     });
     return undefined;
