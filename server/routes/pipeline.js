@@ -63,7 +63,13 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
       const fields = await resp.json();
       extracted = { ...extracted, ...fields };
     }
-    const normalized = { ...basePayload, ...extracted };
+    const overrideKeys = Object.keys(basePayload).filter((key) =>
+      Object.prototype.hasOwnProperty.call(extracted, key)
+    );
+    if (overrideKeys.length) {
+      logger.debug(`Overriding analyzer fields: ${overrideKeys.join(', ')}`);
+    }
+    const normalized = { ...extracted, ...basePayload };
     await updateCase(caseId, { status: 'analyzed', normalized, analyzer: extracted });
 
     const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
