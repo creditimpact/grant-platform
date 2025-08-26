@@ -25,6 +25,8 @@ ENV_PATH = ENV_FILE or Path(__file__).resolve().parent / f".env.{NODE_ENV}"
 
 class Settings(BaseSettings):
     OPENAI_API_KEY: str | None = None
+    OPENAI_MODEL: str | None = None
+    OPENAI_TIMEOUT_MS: int = 20000
     MONGO_URI: AnyUrl | None = None
     ENABLE_DEBUG: bool = False
 

@@ -18,7 +18,7 @@ from common.logger import get_logger
 from common.request_id import request_id_middleware
 
 from engine import analyze_eligibility  # type: ignore
-from form_filler import fill_form
+from fill_form import fill_form
 from session_memory import append_memory, get_missing_fields, save_draft_form, get_conversation
 from nlp_utils import llm_semantic_inference, llm_complete
 from grants_loader import load_grants
@@ -178,7 +178,7 @@ async def chat(message: dict):
                     history_msgs.append({"role": "user", "content": chat.get("text")})
                 if entry.get("response"):
                     history_msgs.append({"role": "assistant", "content": entry["response"]})
-        response = llm_complete(text, history=history_msgs)
+        response = llm_complete(text, None, history=history_msgs)
         follow_up = []
         if session_id:
             missing = get_missing_fields(session_id)
