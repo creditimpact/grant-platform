@@ -99,5 +99,5 @@ def generate_reasoning_explanation(
     if not text:
         text = "Eligibility could not be determined."
     prompt = "Explain to a user why they are or are not eligible based on: " + text
-    explanation = llm_complete(prompt)
+    explanation = llm_complete(prompt, {})
     return explanation or text

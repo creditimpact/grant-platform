@@ -2,6 +2,8 @@ import os
 import re
 from datetime import datetime
 from typing import Dict, Tuple, Any, List
+import json
+import time
 
 try:
     import openai  # type: ignore
@@ -15,26 +17,50 @@ if openai and OPENAI_API_KEY:
 
 def llm_complete(
     prompt: str,
-    system: str | None = "You are a helpful grants advisor.",
+    context: Dict[str, Any] | None = None,
+    *,
+    system: str | None = "You complete grant form fields. Output plain text only; no extra quotes.",
     history: List[Dict[str, str]] | None = None,
 ) -> str:
-    """Return a completion from OpenAI, with graceful fallback."""
-    messages = []
+    """Return a short completion from OpenAI with graceful fallback.
+
+    ``context`` is serialized into the user message to give the model
+    additional background. If the OpenAI SDK or API key is unavailable,
+    an empty string is returned instead of raising.
+    """
+
+    messages: List[Dict[str, str]] = []
     if system:
         messages.append({"role": "system", "content": system})
     if history:
         messages.extend(history)
-    messages.append({"role": "user", "content": prompt})
-
-    if openai and openai.api_key:
-        try:  # pragma: no cover - network call
-            resp = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
-            return resp.choices[0].message.content.strip()
+    user = f"Field instruction: {prompt}" if prompt else ""
+    if context:
+        try:
+            user += "\nContext (JSON):\n" + json.dumps(context, ensure_ascii=False)[:4000]
         except Exception:
             pass
+    messages.append({"role": "user", "content": user})
 
-    # simple fallback if API unavailable
-    return prompt[:200]
+    if not (openai and getattr(settings, "OPENAI_API_KEY", None)):
+        return ""
+
+    model = getattr(settings, "OPENAI_MODEL", "gpt-4o-mini")
+    timeout = getattr(settings, "OPENAI_TIMEOUT_MS", 20000) / 1000
+    for attempt in range(2):  # simple retry
+        try:  # pragma: no cover - network call
+            resp = openai.ChatCompletion.create(
+                model=model,
+                messages=messages,
+                request_timeout=timeout,
+            )
+            return resp.choices[0].message.get("content", "").strip()
+        except Exception:  # pragma: no cover - network call
+            if attempt == 0:
+                time.sleep(0.5)
+            else:
+                return ""
+    return ""
 
 # State lookup for basic zip inference
 ZIP_PREFIX_STATE = {

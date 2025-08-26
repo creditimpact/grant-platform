@@ -1,48 +1,15 @@
 {
-  "form": "SF-424",
-  "fields": {
-    "OMB Number": "4040-0004",
-    "Expiration Date": "10/31/2019",
-    "Form": "Application for Federal Assistance SF - 424",
-    "Type of Submission": "New",
-    "Type of Application": "Application Continuation",
-    "Date Received": "",
-    "Applicant Identifier": "",
-    "Federal Entity Identifier": "",
-    "Federal Award Identifier": "",
-    "State Use Only": "",
-    "Date Received by State": "",
-    "State Application Identifier": ""
-  },
-  "sections": [
+  "form_name": "form_sf424",
+  "fields": [
+    { "key": "applicant_name" },
+    { "key": "ein" },
     {
-      "section": "Applicant Information",
-      "fields": {
-        "Legal Name": "",
-        "Employer/Taxpayer Identification Number (EIN/TIN)": "",
-        "Organizational DUNS": "",
-        "Street1": "",
-        "Street2": "",
-        "City": "",
-        "County/Parish": "",
-        "State": "",
-        "Province": "",
-        "Country": "",
-        "Zip/Postal Code": "",
-        "Department Name": "",
-        "Division Name": "",
-        "Prefix": "",
-        "First Name": "",
-        "Middle Name": "",
-        "Last Name": "",
-        "Suffix": "",
-        "Title": "",
-        "Organizational Affiliation": "",
-        "Telephone Number": "",
-        "Fax Number": "",
-        "Email": ""
-      }
+      "key": "business_summary",
+      "prompt": "Summarize the company's activity in one concise sentence using profile + analyzer text. Output plain text only."
+    },
+    {
+      "key": "entity_type",
+      "prompt": "From profile/analyzer, infer the legal entity type (LLC, C-Corp, S-Corp, Sole Proprietor). Return a canonical label."
     }
-  ],
-  "text": "OMB Number : 4040-0004\nExpiration Date : 10/31/2019\nApplication for Federal Assistance SF - 424\n* 1 . Type of Submission : 2. Type of Application : * If Revision , select appropriate letter ( s ) :\n☐ Preapplication New\nApplication Continuation * Other ( Specify ) :\nChanged / Corrected Application Revision\n3. Date Received : 4. Applicant Identifier :\n5a . Federal Entity Identifier : 5b . Federal Award Identifier :\nState Use Only :\n6. Date Received by State : 7. State Application Identifier :\n8. APPLICANT INFORMATION :\na . Legal Name :\n* b . Employer / Taxpayer Identification Number ( EIN / TIN ) : * c . Organizational DUNS :\nd . Address :\n* Street1 :\nStreet2 :\nCity :\nCounty / Parish :\n* State :\nProvince :\n* Country :\n* Zip / Postal Code :\ne . Organizational Unit :\nDepartment Name : Division Name :\nf . Name and contact information of person to be contacted on matters involving this application :\nPrefix : * First Name :\nMiddle Name :\n* Last Name :\nSuffix :\nTitle :\nOrganizational Affiliation :\n* Telephone Number : Fax Number :\n* Email :"
+  ]
 }
