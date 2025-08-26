@@ -1,7 +1,6 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const FormData = require('form-data');
 
 const { extensions: allowedExtensions } = require('../../shared/file_types.json');
 const fetchFn =
@@ -54,10 +53,10 @@ router.post('/files/upload', (req, res) => {
     }
 
     const form = new FormData();
-    form.append('file', req.file.buffer, {
-      filename: req.file.originalname,
-      contentType: req.file.mimetype || 'application/pdf',
+    const blob = new Blob([req.file.buffer], {
+      type: req.file.mimetype || 'application/pdf',
     });
+    form.append('file', blob, req.file.originalname);
     if (caseId) form.append('caseId', caseId);
     if (key) form.append('key', key);
 
@@ -65,7 +64,6 @@ router.post('/files/upload', (req, res) => {
       for (const [key] of form) {
         console.log(`[files.upload] form field: ${key}`);
       }
-      console.log('[files.upload] form headers:', form.getHeaders());
     }
 
     let resp;
@@ -73,10 +71,7 @@ router.post('/files/upload', (req, res) => {
       resp = await fetchFn(analyzerUrl, {
         method: 'POST',
         body: form,
-        headers: {
-          ...form.getHeaders(),
-          ...getServiceHeaders('AI_ANALYZER', req),
-        },
+        headers: getServiceHeaders('AI_ANALYZER', req),
       });
     } catch (error) {
       return res

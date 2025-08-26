@@ -29,9 +29,7 @@ export async function getRequiredDocuments(caseId: string): Promise<string[]> {
 
 // -------------------- FILE UPLOAD --------------------
 export async function uploadFile(formData: FormData): Promise<CaseSnapshot> {
-  const res = await api.post('/files/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const res = await api.post('/files/upload', formData);
   return transformCase(res.data);
 }
 
