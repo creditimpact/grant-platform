@@ -1,7 +1,7 @@
 const request = require('supertest');
 process.env.SKIP_DB = 'true';
 const app = require('../index');
-const { createCase, updateCase, resetStore } = require('../utils/pipelineStore');
+const { createCase, updateCase, resetStore, getCase } = require('../utils/pipelineStore');
 const logger = require('../utils/logger');
 
 describe('eligibility report endpoints', () => {
@@ -15,13 +15,18 @@ describe('eligibility report endpoints', () => {
   test('POST aggregates required forms from array response', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => [
-        { program: 'p1', requiredForms: ['941-X'], missing_fields: ['m1'] },
-        { program: 'p2', requiredForms: ['424A'], missing_fields: ['m2'] },
-      ],
-    });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { program: 'p1', requiredForms: ['941-X'], missing_fields: ['m1'] },
+          { program: 'p2', requiredForms: ['424A'], missing_fields: ['m2'] },
+        ],
+      })
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({ filled_form: {} }),
+      });
     const res = await request(app)
       .post('/api/eligibility-report')
       .send({ caseId, payload: { b: 2 } });
@@ -42,15 +47,20 @@ describe('eligibility report endpoints', () => {
   test('POST aggregates required forms from envelope response', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        results: [
-          { program: 'p1', requiredForms: ['941-X'], missing_fields: [] },
-        ],
-        requiredForms: ['SF-424'],
-      }),
-    });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            { program: 'p1', requiredForms: ['941-X'], missing_fields: [] },
+          ],
+          requiredForms: ['SF-424'],
+        }),
+      })
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({ filled_form: {} }),
+      });
     const res = await request(app)
       .post('/api/eligibility-report')
       .send({ caseId, payload: {} });
@@ -59,6 +69,58 @@ describe('eligibility report endpoints', () => {
     expect(res.body.eligibility.requiredForms).toEqual(
       expect.arrayContaining(['941-X', 'SF-424'])
     );
+  });
+
+  test('generates forms after eligibility-report', async () => {
+    const caseId = await createCase('dev-user');
+    await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            { program: 'p1', requiredForms: ['941-X'], missing_fields: [] },
+          ],
+        }),
+      })
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({ filled_form: { some: 'data' } }),
+      });
+    const res = await request(app)
+      .post('/api/eligibility-report')
+      .send({ caseId });
+    expect(res.status).toBe(200);
+    expect(res.body.generatedForms).toHaveLength(1);
+    expect(res.body.generatedForms[0].formKey).toBe('941-X');
+    const stored = await getCase('dev-user', caseId);
+    expect(stored.generatedForms).toHaveLength(1);
+  });
+
+  test('continues when a form-fill fails', async () => {
+    const caseId = await createCase('dev-user');
+    await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ requiredForms: ['941-X', 'SF-424'], results: [] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ filled_form: { x: 1 } }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: async () => 'bad',
+      });
+    const res = await request(app)
+      .post('/api/eligibility-report')
+      .send({ caseId });
+    expect(res.status).toBe(200);
+    expect(res.body.generatedForms).toHaveLength(1);
+    const errorLog = logger.logs.find((l) => l.message === 'form_fill_failed');
+    expect(errorLog).toBeDefined();
   });
 
   test('GET returns latest eligibility', async () => {
