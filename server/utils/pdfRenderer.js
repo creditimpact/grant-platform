@@ -1,48 +1,93 @@
-const escapeText = (str) =>
-  str
-    .replace(/\\/g, '\\\\')
-    .replace(/\(/g, '\\(')
-    .replace(/\)/g, '\\)')
-    .replace(/\r?\n/g, '\n');
+const fs = require('fs');
+const path = require('path');
+const { PDFDocument, StandardFonts } = require('pdf-lib');
+const { pdfTemplates } = require('./formTemplates');
+const logger = require('./logger');
 
-function buildPdf(lines) {
-  let stream = 'BT /F1 12 Tf 72 720 Td ';
-  lines.forEach((line, idx) => {
-    stream += `(${escapeText(line)}) Tj`;
-    if (idx < lines.length - 1) stream += ' T* ';
-  });
-  stream += ' ET';
-  const len = Buffer.byteLength(stream, 'utf8');
-  const objs = [
-    '1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj',
-    '2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj',
-    '3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>endobj',
-    `4 0 obj<< /Length ${len} >>stream\n${stream}\nendstream\nendobj`,
-    '5 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj',
-  ];
-  let pdf = '%PDF-1.4\n';
-  const offsets = [0];
-  objs.forEach((o) => {
-    offsets.push(pdf.length);
-    pdf += o + '\n';
-  });
-  const xref = pdf.length;
-  pdf += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
-  for (let i = 1; i < offsets.length; i++) {
-    pdf += offsets[i].toString().padStart(10, '0') + ' 00000 n \n';
-  }
-  pdf += `trailer<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
-  return Buffer.from(pdf, 'utf8');
+const FLATTEN = process.env.FLATTEN !== 'false';
+
+function formatValue(v) {
+  if (v === null || v === undefined || v === '') return '—';
+  if (v instanceof Date) return new Date(v).toLocaleDateString('en-US');
+  if (typeof v === 'number') return v.toLocaleString('en-US');
+  return String(v);
 }
 
 async function renderPdf({ formId, filledForm }) {
   if (!filledForm) throw new Error('filledForm required');
-  const fields = filledForm.fields || filledForm;
-  const lines = [`Form ${formId}`];
-  for (const [k, v] of Object.entries(fields)) {
-    lines.push(`${k}: ${v}`);
+  const tmpl = pdfTemplates[formId];
+  const caseId = filledForm.caseId || filledForm.case_id;
+
+  if (!tmpl) {
+    logger.error('pdf_render_failed', { formId, caseId, error: 'template_not_found' });
+    throw new Error('template_not_found');
   }
-  return buildPdf(lines);
+
+  logger.info('pdf_render_started', { formId, caseId, mode: tmpl.mode });
+
+  const basePath = path.join(__dirname, '..', 'templates', tmpl.base);
+  let baseBytes;
+  try {
+    baseBytes = fs.readFileSync(basePath);
+  } catch (err) {
+    logger.error('pdf_render_failed', { formId, caseId, error: 'missing_base_template' });
+    throw err;
+  }
+
+  const pdfDoc = await PDFDocument.load(baseBytes);
+  const pages = pdfDoc.getPages();
+  const form = pdfDoc.getForm();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fields = filledForm.fields || filledForm;
+
+  if (tmpl.mode === 'acro') {
+    for (const [key, fieldName] of Object.entries(tmpl.fields || {})) {
+      const value = formatValue(fields[key]);
+      try {
+        const field = form.getTextField(fieldName);
+        field.setText(value);
+        logger.info('pdf_render_field_mapped', { formId, key, fieldName });
+      } catch (err) {
+        logger.warn('pdf_render_missing_field', { formId, key });
+      }
+    }
+    if (FLATTEN) form.flatten();
+  } else if (tmpl.mode === 'absolute') {
+    for (const [key, cfg] of Object.entries(tmpl.coords || {})) {
+      const value = formatValue(fields[key]);
+      const page = pages[cfg.page || 0];
+      page.drawText(value, {
+        x: cfg.x,
+        y: cfg.y,
+        size: cfg.fontSize || 9,
+        font,
+      });
+      logger.info('pdf_render_field_mapped', { formId, key, coords: cfg });
+    }
+    for (const [key, cfg] of Object.entries(tmpl.checkboxes || {})) {
+      const page = pages[cfg.page || 0];
+      const mark = fields[key] ? 'X' : '';
+      page.drawText(mark, {
+        x: cfg.x,
+        y: cfg.y,
+        size: cfg.size || 9,
+        font,
+      });
+    }
+  } else {
+    logger.error('pdf_render_failed', { formId, caseId, error: 'unknown_mode' });
+    throw new Error('unknown_mode');
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  const buf = Buffer.from(pdfBytes);
+  const valid = buf.slice(0, 5).toString() === '%PDF-' && buf.includes('%%EOF');
+  if (!valid) {
+    logger.error('pdf_render_failed', { formId, caseId, error: 'invalid_pdf' });
+    throw new Error('invalid_pdf');
+  }
+  logger.info('pdf_render_succeeded', { formId, caseId, size: buf.length });
+  return buf;
 }
 
 module.exports = { renderPdf };
