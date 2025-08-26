@@ -14,6 +14,7 @@ const documentSchema = new mongoose.Schema(
 const generatedFormSchema = new mongoose.Schema(
   {
     formName: String,
+    formId: String,
     payload: mongoose.Schema.Types.Mixed,
     files: [String],
     url: String,

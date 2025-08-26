@@ -27,8 +27,13 @@ describe('SummaryStep', () => {
     render(<SummaryStep snapshot={snapshot} onRestart={() => {}} />);
 
     expect(screen.getByText('$25,000')).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: /941-X draft/i });
-    expect(link).toHaveAttribute('href', 'https://example.com/forms/941x.pdf');
+    const link = screen.getByRole('link', {
+      name: /view draft \(941-x draft\)/i,
+    });
+    expect(link).toHaveAttribute(
+      'href',
+      'https://example.com/forms/941x.pdf',
+    );
     expect(link).toHaveAttribute('target', '_blank');
   });
 
@@ -51,6 +56,10 @@ describe('SummaryStep', () => {
     render(<SummaryStep snapshot={snapshot} onRestart={() => {}} />);
 
     expect(screen.getByText(/Draft unavailable/i)).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /941-X draft/i })).toBeNull();
+    expect(
+      screen.queryByRole('link', {
+        name: /view draft \(941-x draft\)/i,
+      }),
+    ).toBeNull();
   });
 });
