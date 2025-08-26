@@ -1,5 +1,6 @@
 const express = require('express');
 const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -47,7 +48,6 @@ router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
     c = await getCase(userId, caseId);
   }
   const existingFields = (c.analyzer && c.analyzer.fields) || {};
-  const merged = { ...existingFields };
   const keyMap = {
     entityType: 'entity_type',
     employees: 'w2_employee_count',
@@ -68,16 +68,19 @@ router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
     ruralArea: 'rural_area',
     opportunityZone: 'opportunity_zone',
   };
+  const normalizedPayload = {};
   for (const [k, v] of Object.entries(payload)) {
     const key = keyMap[k] || k;
-    if (
-      merged[key] === undefined ||
-      merged[key] === null ||
-      merged[key] === ''
-    ) {
-      merged[key] = v;
-    }
+    normalizedPayload[key] = v;
   }
+  const overriddenKeys = Object.keys(normalizedPayload).filter(
+    (k) => k in existingFields
+  );
+  const merged = { ...existingFields, ...normalizedPayload };
+  logger.info('merge: questionnaire overrides existing fields', {
+    overriddenKeys,
+    requestId: req.headers['x-request-id'],
+  });
   const now = new Date().toISOString();
   await updateCase(caseId, {
     analyzer: { fields: merged, lastUpdated: now },
