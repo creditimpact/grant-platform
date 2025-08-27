@@ -90,6 +90,33 @@ describe('pdfRenderer', () => {
     expect(log).toBeTruthy();
   });
 
+  test('renders RD 400-4 without debug overlay when complete', async () => {
+    logger.logs.length = 0;
+    process.env.PDF_DEBUG_OVERLAY = 'true';
+    const buf = await renderPdf({
+      formId: 'form_RD_400_4',
+      filledForm: {
+        recipient_name: 'ACME',
+        recipient_address_street: '123 Main',
+        recipient_address_city: 'Town',
+        recipient_address_state: 'CA',
+        recipient_address_zip: '12345',
+        recipient_title: 'CEO',
+        recipient_signature: 'Alice',
+        date_signed: '2024-01-01',
+        attest_signature: 'Bob',
+        attest_title: 'Witness',
+      },
+    });
+    const pdfString = buf.toString();
+    expect(pdfString).not.toContain('MISSING:recipient_name');
+    const missingLog = logger.logs.find(
+      (l) => l.message === 'pdf_render_missing_field' && l.key === 'recipient_name'
+    );
+    expect(missingLog).toBeUndefined();
+    delete process.env.PDF_DEBUG_OVERLAY;
+  });
+
   test('logs missing fields and draws overlay when enabled', async () => {
     logger.logs.length = 0;
     process.env.PDF_DEBUG_OVERLAY = 'true';
