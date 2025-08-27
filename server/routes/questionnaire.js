@@ -2,6 +2,8 @@ const express = require('express');
 const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
 const logger = require('../utils/logger');
 const { getRequiredDocuments } = require('../utils/requiredDocuments');
+const { safeMerge } = require('../utils/safeMerge');
+const { normalizeAnswers } = require('../utils/normalizeAnswers');
 
 const router = express.Router();
 
@@ -74,22 +76,22 @@ router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
     const key = keyMap[k] || k;
     normalizedPayload[key] = v;
   }
-  const overriddenKeys = Object.keys(normalizedPayload).filter(
-    (k) => k in existingFields
-  );
-  const merged = { ...existingFields, ...normalizedPayload };
+  const { merged, updatedKeys } = safeMerge(existingFields, normalizedPayload, {
+    source: 'questionnaire',
+  });
   logger.info('merge: questionnaire overrides existing fields', {
-    overriddenKeys,
+    overriddenKeys: updatedKeys,
     requestId: req.headers['x-request-id'],
   });
+  const normalizedMerged = normalizeAnswers(merged);
   const now = new Date().toISOString();
   const requiredDocuments = getRequiredDocuments({
     ...c,
-    analyzer: { fields: merged },
+    analyzer: { fields: normalizedMerged },
     questionnaire: { data: payload },
   });
   await updateCase(caseId, {
-    analyzer: { fields: merged, lastUpdated: now },
+    analyzer: { fields: normalizedMerged, lastUpdated: now },
     questionnaire: { data: payload, lastUpdated: now },
     requiredDocuments,
   });
