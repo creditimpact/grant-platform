@@ -89,6 +89,26 @@ const pdfTemplates = {
     },
     required: ['date_of_review', 'state', 'county', 'case_number', 'borrower_name', 'borrower_address'],
   },
+  form_6765: {
+    base: 'form_6765.pdf',
+    mode: 'absolute',
+    coords: {
+      taxpayer_name: { page: 0, x: 50, y: 700 },
+      ein: { page: 0, x: 300, y: 700 },
+      total_qre: { page: 0, x: 50, y: 680 },
+    },
+    required: ['taxpayer_name', 'ein', 'total_qre'],
+  },
+  form_8974: {
+    base: 'form_8974.pdf',
+    mode: 'absolute',
+    coords: {
+      employer_identification_number: { page: 0, x: 50, y: 700 },
+      name: { page: 0, x: 300, y: 700 },
+      credit_amount: { page: 0, x: 50, y: 680 },
+    },
+    required: ['employer_identification_number', 'name', 'credit_amount'],
+  },
 };
 
 module.exports = { getLatestTemplate, getTemplate, cacheTemplate, cache, pdfTemplates };
