@@ -18,6 +18,96 @@ function cacheTemplate(doc) {
   if (doc && doc.key) cache.set(doc.key, doc);
 }
 
+// Precompute mappings for Form 8974 fields and checkboxes
+const form8974Coords = {
+  employer_identification_number: { page: 0, x: 50, y: 750, fontSize: 11 },
+  name: { page: 0, x: 200, y: 750, fontSize: 11 },
+  calendar_year: { page: 0, x: 450, y: 750, fontSize: 11 },
+};
+const form8974Required = ['employer_identification_number', 'name', 'calendar_year'];
+const rowFields = [
+  'ending_date',
+  'income_tax_return',
+  'date_filed',
+  'ein_used',
+  'amount_form_6765',
+  'credit_taken_previous',
+  'remaining_credit',
+];
+for (let i = 1; i <= 5; i++) {
+  const y = 700 - (i - 1) * 20;
+  rowFields.forEach((f, idx) => {
+    const key = `line${i}_${f}`;
+    form8974Coords[key] = { page: 0, x: 40 + idx * 70, y, fontSize: 10 };
+    form8974Required.push(key);
+  });
+}
+form8974Coords.line6 = { page: 0, x: 520, y: 600, fontSize: 10 };
+const part2 = ['line7','line8','line9','line10','line11','line12','line13','line14','line15','line16','line17'];
+part2.forEach((ln, idx) => {
+  form8974Coords[ln] = { page: 0, x: 520, y: 580 - idx * 20, fontSize: 10 };
+  form8974Required.push(ln);
+});
+const form8974Checkboxes = {
+  credit_reporting_form_941: {
+    page: 0,
+    x: 100,
+    y: 730,
+    size: 9,
+    source: 'credit_reporting_selected_form',
+    value: 'form_941',
+  },
+  credit_reporting_form_943: {
+    page: 0,
+    x: 150,
+    y: 730,
+    size: 9,
+    source: 'credit_reporting_selected_form',
+    value: 'form_943',
+  },
+  credit_reporting_form_944: {
+    page: 0,
+    x: 200,
+    y: 730,
+    size: 9,
+    source: 'credit_reporting_selected_form',
+    value: 'form_944',
+  },
+  quarter_q1: {
+    page: 0,
+    x: 100,
+    y: 710,
+    size: 9,
+    source: 'quarter_selection_selected_quarter',
+    value: 'q1',
+  },
+  quarter_q2: {
+    page: 0,
+    x: 130,
+    y: 710,
+    size: 9,
+    source: 'quarter_selection_selected_quarter',
+    value: 'q2',
+  },
+  quarter_q3: {
+    page: 0,
+    x: 160,
+    y: 710,
+    size: 9,
+    source: 'quarter_selection_selected_quarter',
+    value: 'q3',
+  },
+  quarter_q4: {
+    page: 0,
+    x: 190,
+    y: 710,
+    size: 9,
+    source: 'quarter_selection_selected_quarter',
+    value: 'q4',
+  },
+  line11_third_party_payer: { page: 0, x: 380, y: 360, size: 9 },
+  line11_section_3121q_notice: { page: 0, x: 430, y: 360, size: 9 },
+};
 // mappings for PDF rendering templates
 // each entry defines how a given form should be rendered
 // using either AcroForm fields or absolute positioning
@@ -223,12 +313,9 @@ const pdfTemplates = {
   form_8974: {
     base: 'form_8974.pdf',
     mode: 'absolute',
-    coords: {
-      employer_identification_number: { page: 0, x: 50, y: 700 },
-      name: { page: 0, x: 300, y: 700 },
-      credit_amount: { page: 0, x: 50, y: 680 },
-    },
-    required: ['employer_identification_number', 'name', 'credit_amount'],
+    coords: form8974Coords,
+    checkboxes: form8974Checkboxes,
+    required: form8974Required,
   },
 };
 
