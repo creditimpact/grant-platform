@@ -7,7 +7,7 @@ const fetchFn = global.pipelineFetch || (global.fetch ? global.fetch.bind(global
 const { createCase, updateCase, getCase } = require('../utils/pipelineStore');
 const logger = require('../utils/logger');
 const { validate, schemas } = require('../middleware/validate');
-const { getLatestTemplate } = require('../utils/formTemplates');
+const { getLatestTemplate, pdfTemplates } = require('../utils/formTemplates');
 const { validateAgainstSchema } = require('../middleware/formValidation');
 const { getServiceHeaders } = require('../utils/serviceHeaders');
 const { saveDraft } = require('../utils/drafts');
@@ -129,21 +129,31 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
       const tmpl = await getLatestTemplate(formName);
       const version = tmpl ? tmpl.version : 1;
       const formData = agentData.filled_form || agentData;
+      const required = pdfTemplates[formName]?.required || [];
+      const missingRequired = required.filter(
+        (k) =>
+          formData[k] === undefined ||
+          formData[k] === null ||
+          formData[k] === ''
+      );
       const validationErrors = tmpl ? validateAgainstSchema(formData, tmpl.schema) : [];
-      if (validationErrors.length) {
-        const missingFields = validationErrors
-          .filter((e) => e.message === 'required')
-          .map((e) => e.field);
+      const missingFields = [
+        ...missingRequired,
+        ...validationErrors.filter((e) => e.message === 'required').map((e) => e.field),
+      ];
+      if (missingFields.length) {
         logger.error('form_fill_validation_failed', {
           formId: formName,
           requestId: req.id,
-          errors: validationErrors,
+          missingKeys: missingFields,
+          caseId,
         });
         incompleteForms.push({
           formId: formName,
           formKey: formName,
           version,
           missingFields,
+          message: `Missing required fields: ${missingFields.join(', ')}`,
           name: formNames[formName] || formName,
         });
         continue;

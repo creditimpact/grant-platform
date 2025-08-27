@@ -1,40 +1,13 @@
 {
-  "form": "Form RD 400-1",
-  "fields": {
-    "form_number": "RD 400-1",
-    "form_version": "Rev. 8-22",
-    "agency": "United States Department of Agriculture",
-    "OMB_number": "0575-0201",
-    "expiration_date": "3/31/2026",
-    "title": "EQUAL OPPORTUNITY AGREEMENT",
-    "parties_involved": {
-      "recipient": "Recipient",
-      "usda": "United States Department of Agriculture (USDA)"
-    },
-    "agreement_details": {
-      "financial_assistance": "loan, grant, loan guaranty, or other form of financial assistance",
-      "threshold_amount": "$10,000",
-      "requirements": [
-        "Incorporate Equal Opportunity Clause into construction contracts",
-        "Non-discrimination obligations towards employees and applicants",
-        "Notification requirements to labor unions or workers' representatives",
-        "Compliance with Executive Order 11246 and related regulations",
-        "Submission of information and reports as required",
-        "Consequences of noncompliance"
-      ]
-    },
-    "paperwork_reduction_act": {
-      "OMB_control_numbers": [
-        "0575-0201",
-        "0575-0189"
-      ],
-      "expiration_date": "3/31/2026",
-      "burden_estimation": "10 minutes per response",
-      "voluntary_responses": true,
-      "contact_email": "ICRMTRequests@usda.gov"
-    },
-    "position": "6",
-    "form_version_position": "Rev. 5-00"
-  },
-  "text": "Form RD 400-1 establishes an Equal Opportunity Agreement between the USDA and the recipient. The recipient agrees to include nondiscrimination clauses in contracts and comply with Executive Order 11246."
+  "form_name": "form_RD_400_1",
+  "fields": [
+    { "key": "recipient_name" },
+    { "key": "recipient_title" },
+    { "key": "usda_representative" },
+    { "key": "agreement_date", "type": "date" },
+    { "key": "loan", "type": "boolean" },
+    { "key": "grant", "type": "boolean" },
+    { "key": "loan_guaranty", "type": "boolean" },
+    { "key": "other_assistance", "type": "boolean" }
+  ]
 }

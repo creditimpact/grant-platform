@@ -29,6 +29,7 @@ const pdfTemplates = {
       applicant_name: 'SF424.ApplicantName',
       ein: 'SF424.EIN',
     },
+    required: ['applicant_name', 'ein'],
   },
   form_424A: {
     base: 'form_424A.pdf',
@@ -36,6 +37,7 @@ const pdfTemplates = {
     coords: {
       applicant_name: { page: 0, x: 50, y: 700, fontSize: 12 },
     },
+    required: ['applicant_name'],
   },
   // RD 400 series templates currently use absolute positioning for rendering
   form_RD_400_1: {
@@ -53,6 +55,7 @@ const pdfTemplates = {
       loan_guaranty: { page: 0, x: 180, y: 640 },
       other_assistance: { page: 0, x: 220, y: 640 },
     },
+    required: ['recipient_name', 'recipient_title', 'usda_representative', 'agreement_date'],
   },
   form_RD_400_4: {
     base: 'form_RD_400_4.pdf',
@@ -67,6 +70,7 @@ const pdfTemplates = {
       corporate: { page: 0, x: 90, y: 610 },
       individual: { page: 0, x: 150, y: 610 },
     },
+    required: ['recipient_name', 'recipient_address', 'assurance_date', 'recipient_title'],
   },
   form_RD_400_8: {
     base: 'form_RD_400_8.pdf',
@@ -83,6 +87,7 @@ const pdfTemplates = {
       source_of_funds_direct: { page: 0, x: 260, y: 700 },
       source_of_funds_insured: { page: 0, x: 310, y: 700 },
     },
+    required: ['date_of_review', 'state', 'county', 'case_number', 'borrower_name', 'borrower_address'],
   },
 };
 

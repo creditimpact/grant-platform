@@ -5,9 +5,13 @@ const { pdfTemplates } = require('./formTemplates');
 const logger = require('./logger');
 
 const FLATTEN = process.env.FLATTEN !== 'false';
+const DEBUG_MISSING = process.env.PDF_DEBUG_MISSING === 'true';
 
-function formatValue(v) {
-  if (v === null || v === undefined || v === '') return '—';
+function formatValue(formId, key, v) {
+  if (v === null || v === undefined || v === '') {
+    logger.warn('pdf_render_missing_field', { formId, key });
+    return DEBUG_MISSING ? `MISSING:${key}` : '';
+  }
   if (v instanceof Date) return new Date(v).toLocaleDateString('en-US');
   if (typeof v === 'number') return v.toLocaleString('en-US');
   return String(v);
@@ -42,7 +46,7 @@ async function renderPdf({ formId, filledForm }) {
 
   if (tmpl.mode === 'acro') {
     for (const [key, fieldName] of Object.entries(tmpl.fields || {})) {
-      const value = formatValue(fields[key]);
+      const value = formatValue(formId, key, fields[key]);
       try {
         const field = form.getTextField(fieldName);
         field.setText(value);
@@ -54,7 +58,7 @@ async function renderPdf({ formId, filledForm }) {
     if (FLATTEN) form.flatten();
   } else if (tmpl.mode === 'absolute') {
     for (const [key, cfg] of Object.entries(tmpl.coords || {})) {
-      const value = formatValue(fields[key]);
+      const value = formatValue(formId, key, fields[key]);
       const page = pages[cfg.page || 0];
       page.drawText(value, {
         x: cfg.x,
@@ -66,7 +70,11 @@ async function renderPdf({ formId, filledForm }) {
     }
     for (const [key, cfg] of Object.entries(tmpl.checkboxes || {})) {
       const page = pages[cfg.page || 0];
-      const mark = fields[key] ? 'X' : '';
+      const raw = fields[key];
+      if (raw === undefined || raw === null || raw === '') {
+        logger.warn('pdf_render_missing_field', { formId, key });
+      }
+      const mark = raw ? 'X' : '';
       page.drawText(mark, {
         x: cfg.x,
         y: cfg.y,
