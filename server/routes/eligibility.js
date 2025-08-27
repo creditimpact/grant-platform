@@ -13,7 +13,42 @@ const { saveDraft } = require('../utils/drafts');
 const { renderPdf } = require('../utils/pdfRenderer');
 const { validateForm8974Calcs } = require('../utils/form8974');
 const { validateForm6765Calcs } = require('../utils/form6765');
-const { normalizeAnswers } = require('../utils/normalizeAnswers');
+const {
+  normalizeAnswers,
+  toMMDDYYYY,
+  toNumber,
+  currency,
+} = require('../utils/normalizeAnswers');
+const {
+  mapSF424,
+  mapSF424A,
+  mapRD400_1,
+  mapRD400_4,
+  mapRD400_8,
+  map8974,
+  map6765,
+} = require('../utils/formMappers');
+
+function mapForForm(formId, answers, { testMode = false } = {}) {
+  switch (formId) {
+    case 'form_sf424':
+      return { ...answers, ...mapSF424(answers, { testMode }) };
+    case 'form_sf424a':
+      return { ...answers, ...mapSF424A(answers) };
+    case 'form_rd400_1':
+      return { ...answers, ...mapRD400_1(answers) };
+    case 'form_rd400_4':
+      return { ...answers, ...mapRD400_4(answers) };
+    case 'form_rd400_8':
+      return { ...answers, ...mapRD400_8(answers) };
+    case 'form_8974':
+      return { ...answers, ...map8974(answers) };
+    case 'form_6765':
+      return { ...answers, ...map6765(answers) };
+    default:
+      return answers;
+  }
+}
 
 const router = express.Router();
 
@@ -192,11 +227,17 @@ router.post('/eligibility-report', async (req, res) => {
           });
           return;
         }
-        const agentData = await agentResp.json();
-        const tmpl = await getLatestTemplate(formName);
-        const version = tmpl ? tmpl.version : 1;
-        const formData = agentData.filled_form || agentData;
-        const required = pdfTemplates[formName]?.required || [];
+          const agentData = await agentResp.json();
+          const tmpl = await getLatestTemplate(formName);
+          const version = tmpl ? tmpl.version : 1;
+          const mappedAnswers = mapForForm(formName, base, {
+            testMode: process.env.PROCESS_TEST_MODE === 'true',
+          });
+          const formData = {
+            ...mappedAnswers,
+            ...(agentData.filled_form || agentData),
+          };
+          const required = pdfTemplates[formName]?.required || [];
         const missingRequired = required.filter(
           (k) =>
             formData[k] === undefined ||
