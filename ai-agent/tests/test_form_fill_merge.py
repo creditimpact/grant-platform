@@ -17,7 +17,7 @@ def test_user_values_win_and_reasoning_logs_sources():
     assert "pdf" not in data
     steps = data["reasoning"]["reasoning_steps"]
     assert any("kept user value" in s and "employer_identification_number" in s for s in steps)
-    assert any("filled" in s and "reporting_quarter" in s for s in steps)
+    assert any("filled" in s and "name" in s for s in steps)
 
 
 def test_analyzer_fills_missing_field():

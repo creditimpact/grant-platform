@@ -24,7 +24,7 @@ form_key: {
 **fields** – maps your data keys to PDF field names when `mode` is `acro`:
 ```js
 fields: {
-  applicant_name: 'SF424.ApplicantName',
+  applicant_legal_name: 'SF424.ApplicantName',
   ein: 'SF424.EIN'
 }
 ```
@@ -32,7 +32,7 @@ fields: {
 **coords** – for `absolute` mode, maps data keys to coordinates where text should be drawn. Coordinates use the bottom‑left origin used by [pdf-lib](https://pdf-lib.js.org/):
 ```js
 coords: {
-  applicant_name: { page: 0, x: 50, y: 700, fontSize: 12 }
+  applicant_legal_name: { page: 0, x: 50, y: 700, fontSize: 12 }
 }
 ```
 `page` is zero‑based. `fontSize` defaults to 9.
@@ -68,7 +68,7 @@ checkboxes: {
      base: 'form_example.pdf',
      mode: 'absolute',
      coords: {
-       applicant_name: { page: 0, x: 50, y: 700, fontSize: 12 }
+       applicant_legal_name: { page: 0, x: 50, y: 700, fontSize: 12 }
      },
      checkboxes: {
        agree_terms: { page: 0, x: 100, y: 640 }

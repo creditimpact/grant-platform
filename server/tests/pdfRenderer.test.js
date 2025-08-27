@@ -5,7 +5,18 @@ describe('pdfRenderer', () => {
   test('renders acro template', async () => {
     const buf = await renderPdf({
       formId: 'form_sf424',
-      filledForm: { applicant_name: 'ACME', ein: '12-3456789' },
+      filledForm: {
+        applicant_legal_name: 'ACME',
+        ein: '12-3456789',
+        descriptive_title: 'Proj',
+        project_start_date: '2024-01-01',
+        project_end_date: '2024-12-31',
+        authorized_rep_name: 'Alice',
+        authorized_rep_title: 'CEO',
+        authorized_rep_date_signed: '2024-06-01',
+        funding_federal: 100,
+        funding_total: 100,
+      },
     });
     expect(Buffer.isBuffer(buf)).toBe(true);
     expect(buf.length).toBeGreaterThan(0);
@@ -58,9 +69,11 @@ describe('pdfRenderer', () => {
       filledForm: {},
     });
     const pdfString = buf.toString();
-    expect(pdfString).toContain('MISSING:applicant_name');
+    expect(pdfString).toContain('MISSING:applicant_legal_name');
     const log = logger.logs.find(
-      (l) => l.message === 'pdf_render_missing_field' && l.key === 'applicant_name'
+      (l) =>
+        l.message === 'pdf_render_missing_field' &&
+        l.key === 'applicant_legal_name'
     );
     expect(log).toBeTruthy();
     delete process.env.PDF_DEBUG_OVERLAY;
@@ -73,9 +86,11 @@ describe('pdfRenderer', () => {
       filledForm: {},
     });
     const pdfString = buf.toString();
-    expect(pdfString).not.toContain('MISSING:applicant_name');
+    expect(pdfString).not.toContain('MISSING:applicant_legal_name');
     const log = logger.logs.find(
-      (l) => l.message === 'pdf_render_missing_field' && l.key === 'applicant_name'
+      (l) =>
+        l.message === 'pdf_render_missing_field' &&
+        l.key === 'applicant_legal_name'
     );
     expect(log).toBeTruthy();
   });

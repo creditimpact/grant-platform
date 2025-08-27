@@ -137,6 +137,21 @@ async def form_fill(request_model: FormFillRequest) -> FormFillResponse:
     merged_fields, merge_steps = merge_preserving_user(
         normalized_data, filled.get("fields", {})
     )
+    for k, v in list(merged_fields.items()):
+        if k.startswith("funding_"):
+            if isinstance(v, str):
+                try:
+                    merged_fields[k] = float(v.replace("$", "").replace(",", ""))
+                except ValueError:
+                    continue
+    fund_keys = [k for k in merged_fields if k.startswith("funding_") and k != "funding_total"]
+    if fund_keys:
+        total = 0.0
+        for k in fund_keys:
+            val = merged_fields.get(k)
+            if isinstance(val, (int, float)):
+                total += float(val)
+        merged_fields["funding_total"] = total
     filled["fields"] = merged_fields
 
     reasoning_steps = norm_steps + merge_steps
