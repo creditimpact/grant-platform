@@ -61,6 +61,35 @@ describe('pdfRenderer', () => {
     expect(buf.includes('%%EOF')).toBe(true);
   });
 
+  test('renders RD 400-8 template', async () => {
+    const buf = await renderPdf({
+      formId: 'form_RD_400_8',
+      filledForm: {
+        date_of_review: '2024-01-01',
+        state: 'CA',
+        county: 'Orange',
+        case_number: '123',
+        borrower_name: 'ACME',
+        borrower_address: '123 Main St',
+        source_of_funds_direct: true,
+        type_of_assistance_community_facilities: true,
+      },
+    });
+    expect(Buffer.isBuffer(buf)).toBe(true);
+    expect(buf.length).toBeGreaterThan(0);
+    expect(buf.slice(0, 5).toString()).toBe('%PDF-');
+    expect(buf.includes('%%EOF')).toBe(true);
+  });
+
+  test('logs missing fields for RD 400-8', async () => {
+    logger.logs.length = 0;
+    await renderPdf({ formId: 'form_RD_400_8', filledForm: {} });
+    const log = logger.logs.find(
+      (l) => l.message === 'pdf_render_missing_field' && l.key === 'state'
+    );
+    expect(log).toBeTruthy();
+  });
+
   test('logs missing fields and draws overlay when enabled', async () => {
     logger.logs.length = 0;
     process.env.PDF_DEBUG_OVERLAY = 'true';
