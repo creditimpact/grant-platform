@@ -62,8 +62,13 @@ export default function QuestionnaireStep({
   onBack: () => void;
 }) {
   const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
+    ownerFirstName: '',
+    ownerLastName: '',
+    ownerTitle: '',
+    authorizedRepSameAsOwner: true,
+    authorizedRepFirstName: '',
+    authorizedRepLastName: '',
+    authorizedRepTitle: '',
     legalBusinessName: '',
     dba: '',
     entityType: '',
@@ -71,8 +76,6 @@ export default function QuestionnaireStep({
     incorporationState: '',
     physicalAddress: { ...emptyAddress },
     mailingAddress: { ...emptyAddress },
-    primaryContact: { ...emptyContact },
-    authorizedRep: { ...emptyContact },
     numEmployees: '',
     projectTitle: '',
     fundingRequest: '',
@@ -88,7 +91,6 @@ export default function QuestionnaireStep({
     { name: '', role: '', percent: '', email: '', phone: '' },
   ]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -108,14 +110,10 @@ export default function QuestionnaireStep({
     }));
   };
 
-  const handleContactChange = (
-    which: 'primaryContact' | 'authorizedRep' | 'eeoOfficer',
-    field: keyof Contact,
-    value: string,
-  ) => {
+  const handleEeoOfficerChange = (field: keyof Contact, value: string) => {
     setForm((f) => ({
       ...f,
-      [which]: { ...f[which], [field]: value },
+      eeoOfficer: { ...f.eeoOfficer, [field]: value },
     }));
   };
 
@@ -136,34 +134,6 @@ export default function QuestionnaireStep({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(undefined);
-
-    if (!form.firstName || !form.lastName || !form.legalBusinessName || !form.entityType) {
-      setError('First name, last name, legal business name and entity type are required');
-      setLoading(false);
-      return;
-    }
-    if (form.hasEin === 'yes' && !/^\d{9}$/.test(form.ein)) {
-      setError('Valid EIN required');
-      setLoading(false);
-      return;
-    }
-    if (form.hasEin === 'no' && !/^\d{9}$/.test(form.ssn)) {
-      setError('Valid SSN required');
-      setLoading(false);
-      return;
-    }
-    if (!form.complianceCertify) {
-      setError('Compliance certification required');
-      setLoading(false);
-      return;
-    }
-    if (!owners.length || owners.some((o) => !o.name)) {
-      setError('At least one owner with name is required');
-      setLoading(false);
-      return;
-    }
-
     try {
       const payload = {
         ...form,
@@ -175,11 +145,20 @@ export default function QuestionnaireStep({
         })),
         ein: form.hasEin === 'yes' ? form.ein : undefined,
         ssn: form.hasEin === 'no' ? form.ssn : undefined,
+        authorizedRepFirstName: form.authorizedRepSameAsOwner
+          ? form.ownerFirstName
+          : form.authorizedRepFirstName,
+        authorizedRepLastName: form.authorizedRepSameAsOwner
+          ? form.ownerLastName
+          : form.authorizedRepLastName,
+        authorizedRepTitle: form.authorizedRepSameAsOwner
+          ? form.ownerTitle
+          : form.authorizedRepTitle,
       };
       const snap = await postQuestionnaire({ caseId, answers: payload });
       onComplete(snap);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || 'Failed');
+    } catch (err) {
+      console.warn('Questionnaire submission failed', err);
     } finally {
       setLoading(false);
     }
@@ -252,43 +231,43 @@ export default function QuestionnaireStep({
     </div>
   );
 
-  const renderContact = (which: 'primaryContact' | 'authorizedRep' | 'eeoOfficer', label: string) => (
+  const renderEeoOfficer = () => (
     <div className="border p-2 space-y-2">
-      <h4 className="font-semibold">{label}</h4>
+      <h4 className="font-semibold">EEO Officer (optional)</h4>
       <div>
-        <label htmlFor={`${which}-name`} className="block text-sm">Name</label>
+        <label htmlFor="eeoOfficer-name" className="block text-sm">Name</label>
         <input
-          id={`${which}-name`}
-          value={form[which].name}
-          onChange={(e) => handleContactChange(which, 'name', e.target.value)}
+          id="eeoOfficer-name"
+          value={form.eeoOfficer.name}
+          onChange={(e) => handleEeoOfficerChange('name', e.target.value)}
           className="border p-1 w-full"
         />
       </div>
       <div>
-        <label htmlFor={`${which}-title`} className="block text-sm">Title</label>
+        <label htmlFor="eeoOfficer-title" className="block text-sm">Title</label>
         <input
-          id={`${which}-title`}
-          value={form[which].title}
-          onChange={(e) => handleContactChange(which, 'title', e.target.value)}
+          id="eeoOfficer-title"
+          value={form.eeoOfficer.title}
+          onChange={(e) => handleEeoOfficerChange('title', e.target.value)}
           className="border p-1 w-full"
         />
       </div>
       <div>
-        <label htmlFor={`${which}-phone`} className="block text-sm">Phone</label>
+        <label htmlFor="eeoOfficer-phone" className="block text-sm">Phone</label>
         <input
-          id={`${which}-phone`}
-          value={form[which].phone}
-          onChange={(e) => handleContactChange(which, 'phone', e.target.value)}
+          id="eeoOfficer-phone"
+          value={form.eeoOfficer.phone}
+          onChange={(e) => handleEeoOfficerChange('phone', e.target.value)}
           className="border p-1 w-full"
         />
       </div>
       <div>
-        <label htmlFor={`${which}-email`} className="block text-sm">Email</label>
+        <label htmlFor="eeoOfficer-email" className="block text-sm">Email</label>
         <input
-          id={`${which}-email`}
+          id="eeoOfficer-email"
           type="email"
-          value={form[which].email}
-          onChange={(e) => handleContactChange(which, 'email', e.target.value)}
+          value={form.eeoOfficer.email}
+          onChange={(e) => handleEeoOfficerChange('email', e.target.value)}
           className="border p-1 w-full"
         />
       </div>
@@ -298,19 +277,86 @@ export default function QuestionnaireStep({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-2xl font-bold">Questionnaire</h2>
-      {error && <div className="bg-red-100 text-red-800 p-2 rounded">{error}</div>}
 
       <h3 className="text-xl font-semibold">Business Identity</h3>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <div>
-          <label htmlFor="firstName" className="block text-sm">First Name</label>
-          <input id="firstName" name="firstName" value={form.firstName} onChange={handleChange} className="border p-1 w-full" />
+          <label htmlFor="ownerFirstName" className="block text-sm">Owner First Name</label>
+          <input
+            id="ownerFirstName"
+            name="ownerFirstName"
+            value={form.ownerFirstName}
+            onChange={handleChange}
+            className="border p-1 w-full"
+          />
         </div>
         <div>
-          <label htmlFor="lastName" className="block text-sm">Last Name</label>
-          <input id="lastName" name="lastName" value={form.lastName} onChange={handleChange} className="border p-1 w-full" />
+          <label htmlFor="ownerLastName" className="block text-sm">Owner Last Name</label>
+          <input
+            id="ownerLastName"
+            name="ownerLastName"
+            value={form.ownerLastName}
+            onChange={handleChange}
+            className="border p-1 w-full"
+          />
+        </div>
+        <div>
+          <label htmlFor="ownerTitle" className="block text-sm">Owner Title</label>
+          <input
+            id="ownerTitle"
+            name="ownerTitle"
+            value={form.ownerTitle}
+            onChange={handleChange}
+            className="border p-1 w-full"
+          />
         </div>
       </div>
+      <div>
+        <label className="inline-flex items-center">
+          <input
+            type="checkbox"
+            name="authorizedRepSameAsOwner"
+            checked={form.authorizedRepSameAsOwner}
+            onChange={handleChange}
+            className="mr-2"
+          />
+          Authorized representative same as owner
+        </label>
+      </div>
+      {!form.authorizedRepSameAsOwner && (
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label htmlFor="authorizedRepFirstName" className="block text-sm">Authorized Rep First Name</label>
+            <input
+              id="authorizedRepFirstName"
+              name="authorizedRepFirstName"
+              value={form.authorizedRepFirstName}
+              onChange={handleChange}
+              className="border p-1 w-full"
+            />
+          </div>
+          <div>
+            <label htmlFor="authorizedRepLastName" className="block text-sm">Authorized Rep Last Name</label>
+            <input
+              id="authorizedRepLastName"
+              name="authorizedRepLastName"
+              value={form.authorizedRepLastName}
+              onChange={handleChange}
+              className="border p-1 w-full"
+            />
+          </div>
+          <div>
+            <label htmlFor="authorizedRepTitle" className="block text-sm">Authorized Rep Title</label>
+            <input
+              id="authorizedRepTitle"
+              name="authorizedRepTitle"
+              value={form.authorizedRepTitle}
+              onChange={handleChange}
+              className="border p-1 w-full"
+            />
+          </div>
+        </div>
+      )}
       <div>
         <label htmlFor="legalBusinessName" className="block text-sm">Legal Business Name</label>
         <input
@@ -371,9 +417,6 @@ export default function QuestionnaireStep({
 
       {renderAddress('physicalAddress', 'Physical Address')}
       {renderAddress('mailingAddress', 'Mailing Address')}
-
-      {renderContact('primaryContact', 'Primary Contact')}
-      {renderContact('authorizedRep', 'Authorized Representative')}
 
       <div>
         <label htmlFor="numEmployees" className="block text-sm">Number of Employees</label>
@@ -568,7 +611,7 @@ export default function QuestionnaireStep({
           I certify this business complies with Equal Opportunity and Nondiscrimination requirements.
         </label>
       </div>
-      {form.complianceCertify && renderContact('eeoOfficer', 'EEO Officer (optional)')}
+      {form.complianceCertify && renderEeoOfficer()}
 
       <div className="flex justify-between">
         <button

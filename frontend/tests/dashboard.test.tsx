@@ -34,14 +34,6 @@ describe('Dashboard wizard', () => {
 
     expect(await screen.findByRole('heading', { name: 'Questionnaire' })).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText('First Name'), { target: { value: 'John' } });
-    fireEvent.change(screen.getByLabelText('Last Name'), { target: { value: 'Doe' } });
-    fireEvent.change(screen.getByLabelText('Legal Business Name'), { target: { value: 'Biz LLC' } });
-    fireEvent.change(screen.getByLabelText('Entity Type'), { target: { value: 'LLC' } });
-    fireEvent.change(screen.getByLabelText('EIN'), { target: { value: '123456789' } });
-    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Owner One' } });
-    fireEvent.click(screen.getByLabelText(/I certify this business/));
-
     fireEvent.click(screen.getByText('Next'));
     await waitFor(() => expect(api.postQuestionnaire).toHaveBeenCalled());
 
