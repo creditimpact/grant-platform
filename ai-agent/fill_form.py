@@ -51,6 +51,50 @@ def _flatten_dict(d: Dict[str, Any], parent_key: str = "", sep: str = "_") -> Di
     return dict(items)
 
 
+def _flatten_stats_fields(data: Dict[str, Any]) -> Dict[str, Any]:
+    flat = _flatten_dict(data)
+    cleaned: Dict[str, Any] = {}
+    replacements = {
+        "section_i_statistical_information_": "",
+        "section_ii_application_information_": "",
+        "section_iii_location_of_facility_": "",
+        "section_iv_use_of_services_and_facilities_": "",
+        "section_v_accessibility_requirements_disability_": "",
+        "section_vi_accessibility_requirements_rural_rental_": "",
+        "section_vii_accessibility_health_care_": "",
+        "section_viii_housing_facilities_": "",
+        "section_ix_employment_programs_": "",
+        "section_x_individual_contacts_": "",
+        "section_xi_community_contacts_": "",
+        "section_xii_past_assistance_": "",
+        "section_xiii_civil_rights_history_": "",
+        "section_xiv_conclusions_": "",
+        "section_xv_non_compliance_": "",
+        "header_information_": "",
+        "certification_": "",
+        "_participants_": "_",
+        "_ethnicity_": "_",
+        "_race_": "_",
+        "_board_of_directors_": "_board_",
+    }
+    ethnicity_map = {
+        "hispanic_or_latino": "hispanic",
+        "not_hispanic_or_latino": "not_hispanic",
+        "american_indian_alaskan_native": "american_indian",
+        "native_hawaiian_other_pacific_islander": "native_hawaiian",
+        "black_or_african_american": "black",
+    }
+    for k, v in flat.items():
+        nk = k
+        for old, new in replacements.items():
+            nk = nk.replace(old, new)
+        for old, new in ethnicity_map.items():
+            nk = nk.replace(old, new)
+        nk = nk.replace("__", "_")
+        cleaned[nk] = v
+    return cleaned
+
+
 def _canonical_entity_type(value: str) -> str:
     key = value.strip().lower().replace(".", "").replace(",", "")
     return ENTITY_TYPE_MAP.get(key, value.strip())
@@ -415,6 +459,8 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
     """Load ``form_key`` template and merge ``data`` into the fields."""
     if file_bytes:
         data.update(extract_fields(file_bytes))
+    # flatten deeply nested sections for easier access
+    data = _flatten_stats_fields(data)
     # derive common checkboxes from known canonical fields
     et = data.get("entity_type")
     if isinstance(et, str):
@@ -431,6 +477,14 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
     source = str(data.get("source_of_funds", "")).lower()
     data["source_of_funds_direct"] = source == "direct"
     data["source_of_funds_insured"] = source == "insured"
+    assistance = data.get("type_of_assistance")
+    if isinstance(assistance, list):
+        for opt in assistance:
+            key = "type_of_assistance_" + opt.lower().replace("&", "and").replace(" ", "_")
+            data[key] = True
+    elif isinstance(assistance, str):
+        key = "type_of_assistance_" + assistance.lower().replace("&", "and").replace(" ", "_")
+        data[key] = True
     submission = str(data.get("type_of_submission", "")).lower()
     data["type_of_submission_application"] = submission == "application"
     data["type_of_submission_preapplication"] = submission == "preapplication"
@@ -460,6 +514,8 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
         filled["reasoning_log"] = reasoning
     fields = filled.get("fields", {})
     flat = _flatten_dict(fields)
+    stats_fields = {k: v for k, v in data.items() if k.startswith(("a1_", "a2_", "a3_", "b1_"))}
+    flat.update(stats_fields)
     funding_keys = [k for k in flat if k.startswith("funding_") and k != "funding_total"]
     total = 0.0
     has_val = False
