@@ -1,30 +1,25 @@
 const request = require('supertest');
-const nock = require('nock');
 
 process.env.SKIP_DB = 'true';
-process.env.ELIGIBILITY_ENGINE_URL = 'http://engine.test';
-process.env.AI_AGENT_URL = 'http://agent.test';
 process.env.PROCESS_TEST_MODE = 'true';
 
-jest.mock('../utils/pdfRenderer', () => ({
-  renderPdf: jest.fn(() => Buffer.from('%PDF-1.4\n%%EOF')),
-}));
+jest.mock('../utils/pdfRenderer', () => require('./__mocks__/pdfRenderer.mock'));
+jest.mock('../utils/formTemplates', () => require('./__mocks__/formTemplates.mock'));
 
 const app = require('../index');
 const { renderPdf } = require('../utils/pdfRenderer');
+const { makeEngineOk } = require('./__mocks__/fetch.mock');
 
 describe('eligibility report integration', () => {
+  beforeEach(() => {
+    global.fetch = makeEngineOk();
+  });
+
   afterEach(() => {
-    nock.cleanAll();
-    renderPdf.mockClear();
+    jest.clearAllMocks();
   });
 
   test('SF-424 mapping applied before rendering', async () => {
-    nock('http://engine.test')
-      .post('/check')
-      .reply(200, { results: [{ requiredForms: ['SF-424'] }] });
-    nock('http://agent.test').post('/form-fill').reply(200, {});
-
     const payload = {
       legalBusinessName: 'ACME',
       ein: '11',
