@@ -3,7 +3,9 @@ const ALWAYS_REQUIRED = [
   "Payroll Records (Form 941 / W-2)",
   "Bank Statements (last 3–6 months)",
   "Business License / Incorporation Docs",
-  "Owner ID (Driver’s License / Passport)"
+  "Owner ID (Driver’s License / Passport)",
+  "Ownership / Officer List (≥20% shareholders / officers)",
+  "Financial Statements (P&L + Balance Sheet)",
 ];
 
 function hasEligibility(caseObj, name) {

@@ -71,6 +71,7 @@ router.get('/eligibility-report', async (req, res) => {
     status: c.status,
     generatedForms: c.generatedForms,
     incompleteForms: c.incompleteForms,
+    requiredDocuments: c.requiredDocuments,
   });
 });
 
@@ -335,6 +336,7 @@ router.post('/eligibility-report', async (req, res) => {
     status: c.status,
     generatedForms: c.generatedForms,
     incompleteForms: c.incompleteForms,
+    requiredDocuments: c.requiredDocuments,
   });
 });
 

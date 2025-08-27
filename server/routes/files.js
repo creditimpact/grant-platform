@@ -119,6 +119,7 @@ router.post('/files/upload', (req, res) => {
       documents,
       analyzer: { fields: mergedFields, lastUpdated: now },
       analyzerFields: mergedFields,
+      requiredDocuments: c.requiredDocuments,
     });
   });
 });

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { ALWAYS_REQUIRED } = require('../utils/requiredDocuments');
 
 const documentSchema = new mongoose.Schema(
   {
@@ -45,6 +46,7 @@ const pipelineSchema = new mongoose.Schema(
       lastUpdated: Date,
     },
     documents: { type: [documentSchema], default: [] },
+    requiredDocuments: { type: [String], default: ALWAYS_REQUIRED },
     generatedForms: { type: [generatedFormSchema], default: [] },
     normalized: { type: mongoose.Schema.Types.Mixed, default: {} },
   },

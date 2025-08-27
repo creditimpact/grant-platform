@@ -1,6 +1,7 @@
 const express = require('express');
 const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
 const logger = require('../utils/logger');
+const { getRequiredDocuments } = require('../utils/requiredDocuments');
 
 const router = express.Router();
 
@@ -29,6 +30,7 @@ router.get(['/questionnaire', '/case/questionnaire'], async (req, res) => {
     eligibility: c.eligibility?.results,
     documents: c.documents,
     status: c.status,
+    requiredDocuments: c.requiredDocuments,
   });
 });
 
@@ -82,9 +84,15 @@ router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
     requestId: req.headers['x-request-id'],
   });
   const now = new Date().toISOString();
+  const requiredDocuments = getRequiredDocuments({
+    ...c,
+    analyzer: { fields: merged },
+    questionnaire: { data: payload },
+  });
   await updateCase(caseId, {
     analyzer: { fields: merged, lastUpdated: now },
     questionnaire: { data: payload, lastUpdated: now },
+    requiredDocuments,
   });
   const updated = await getCase(userId, caseId);
   const missing = updated.eligibility?.results
@@ -97,6 +105,7 @@ router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
     analyzerFields: updated.analyzer?.fields,
     eligibility: updated.eligibility,
     documents: updated.documents,
+    requiredDocuments: updated.requiredDocuments,
     questionnaire: {
       data: payload,
       missingFieldsHint: missing,
