@@ -11,6 +11,8 @@ const fetchFn =
 const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
 const { getServiceHeaders } = require('../utils/serviceHeaders');
 const logger = require('../utils/logger');
+const { safeMerge } = require('../utils/safeMerge');
+const { normalizeAnswers } = require('../utils/normalizeAnswers');
 
 const router = express.Router();
 
@@ -91,15 +93,18 @@ router.post('/files/upload', (req, res) => {
     const fields = await resp.json();
     const c = await getCase(userId, caseId);
     const existingFields = (c.analyzer && c.analyzer.fields) || {};
-    const overriddenKeys = Object.keys(fields).filter((k) => k in existingFields);
-    if (overriddenKeys.length) {
+    const { merged: mergedFields, updatedKeys } = safeMerge(existingFields, fields, {
+      source: 'analyzer',
+      questionnaire: c.questionnaire?.data || {},
+    });
+    if (updatedKeys.length) {
       const logFn = logger.debug ? logger.debug.bind(logger) : logger.info.bind(logger);
       logFn('merge: analyzer overrides existing fields', {
-        overriddenKeys,
+        overriddenKeys: updatedKeys,
         requestId: req.headers['x-request-id'],
       });
     }
-    const mergedFields = { ...existingFields, ...fields };
+    const normalized = normalizeAnswers(mergedFields);
     const now = new Date().toISOString();
     const docMeta = {
       key,
@@ -110,15 +115,15 @@ router.post('/files/upload', (req, res) => {
     };
     const documents = [...(c.documents || []), docMeta];
     await updateCase(caseId, {
-      analyzer: { fields: mergedFields, lastUpdated: now },
+      analyzer: { fields: normalized, lastUpdated: now },
       documents,
     });
     res.json({
       caseId,
       status: c.status || 'open',
       documents,
-      analyzer: { fields: mergedFields, lastUpdated: now },
-      analyzerFields: mergedFields,
+      analyzer: { fields: normalized, lastUpdated: now },
+      analyzerFields: normalized,
       requiredDocuments: c.requiredDocuments,
     });
   });

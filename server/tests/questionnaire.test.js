@@ -39,6 +39,15 @@ describe('questionnaire endpoints', () => {
     expect(c.questionnaire.data.newField).toBe('val');
   });
 
+  test('applicant_name defaults to legal_business_name', async () => {
+    const caseId = await createCase('dev-user');
+    const res = await request(app)
+      .post('/api/questionnaire')
+      .send({ caseId, answers: { legal_business_name: 'Biz LLC' } });
+    expect(res.status).toBe(200);
+    expect(res.body.analyzerFields.applicant_name).toBe('Biz LLC');
+  });
+
   test('GET returns questionnaire with missingFieldsHint', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, {

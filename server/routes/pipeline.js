@@ -14,6 +14,7 @@ const { saveDraft } = require('../utils/drafts');
 const { renderPdf } = require('../utils/pdfRenderer');
 const { validateForm8974Calcs } = require('../utils/form8974');
 const { validateForm6765Calcs } = require('../utils/form6765');
+const { normalizeAnswers } = require('../utils/normalizeAnswers');
 
 const router = express.Router();
 
@@ -83,7 +84,7 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
     if (overrideKeys.length) {
       logger.debug(`Overriding analyzer fields: ${overrideKeys.join(', ')}`);
     }
-    const normalized = { ...extracted, ...basePayload };
+    const normalized = normalizeAnswers({ ...extracted, ...basePayload });
     await updateCase(caseId, { status: 'analyzed', normalized, analyzer: extracted });
 
     const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';

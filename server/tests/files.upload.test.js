@@ -2,7 +2,8 @@ const request = require('supertest');
 process.env.SKIP_DB = 'true';
 global.fetch = jest.fn();
 const app = require('../index');
-const { resetStore } = require('../utils/pipelineStore');
+const { resetStore, createCase } = require('../utils/pipelineStore');
+const logger = require('../utils/logger');
 
 describe('POST /api/files/upload', () => {
   beforeEach(() => {
@@ -46,6 +47,7 @@ describe('file upload merge', () => {
     process.env.SKIP_DB = 'true';
     resetStore();
     global.fetch.mockReset();
+    logger.logs.length = 0;
   });
 
   test('new analyzer values overwrite old fields', async () => {
@@ -124,5 +126,23 @@ describe('file upload merge', () => {
       annual_revenue: 500000,
       entity_type: 'C-Corp',
     });
+  });
+
+  test('analyzer empty values do not override questionnaire entries', async () => {
+    const caseId = await createCase('dev-user');
+    await request(app)
+      .post('/api/questionnaire')
+      .send({ caseId, answers: { ein: '111111111' } });
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ein: '' }),
+    });
+    const res = await request(app)
+      .post('/api/files/upload')
+      .field('caseId', caseId)
+      .attach('file', Buffer.from('%PDF'), 'doc.pdf');
+    expect(res.body.analyzerFields.ein).toBe('111111111');
+    const log = logger.logs.find((l) => l.message === 'merge: analyzer overrides existing fields');
+    expect(log).toBeUndefined();
   });
 });

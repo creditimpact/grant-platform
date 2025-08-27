@@ -13,6 +13,7 @@ const { saveDraft } = require('../utils/drafts');
 const { renderPdf } = require('../utils/pdfRenderer');
 const { validateForm8974Calcs } = require('../utils/form8974');
 const { validateForm6765Calcs } = require('../utils/form6765');
+const { normalizeAnswers } = require('../utils/normalizeAnswers');
 
 const router = express.Router();
 
@@ -72,6 +73,7 @@ router.get('/eligibility-report', async (req, res) => {
     generatedForms: c.generatedForms,
     incompleteForms: c.incompleteForms,
     requiredDocuments: c.requiredDocuments,
+    draftPdfUrl: c.generatedForms?.[0]?.url,
   });
 });
 
@@ -88,6 +90,7 @@ router.post('/eligibility-report', async (req, res) => {
   } else {
     caseId = await createCase(userId);
   }
+  base = normalizeAnswers(base);
 
   const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
   const engineUrl = `${engineBase.replace(/\/$/, '')}/check`;
@@ -337,6 +340,7 @@ router.post('/eligibility-report', async (req, res) => {
     generatedForms: c.generatedForms,
     incompleteForms: c.incompleteForms,
     requiredDocuments: c.requiredDocuments,
+    draftPdfUrl: c.generatedForms?.[0]?.url,
   });
 });
 
