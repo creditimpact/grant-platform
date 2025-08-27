@@ -205,6 +205,23 @@ router.post('/eligibility-report', async (req, res) => {
     mappedForms.map(async (formName) => {
       logFn('form_fill_attempt', { formId: formName, requestId: req.id });
       try {
+        const payload = mapForForm(formName, base, {
+          testMode: process.env.PROCESS_TEST_MODE === 'true',
+        });
+        logger.info('form_fill_payload_preview', {
+          formId: formName,
+          payloadKeys: Object.keys(payload).sort(),
+          preview: {
+            applicant_legal_name: payload.applicant_legal_name,
+            ein: payload.ein,
+            descriptive_title: payload.descriptive_title,
+            project_start_date: payload.project_start_date,
+            project_end_date: payload.project_end_date,
+            funding_total: payload.funding_total,
+            authorized_rep_name: payload.authorized_rep_name,
+            authorized_rep_title: payload.authorized_rep_title,
+          },
+        });
         const agentResp = await fetchFn(agentUrl, {
           method: 'POST',
           headers: {
@@ -213,7 +230,7 @@ router.post('/eligibility-report', async (req, res) => {
           },
           body: JSON.stringify({
             form_name: formName,
-            user_payload: base,
+            user_payload: payload,
             analyzer_fields: analyzerFields,
           }),
         });
@@ -227,16 +244,13 @@ router.post('/eligibility-report', async (req, res) => {
           });
           return;
         }
-          const agentData = await agentResp.json();
-          const tmpl = await getLatestTemplate(formName);
-          const version = tmpl ? tmpl.version : 1;
-          const mappedAnswers = mapForForm(formName, base, {
-            testMode: process.env.PROCESS_TEST_MODE === 'true',
-          });
-          const formData = {
-            ...mappedAnswers,
-            ...(agentData.filled_form || agentData),
-          };
+        const agentData = await agentResp.json();
+        const tmpl = await getLatestTemplate(formName);
+        const version = tmpl ? tmpl.version : 1;
+        const formData = {
+          ...payload,
+          ...(agentData.filled_form || agentData),
+        };
           const required = pdfTemplates[formName]?.required || [];
         const missingRequired = required.filter(
           (k) =>

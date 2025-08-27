@@ -147,12 +147,29 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
     const filledForms = [];
     const incompleteForms = [];
     for (const formName of requiredForms) {
+      const payload = mapForForm(formName, normalized, {
+        testMode: process.env.PROCESS_TEST_MODE === 'true',
+      });
+      logger.info('form_fill_payload_preview', {
+        formId: formName,
+        payloadKeys: Object.keys(payload).sort(),
+        preview: {
+          applicant_legal_name: payload.applicant_legal_name,
+          ein: payload.ein,
+          descriptive_title: payload.descriptive_title,
+          project_start_date: payload.project_start_date,
+          project_end_date: payload.project_end_date,
+          funding_total: payload.funding_total,
+          authorized_rep_name: payload.authorized_rep_name,
+          authorized_rep_title: payload.authorized_rep_title,
+        },
+      });
       const agentResp = await fetchFn(agentUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getServiceHeaders('AI_AGENT', req) },
         body: JSON.stringify({
           form_name: formName,
-          user_payload: normalized,
+          user_payload: payload,
           analyzer_fields: extracted,
         }),
       });
@@ -163,16 +180,13 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
           .status(502)
           .json({ message: `AI agent form-fill error ${agentResp.status}`, details: text });
       }
-        const agentData = await agentResp.json();
-        const tmpl = await getLatestTemplate(formName);
-        const version = tmpl ? tmpl.version : 1;
-        const mappedAnswers = mapForForm(formName, normalized, {
-          testMode: process.env.PROCESS_TEST_MODE === 'true',
-        });
-        const formData = {
-          ...mappedAnswers,
-          ...(agentData.filled_form || agentData),
-        };
+      const agentData = await agentResp.json();
+      const tmpl = await getLatestTemplate(formName);
+      const version = tmpl ? tmpl.version : 1;
+      const formData = {
+        ...payload,
+        ...(agentData.filled_form || agentData),
+      };
       const required = pdfTemplates[formName]?.required || [];
       const missingRequired = required.filter(
         (k) =>
