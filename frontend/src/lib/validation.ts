@@ -41,34 +41,10 @@ export function normalizeQuestionnaire(input: any = {}) {
     }
   });
 
-  const required = [
-    'businessName',
-    'phone',
-    'email',
-    'address',
-    'city',
-    'state',
-    'zip',
-    'locationZone',
-    'businessType',
-    'incorporationDate',
-    'annualRevenue',
-    'netProfit',
-    'numberOfEmployees',
-    'ownershipPercentage',
-    'businessIncome',
-    'businessExpenses',
-    'taxPaid',
-    'taxYear',
-    'previousRefundsClaimed',
-    'previousGrants',
-  ];
-
-  const missing = required.filter((f) => data[f] === undefined || data[f] === '' || data[f] === null || Number.isNaN(data[f]));
-
+  const missing: string[] = [];
   if (data.businessType === 'Sole') {
     if (!data.ssn) missing.push('ssn');
-  } else {
+  } else if (data.businessType) {
     if (!data.ein) missing.push('ein');
   }
 

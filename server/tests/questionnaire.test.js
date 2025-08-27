@@ -10,6 +10,16 @@ describe('questionnaire endpoints', () => {
     resetStore();
   });
 
+  test('POST accepts empty answers', async () => {
+    const caseId = await createCase('dev-user');
+    const res = await request(app)
+      .post('/api/questionnaire')
+      .send({ caseId, answers: {} });
+    expect(res.status).toBe(200);
+    const c = await getCase('dev-user', caseId);
+    expect(c.questionnaire.data).toEqual({});
+  });
+
   test('POST saves questionnaire and overrides existing analyzer fields', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { existing: 'keep', empty: '' } } });
