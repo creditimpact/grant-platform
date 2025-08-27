@@ -32,3 +32,10 @@ Development shortcut to fetch the latest case when no `caseId` is known.
 ## PDF Templates
 
 See [pdfTemplates.md](pdfTemplates.md) for details on defining PDF form templates.
+
+### Debugging Missing Fields
+
+During development, setting the environment variable `PDF_DEBUG_OVERLAY=true`
+will draw small grey `MISSING:<key>` overlays in generated PDFs whenever a
+template key is absent. In production the variable should remain unset so
+missing fields render as blank while still being logged.

@@ -1,16 +1,18 @@
 const fs = require('fs');
 const path = require('path');
-const { PDFDocument, StandardFonts } = require('pdf-lib');
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const { pdfTemplates } = require('./formTemplates');
 const logger = require('./logger');
 
 const FLATTEN = process.env.FLATTEN !== 'false';
-const DEBUG_MISSING = process.env.PDF_DEBUG_MISSING === 'true';
+// When true, draw placeholders for missing fields to assist development
+// via the PDF_DEBUG_OVERLAY environment variable.
+const DEBUG_OVERLAY = process.env.PDF_DEBUG_OVERLAY === 'true';
 
 function formatValue(formId, key, v) {
   if (v === null || v === undefined || v === '') {
     logger.warn('pdf_render_missing_field', { formId, key });
-    return DEBUG_MISSING ? `MISSING:${key}` : '';
+    return DEBUG_OVERLAY ? `MISSING:${key}` : '';
   }
   if (v instanceof Date) return new Date(v).toLocaleDateString('en-US');
   if (typeof v === 'number') return v.toLocaleString('en-US');
@@ -60,12 +62,17 @@ async function renderPdf({ formId, filledForm }) {
     for (const [key, cfg] of Object.entries(tmpl.coords || {})) {
       const value = formatValue(formId, key, fields[key]);
       const page = pages[cfg.page || 0];
-      page.drawText(value, {
+      const options = {
         x: cfg.x,
         y: cfg.y,
         size: cfg.fontSize || 9,
         font,
-      });
+      };
+      if (DEBUG_OVERLAY && value.startsWith('MISSING:')) {
+        options.color = rgb(0.5, 0.5, 0.5);
+        options.size = (cfg.fontSize || 9) - 1;
+      }
+      page.drawText(value, options);
       logger.info('pdf_render_field_mapped', { formId, key, coords: cfg });
     }
     for (const [key, cfg] of Object.entries(tmpl.checkboxes || {})) {
