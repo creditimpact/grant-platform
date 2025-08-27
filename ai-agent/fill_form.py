@@ -2,6 +2,7 @@
 import ast
 import json
 import time
+import re
 from pathlib import Path
 from typing import Dict, Any
 from datetime import datetime
@@ -19,6 +20,83 @@ ZIP_STATE = {
     "1": "NY",
     "6": "IL",
 }
+
+US_STATE_ABBR = {
+    "ALABAMA": "AL",
+    "ALASKA": "AK",
+    "ARIZONA": "AZ",
+    "ARKANSAS": "AR",
+    "CALIFORNIA": "CA",
+    "COLORADO": "CO",
+    "CONNECTICUT": "CT",
+    "DELAWARE": "DE",
+    "FLORIDA": "FL",
+    "GEORGIA": "GA",
+    "HAWAII": "HI",
+    "IDAHO": "ID",
+    "ILLINOIS": "IL",
+    "INDIANA": "IN",
+    "IOWA": "IA",
+    "KANSAS": "KS",
+    "KENTUCKY": "KY",
+    "LOUISIANA": "LA",
+    "MAINE": "ME",
+    "MARYLAND": "MD",
+    "MASSACHUSETTS": "MA",
+    "MICHIGAN": "MI",
+    "MINNESOTA": "MN",
+    "MISSISSIPPI": "MS",
+    "MISSOURI": "MO",
+    "MONTANA": "MT",
+    "NEBRASKA": "NE",
+    "NEVADA": "NV",
+    "NEW HAMPSHIRE": "NH",
+    "NEW JERSEY": "NJ",
+    "NEW MEXICO": "NM",
+    "NEW YORK": "NY",
+    "NORTH CAROLINA": "NC",
+    "NORTH DAKOTA": "ND",
+    "OHIO": "OH",
+    "OKLAHOMA": "OK",
+    "OREGON": "OR",
+    "PENNSYLVANIA": "PA",
+    "RHODE ISLAND": "RI",
+    "SOUTH CAROLINA": "SC",
+    "SOUTH DAKOTA": "SD",
+    "TENNESSEE": "TN",
+    "TEXAS": "TX",
+    "UTAH": "UT",
+    "VERMONT": "VT",
+    "VIRGINIA": "VA",
+    "WASHINGTON": "WA",
+    "WEST VIRGINIA": "WV",
+    "WISCONSIN": "WI",
+    "WYOMING": "WY",
+}
+
+ZIP_RE = re.compile(r"^(\d{5})(?:[-\s]?(\d{4}))?$")
+
+def _normalize_state(value: str) -> str:
+    if not value:
+        return value
+    v = value.strip()
+    if len(v) == 2 and v.isalpha():
+        return v.upper()
+    return US_STATE_ABBR.get(v.strip().upper(), v.strip())
+
+def _normalize_zip(value: str) -> str:
+    if not value:
+        return value
+    v = str(value).strip()
+    m = ZIP_RE.match(v)
+    if m:
+        return m.group(1) + ("-" + m.group(2) if m.group(2) else "")
+    digits = re.sub(r"\D", "", v)
+    if len(digits) >= 5:
+        first = digits[:5]
+        rest = digits[5:9]
+        return first + ("-" + rest if len(rest) == 4 else "")
+    return v
 
 
 SAFE_FUNCTIONS = {"int": int, "float": float}
@@ -516,6 +594,14 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
     flat = _flatten_dict(fields)
     stats_fields = {k: v for k, v in data.items() if k.startswith(("a1_", "a2_", "a3_", "b1_"))}
     flat.update(stats_fields)
+    for k, v in list(flat.items()):
+        if isinstance(v, str):
+            nv = v.strip()
+            if k.endswith("_zip") or k == "zip":
+                nv = _normalize_zip(nv)
+            elif k.endswith("_state") or k == "state":
+                nv = _normalize_state(nv)
+            flat[k] = nv
     funding_keys = [k for k in flat if k.startswith("funding_") and k != "funding_total"]
     total = 0.0
     has_val = False

@@ -18,7 +18,7 @@ from common.logger import get_logger
 from common.request_id import request_id_middleware
 
 from engine import analyze_eligibility  # type: ignore
-from fill_form import fill_form
+from fill_form import fill_form, _normalize_state, _normalize_zip
 from session_memory import append_memory, get_missing_fields, save_draft_form, get_conversation
 from nlp_utils import llm_semantic_inference, llm_complete
 from grants_loader import load_grants
@@ -138,6 +138,14 @@ async def form_fill(request_model: FormFillRequest) -> FormFillResponse:
         normalized_data, filled.get("fields", {})
     )
     for k, v in list(merged_fields.items()):
+        if isinstance(v, str):
+            nv = v.strip()
+            if k.endswith("_zip") or k == "zip":
+                nv = _normalize_zip(nv)
+            elif k.endswith("_state") or k == "state":
+                nv = _normalize_state(nv)
+            merged_fields[k] = nv
+    for k, v in list(merged_fields.items()):
         if k.startswith("funding_"):
             if isinstance(v, str):
                 try:
@@ -155,7 +163,7 @@ async def form_fill(request_model: FormFillRequest) -> FormFillResponse:
     filled["fields"] = merged_fields
 
     reasoning_steps = norm_steps + merge_steps
-    reasoning = Reasoning(reasoning_steps=reasoning_steps, clarifying_questions=[])
+    reasoning = "; ".join(reasoning_steps)
 
     if request_model.session_id:
         append_memory(
