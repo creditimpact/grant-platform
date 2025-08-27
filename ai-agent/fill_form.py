@@ -308,7 +308,13 @@ def _fill_template(
         if k in data and reasoning is not None:
             reasoning.append(f"{k} provided by user")
         if isinstance(value, str):
-            _, value = normalize_text_field(k, value)
+            # Skip normalization for date-like fields to avoid stripping
+            # separators. ``normalize_text_field`` would treat values such as
+            # "2024-10-19" as numeric and convert them to ``2024``. For
+            # any explicitly typed date field or keys containing "date", we
+            # therefore keep the original string value.
+            if ftype != "date" and "date" not in k.lower():
+                _, value = normalize_text_field(k, value)
         if value is None:
             if k in optional:
                 value = optional[k]
