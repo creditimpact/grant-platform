@@ -81,10 +81,9 @@ describe('pipeline submit-case', () => {
     expect(res.status).toBe(200);
     expect(res.body.generatedForms).toHaveLength(0);
     expect(res.body.incompleteForms).toHaveLength(1);
-    expect(res.body.incompleteForms[0].missingFields).toEqual([
-      'name',
-      'credit_amount',
-    ]);
+    expect(res.body.incompleteForms[0].missingFields).toEqual(
+      expect.arrayContaining(['name', 'calendar_year', 'line1_ending_date', 'line7'])
+    );
     formTemplates.getLatestTemplate.mockRestore();
   });
 

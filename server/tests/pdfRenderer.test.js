@@ -47,14 +47,43 @@ describe('pdfRenderer', () => {
   });
 
   test('renders 8974 template', async () => {
-    const buf = await renderPdf({
-      formId: 'form_8974',
-      filledForm: {
-        employer_identification_number: '98-7654321',
-        name: 'ACME',
-        credit_amount: 2000,
-      },
+    const filled = {
+      employer_identification_number: '98-7654321',
+      name: 'ACME',
+      calendar_year: '2024',
+      credit_reporting_selected_form: 'form_941',
+      quarter_selection_selected_quarter: 'q1',
+    };
+    const rowFields = [
+      'ending_date',
+      'income_tax_return',
+      'date_filed',
+      'ein_used',
+      'amount_form_6765',
+      'credit_taken_previous',
+      'remaining_credit',
+    ];
+    for (let i = 1; i <= 5; i++) {
+      rowFields.forEach((f) => {
+        filled[`line${i}_${f}`] = f.includes('amount') || f.includes('credit')
+          ? 0
+          : '2023-12-31';
+      });
+    }
+    Object.assign(filled, {
+      line7: 0,
+      line8: 0,
+      line9: 0,
+      line10: 0,
+      line11: 0,
+      line12: 0,
+      line13: 0,
+      line14: 0,
+      line15: 0,
+      line16: 0,
+      line17: 0,
     });
+    const buf = await renderPdf({ formId: 'form_8974', filledForm: filled });
     expect(Buffer.isBuffer(buf)).toBe(true);
     expect(buf.length).toBeGreaterThan(0);
     expect(buf.slice(0, 5).toString()).toBe('%PDF-');

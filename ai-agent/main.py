@@ -123,16 +123,10 @@ async def check(request_model: AgentCheckRequest) -> AgentCheckResponse:
 @app.post("/form-fill")
 async def form_fill(request_model: FormFillRequest) -> FormFillResponse:
     payload: dict[str, Any] = dict(request_model.user_payload)
-    if request_model.analyzer_fields:
-        filled_keys: list[str] = []
-        for k, v in request_model.analyzer_fields.items():
-            if k not in payload or payload[k] in (None, ""):
-                payload[k] = v
-                filled_keys.append(k)
-        if filled_keys:
-            logger.debug("analyzer_backfill", extra={"keys": filled_keys})
     normalized_data, norm_steps = normalize_dates_in_mapping(payload)
-    filled = fill_form(request_model.form_name, normalized_data)
+    filled = fill_form(
+        request_model.form_name, normalized_data, request_model.analyzer_fields
+    )
 
     merged_fields, merge_steps = merge_preserving_user(
         normalized_data, filled.get("fields", {})
@@ -174,16 +168,14 @@ async def form_fill(request_model: FormFillRequest) -> FormFillResponse:
     filled["fields"] = merged_fields
 
     reasoning_steps = norm_steps + merge_steps
-    reasoning = "; ".join(reasoning_steps)
+    reasoning = Reasoning(reasoning_steps=reasoning_steps)
 
     if request_model.session_id:
         append_memory(
             request_model.session_id,
             {"form": request_model.form_name, "data": normalized_data},
         )
-    return FormFillResponse(
-        filled_form=filled, reasoning=reasoning
-    )
+    return FormFillResponse(filled_form=filled, reasoning=reasoning)
 
 
 @app.post("/preview-form")

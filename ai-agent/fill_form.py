@@ -4,7 +4,7 @@ import json
 import time
 import re
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime
 import operator as op
 from common.logger import get_logger
@@ -115,6 +115,19 @@ def _normalize_zip(value: str) -> str:
         return first + ("-" + rest if len(rest) == 4 else "")
     return v
 
+
+def _to_float(value: Any) -> float:
+    """Convert ``value`` to a float rounded to 2 decimals."""
+    if value in (None, ""):
+        return 0.0
+    if isinstance(value, (int, float)):
+        return round(float(value), 2)
+    if isinstance(value, str):
+        try:
+            return round(float(value.replace("$", "").replace(",", "")), 2)
+        except ValueError:
+            return 0.0
+    return 0.0
 
 SAFE_FUNCTIONS = {"int": int, "float": float}
 
@@ -550,8 +563,21 @@ def _fill_template(
     return template
 
 
-def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = None) -> Dict[str, Any]:
+def fill_form(
+    form_key: str,
+    data: Dict[str, Any],
+    analyzer_fields: Optional[Dict[str, Any]] = None,
+    file_bytes: bytes | None = None,
+) -> Dict[str, Any]:
     """Load ``form_key`` template and merge ``data`` into the fields."""
+    if analyzer_fields:
+        filled_keys: list[str] = []
+        for k, v in analyzer_fields.items():
+            if k not in data or data[k] in (None, ""):
+                data[k] = v
+                filled_keys.append(k)
+        if filled_keys:
+            logger.debug("analyzer_backfill", extra={"keys": filled_keys})
     if file_bytes:
         data.update(extract_fields(file_bytes))
     # flatten deeply nested sections for easier access
@@ -654,5 +680,123 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
             has_val = True
     if has_val:
         flat["funding_total"] = total
+
+    if form_key == "form_8974":
+        numeric_keys = [
+            "line1_amount_form_6765",
+            "line1_credit_taken_previous",
+            "line1_remaining_credit",
+            "line2_amount_form_6765",
+            "line2_credit_taken_previous",
+            "line2_remaining_credit",
+            "line3_amount_form_6765",
+            "line3_credit_taken_previous",
+            "line3_remaining_credit",
+            "line4_amount_form_6765",
+            "line4_credit_taken_previous",
+            "line4_remaining_credit",
+            "line5_amount_form_6765",
+            "line5_credit_taken_previous",
+            "line5_remaining_credit",
+            "line6",
+            "line7",
+            "line8",
+            "line9",
+            "line10",
+            "line11",
+            "line12",
+            "line13",
+            "line14",
+            "line15",
+            "line16",
+            "line17",
+        ]
+        for k in numeric_keys:
+            if k in flat:
+                flat[k] = _to_float(flat[k])
+        mismatches: list[str] = []
+        line6_calc = sum(flat.get(f"line{i}_remaining_credit", 0.0) for i in range(1, 6))
+        if "line6" in flat and round(flat.get("line6", 0.0), 2) != round(line6_calc, 2):
+            mismatches.append("line6")
+        flat["line6"] = round(line6_calc, 2)
+        line10_calc = flat.get("line8", 0.0) + flat.get("line9", 0.0)
+        if "line10" in flat and round(flat.get("line10", 0.0), 2) != round(line10_calc, 2):
+            mismatches.append("line10")
+        flat["line10"] = round(line10_calc, 2)
+        line11_calc = line10_calc * 0.5
+        if "line11" in flat and round(flat.get("line11", 0.0), 2) != round(line11_calc, 2):
+            mismatches.append("line11")
+        flat["line11"] = round(line11_calc, 2)
+        line12_calc = min(flat.get("line7", 0.0), flat["line11"], 250000.0)
+        if "line12" in flat and round(flat.get("line12", 0.0), 2) != round(line12_calc, 2):
+            mismatches.append("line12")
+        flat["line12"] = round(line12_calc, 2)
+        line13_calc = flat.get("line7", 0.0) - flat["line12"]
+        if "line13" in flat and round(flat.get("line13", 0.0), 2) != round(line13_calc, 2):
+            mismatches.append("line13")
+        flat["line13"] = round(line13_calc, 2)
+        line15_calc = flat.get("line14", 0.0) * 0.5
+        if "line15" in flat and round(flat.get("line15", 0.0), 2) != round(line15_calc, 2):
+            mismatches.append("line15")
+        flat["line15"] = round(line15_calc, 2)
+        line16_calc = min(flat["line13"], flat["line15"])
+        if "line16" in flat and round(flat.get("line16", 0.0), 2) != round(line16_calc, 2):
+            mismatches.append("line16")
+        flat["line16"] = round(line16_calc, 2)
+        line17_calc = flat["line12"] + flat["line16"]
+        if "line17" in flat and round(flat.get("line17", 0.0), 2) != round(line17_calc, 2):
+            mismatches.append("line17")
+        flat["line17"] = round(line17_calc, 2)
+        if mismatches:
+            logger.error("form_fill_calculation_mismatch", extra={"form": form_key, "fields": mismatches})
+
+    if getattr(settings, "OPENAI_API_KEY", None):
+        if "business_summary" not in flat:
+            prompt = "Provide a brief business summary based on available information."
+            logger.info(
+                "llm_invocation",
+                extra={
+                    "form": form_key,
+                    "field": "business_summary",
+                    "model": getattr(settings, "OPENAI_MODEL", None),
+                    "tokens_estimate": (len(prompt) + len(json.dumps(flat))) // 4,
+                },
+            )
+            summary = llm_complete(prompt, flat)
+            if summary:
+                logger.info(
+                    "llm_success",
+                    extra={"form": form_key, "field": "business_summary", "latency_ms": 0},
+                )
+                flat["business_summary"] = " ".join(summary.strip().split())
+            else:
+                logger.info(
+                    "llm_fallback",
+                    extra={"form": form_key, "field": "business_summary", "reason": "empty"},
+                )
+                flat["business_summary"] = "summary unavailable"
+        if "entity_type" not in flat:
+            prompt = "What is the entity type of the business?"
+            logger.info(
+                "llm_invocation",
+                extra={
+                    "form": form_key,
+                    "field": "entity_type",
+                    "model": getattr(settings, "OPENAI_MODEL", None),
+                    "tokens_estimate": (len(prompt) + len(json.dumps(flat))) // 4,
+                },
+            )
+            ent = llm_complete(prompt, flat)
+            if ent:
+                logger.info(
+                    "llm_success",
+                    extra={"form": form_key, "field": "entity_type", "latency_ms": 0},
+                )
+                flat["entity_type"] = _canonical_entity_type(ent)
+            else:
+                logger.info(
+                    "llm_fallback",
+                    extra={"form": form_key, "field": "entity_type", "reason": "empty"},
+                )
     filled["fields"] = flat
     return filled
