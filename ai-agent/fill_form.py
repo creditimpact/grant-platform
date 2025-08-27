@@ -257,10 +257,14 @@ def _fill_template(
         "expected_file",
     }
     for k, spec in fields.items():
-        if isinstance(spec, dict) and not (FIELD_KEYS & spec.keys()):
-            merged[k] = _fill_template(spec, data, reasoning)
-            continue
         if isinstance(spec, dict):
+            if (
+                "fields" in spec
+                or "sections" in spec
+                or (not (FIELD_KEYS & spec.keys()) and any(isinstance(v, dict) for v in spec.values()))
+            ):
+                merged[k] = _fill_template(spec, data, reasoning)
+                continue
             default = spec.get("default", "")
             required = spec.get("required", True)
             ftype = spec.get("type", "text")
