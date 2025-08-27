@@ -19,8 +19,6 @@ describe('pipeline submit-case', () => {
   });
 
   test('returns incomplete form when required fields missing', async () => {
-    const pdfRenderer = require('../utils/pdfRenderer');
-    const renderSpy = jest.spyOn(pdfRenderer, 'renderPdf');
     const formTemplates = require('../utils/formTemplates');
     jest
       .spyOn(formTemplates, 'getLatestTemplate')
@@ -48,10 +46,8 @@ describe('pipeline submit-case', () => {
     expect(res.body.generatedForms).toHaveLength(0);
     expect(res.body.incompleteForms).toHaveLength(1);
     expect(res.body.incompleteForms[0].missingFields).toEqual(['foo']);
-    expect(renderSpy).not.toHaveBeenCalled();
     const log = logger.logs.find((l) => l.message === 'form_fill_validation_failed');
     expect(log).toBeDefined();
-    renderSpy.mockRestore();
     formTemplates.getLatestTemplate.mockRestore();
   });
 

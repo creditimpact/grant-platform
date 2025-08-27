@@ -39,11 +39,14 @@ describe('eligibility report integration', () => {
       physicalAddress: { street: '1 Main', city: 'Town', state: 'CA', zip: '12345' },
     };
 
-    await request(app)
+    const res = await request(app)
       .post('/api/eligibility-report')
-      .send({ payload })
-      .expect(200);
+      .send({ payload });
 
+    expect(res.status).toBe(200);
+    expect(res.body.generatedForms).toHaveLength(1);
+    expect(res.body.generatedForms[0].formId).toBe('form_sf424');
+    expect(res.body.generatedForms[0].url).toBeTruthy();
     expect(renderPdf).toHaveBeenCalled();
     const arg = renderPdf.mock.calls[0][0];
     expect(arg.filledForm.applicant_legal_name).toBe('ACME');
