@@ -36,6 +36,13 @@ export interface GeneratedForm {
   version?: string;
 }
 
+export interface IncompleteForm {
+  formId: string;
+  name: string;
+  missingFields: string[];
+  message?: string;
+}
+
 export interface CaseSnapshot {
   caseId: string | null;
   requiredForms?: string[];
@@ -49,6 +56,7 @@ export interface CaseSnapshot {
   };
   eligibility?: EligibilityItem[];
   generatedForms?: GeneratedForm[];
+  incompleteForms?: IncompleteForm[];
   createdAt?: string;
   updatedAt?: string;
 }

@@ -76,6 +76,23 @@ US_STATE_ABBR = {
 
 ZIP_RE = re.compile(r"^(\d{5})(?:[-\s]?(\d{4}))?$")
 
+# Fields that should be normalised to "yes"/"no" when boolean or other variants
+YES_NO_FIELDS = {
+    "construction_cash_cost_exceeds_10k",
+    "exemption_applies",
+    "include_equal_opportunity_clause",
+    "notify_unions",
+    "advertising_statement_included",
+    "reporting_access_agreed",
+    "exec_order_compliance_agreed",
+    "subcontractor_flowdown_agreed",
+    "debarred_contractor_blocked",
+    "rd_400_6_required",
+    "ad_425_included",
+    "ad_560_required",
+    "cc_257_required",
+}
+
 def _normalize_state(value: str) -> str:
     if not value:
         return value
@@ -602,6 +619,24 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
             elif k.endswith("_state") or k == "state":
                 nv = _normalize_state(nv)
             flat[k] = nv
+    # normalise yes/no style fields
+    for k in YES_NO_FIELDS:
+        if k in flat:
+            v = flat[k]
+            if isinstance(v, bool):
+                flat[k] = "yes" if v else "no"
+            elif isinstance(v, str):
+                lv = v.strip().lower()
+                if lv in {"y", "yes", "true", "1"}:
+                    flat[k] = "yes"
+                elif lv in {"n", "no", "false", "0"}:
+                    flat[k] = "no"
+    if (
+        flat.get("corporate_recipient_name") in {None, ""}
+        and data.get("corporate")
+        and flat.get("recipient_name")
+    ):
+        flat["corporate_recipient_name"] = flat["recipient_name"]
     funding_keys = [k for k in flat if k.startswith("funding_") and k != "funding_total"]
     total = 0.0
     has_val = False

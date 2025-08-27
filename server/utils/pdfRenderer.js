@@ -77,11 +77,18 @@ async function renderPdf({ formId, filledForm }) {
     }
     for (const [key, cfg] of Object.entries(tmpl.checkboxes || {})) {
       const page = pages[cfg.page || 0];
-      const raw = fields[key];
+      const source = cfg.source || key;
+      const raw = fields[source];
       if (raw === undefined || raw === null || raw === '') {
-        logger.warn('pdf_render_missing_field', { formId, key });
+        logger.warn('pdf_render_missing_field', { formId, key: source });
       }
-      const mark = raw ? 'X' : '';
+      let checked;
+      if (typeof raw === 'string') {
+        checked = raw.toLowerCase() === 'yes';
+      } else {
+        checked = !!raw;
+      }
+      const mark = checked ? 'X' : '';
       page.drawText(mark, {
         x: cfg.x,
         y: cfg.y,

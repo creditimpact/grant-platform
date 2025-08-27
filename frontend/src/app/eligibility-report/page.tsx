@@ -79,6 +79,15 @@ export default function EligibilityReport() {
       {error && (
         <div className="bg-red-100 text-red-800 p-2 rounded">{error}</div>
       )}
+      {snapshot?.incompleteForms?.length ? (
+        <div className="bg-yellow-100 text-yellow-800 p-2 rounded">
+          {snapshot.incompleteForms.map((f) => (
+            <div key={f.formId}>
+              {f.name}: missing {f.missingFields.join(', ')}
+            </div>
+          ))}
+        </div>
+      ) : null}
       <button
         onClick={computeReport}
         disabled={generating}
