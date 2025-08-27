@@ -37,10 +37,9 @@ router.get(['/questionnaire', '/case/questionnaire'], async (req, res) => {
 router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
   const userId = 'dev-user';
   let { caseId, answers, data } = req.body || {};
-  const payload = answers || data;
-  if (!payload || typeof payload !== 'object') {
-    return res.status(400).json({ message: 'data required' });
-  }
+  let payload = {};
+  if (answers && typeof answers === 'object') payload = answers;
+  else if (data && typeof data === 'object') payload = data;
   let c;
   if (caseId) {
     c = await getCase(userId, caseId);

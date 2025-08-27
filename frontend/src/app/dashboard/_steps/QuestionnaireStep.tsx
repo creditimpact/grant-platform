@@ -265,7 +265,6 @@ export default function QuestionnaireStep({
         <label htmlFor="eeoOfficer-email" className="block text-sm">Email</label>
         <input
           id="eeoOfficer-email"
-          type="email"
           value={form.eeoOfficer.email}
           onChange={(e) => handleEeoOfficerChange('email', e.target.value)}
           className="border p-1 w-full"
@@ -275,7 +274,7 @@ export default function QuestionnaireStep({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} noValidate className="space-y-4">
       <h2 className="text-2xl font-bold">Questionnaire</h2>
 
       <h3 className="text-xl font-semibold">Business Identity</h3>
@@ -507,7 +506,6 @@ export default function QuestionnaireStep({
             name="ein"
             value={form.ein}
             onChange={handleChange}
-            pattern="^\d{9}$"
             className="border p-1 w-full"
           />
         </div>
@@ -520,7 +518,6 @@ export default function QuestionnaireStep({
             type="password"
             value={form.ssn}
             onChange={handleChange}
-            pattern="^\d{9}$"
             className="border p-1 w-full"
           />
         </div>
@@ -572,7 +569,6 @@ export default function QuestionnaireStep({
               <label className="block text-sm" htmlFor={`owner-email-${idx}`}>Email</label>
               <input
                 id={`owner-email-${idx}`}
-                type="email"
                 value={o.email}
                 onChange={(e) => handleOwnerChange(idx, 'email', e.target.value)}
                 className="border p-1 w-full"
