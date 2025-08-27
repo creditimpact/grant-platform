@@ -65,6 +65,7 @@ class FormFillRequest(BaseModel):
         "form_RD_400_8",
     ]
     user_payload: Dict[str, Any]
+    analyzer_fields: Dict[str, Any] | None = None
     session_id: Optional[str] = None
 
 
