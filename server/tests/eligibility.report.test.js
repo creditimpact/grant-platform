@@ -32,8 +32,14 @@ describe('eligibility report endpoints', () => {
       .send({ caseId, payload: { b: 2 } });
     expect(res.status).toBe(200);
     expect(res.body.eligibility.results).toHaveLength(2);
-    expect(res.body.eligibility.requiredForms).toEqual(['form_424A']);
-    expect(global.fetch.mock.calls.length).toBe(2); // engine + one valid form
+    expect(res.body.eligibility.requiredForms).toEqual([
+      'form_sf424',
+      'form_424A',
+    ]);
+    expect(res.body.generatedForms).toHaveLength(2);
+    const formIds = res.body.generatedForms.map((f) => f.formId);
+    expect(formIds).toEqual(expect.arrayContaining(['form_sf424', 'form_424A']));
+    expect(global.fetch.mock.calls.length).toBe(3); // engine + two valid forms
     const warnLog = logger.logs.find((l) => l.message === 'unsupported_form');
     expect(warnLog).toBeDefined();
     expect(warnLog.formId).toBe('941-X');
@@ -42,19 +48,24 @@ describe('eligibility report endpoints', () => {
   test('drops unsupported forms entirely', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => [{ program: 'p1', requiredForms: ['941-X'] }],
-    });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ program: 'p1', requiredForms: ['941-X'] }],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ filled_form: {} }),
+      });
     const res = await request(app)
       .post('/api/eligibility-report')
       .send({ caseId });
     expect(res.status).toBe(200);
-    expect(res.body.eligibility.requiredForms).toEqual([]);
-    expect(global.fetch.mock.calls.length).toBe(1); // only engine called
+    expect(res.body.eligibility.requiredForms).toEqual(['form_sf424']);
+    expect(global.fetch.mock.calls.length).toBe(2); // engine + default form
     const warnLog = logger.logs.find((l) => l.message === 'unsupported_form');
     expect(warnLog).toBeDefined();
-    expect(res.body.generatedForms).toHaveLength(0);
+    expect(res.body.generatedForms).toHaveLength(1);
   });
 
   test('maps envelope-level forms and filters unsupported', async () => {
@@ -80,6 +91,7 @@ describe('eligibility report endpoints', () => {
     expect(res.status).toBe(200);
     expect(res.body.eligibility.results).toHaveLength(1);
     expect(res.body.eligibility.requiredForms).toEqual(['form_sf424']);
+    expect(res.body.generatedForms).toHaveLength(1);
     const warnLog = logger.logs.find((l) => l.message === 'unsupported_form');
     expect(warnLog).toBeDefined();
   });
@@ -106,15 +118,21 @@ describe('eligibility report endpoints', () => {
       .post('/api/eligibility-report')
       .send({ caseId });
     expect(res.status).toBe(200);
-    expect(res.body.generatedForms).toHaveLength(1);
-    expect(res.body.generatedForms[0].formId).toBe('form_424A');
-    expect(res.body.generatedForms[0].name).toBeTruthy();
-    expect(res.body.generatedForms[0].url).toBeTruthy();
+    expect(res.body.generatedForms).toHaveLength(2);
+    const ids = res.body.generatedForms.map((f) => f.formId);
+    expect(ids).toEqual(expect.arrayContaining(['form_424A', 'form_sf424']));
+    res.body.generatedForms.forEach((f) => {
+      expect(f.name).toBeTruthy();
+      expect(f.url).toBeTruthy();
+    });
     const stored = await getCase('dev-user', caseId);
-    expect(stored.generatedForms).toHaveLength(1);
-    expect(stored.generatedForms[0].formId).toBe('form_424A');
-    expect(stored.generatedForms[0].name).toBeTruthy();
-    expect(stored.generatedForms[0].url).toBeTruthy();
+    expect(stored.generatedForms).toHaveLength(2);
+    const storedIds = stored.generatedForms.map((f) => f.formId);
+    expect(storedIds).toEqual(expect.arrayContaining(['form_424A', 'form_sf424']));
+    stored.generatedForms.forEach((f) => {
+      expect(f.name).toBeTruthy();
+      expect(f.url).toBeTruthy();
+    });
   });
 
   test('omits url when pdf render fails', async () => {
@@ -139,7 +157,8 @@ describe('eligibility report endpoints', () => {
       .post('/api/eligibility-report')
       .send({ caseId });
     expect(res.status).toBe(200);
-    expect(res.body.generatedForms[0].url).toBeFalsy();
+    expect(res.body.generatedForms).toHaveLength(2);
+    expect(res.body.generatedForms.some((f) => !f.url)).toBe(true);
     const log = logger.logs.find((l) => l.message === 'pdf_render_failed');
     expect(log).toBeDefined();
     spy.mockRestore();
@@ -148,8 +167,6 @@ describe('eligibility report endpoints', () => {
   test('records incomplete form when required fields missing', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
-    const pdfRenderer = require('../utils/pdfRenderer');
-    const renderSpy = jest.spyOn(pdfRenderer, 'renderPdf');
     const formTemplates = require('../utils/formTemplates');
     jest
       .spyOn(formTemplates, 'getLatestTemplate')
@@ -165,7 +182,7 @@ describe('eligibility report endpoints', () => {
           requiredForms: ['424A'],
         }),
       })
-      .mockResolvedValueOnce({
+      .mockResolvedValue({
         ok: true,
         json: async () => ({ filled_form: {} }),
       });
@@ -173,13 +190,12 @@ describe('eligibility report endpoints', () => {
       .post('/api/eligibility-report')
       .send({ caseId });
     expect(res.status).toBe(200);
-    expect(res.body.generatedForms).toHaveLength(0);
+    expect(res.body.generatedForms).toHaveLength(1);
+    expect(res.body.generatedForms[0].formId).toBe('form_sf424');
     expect(res.body.incompleteForms).toHaveLength(1);
     expect(res.body.incompleteForms[0].missingFields).toEqual(['foo']);
-    expect(renderSpy).not.toHaveBeenCalled();
     const log = logger.logs.find((l) => l.message === 'form_fill_validation_failed');
     expect(log).toBeDefined();
-    renderSpy.mockRestore();
     formTemplates.getLatestTemplate.mockRestore();
   });
 
@@ -212,8 +228,10 @@ describe('eligibility report endpoints', () => {
   test('GET returns latest eligibility', async () => {
     const caseId = await createCase('dev-user');
     const eligibility = {
-      results: [{ program: 'p', requiredForms: ['form_424A'], missing_fields: ['m'] }],
-      requiredForms: ['form_424A'],
+      results: [
+        { program: 'p', requiredForms: ['form_424A'], missing_fields: ['m'] },
+      ],
+      requiredForms: ['form_sf424', 'form_424A'],
       lastUpdated: new Date().toISOString(),
     };
     await updateCase(caseId, { eligibility });
@@ -222,7 +240,10 @@ describe('eligibility report endpoints', () => {
       .query({ caseId });
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.eligibility.requiredForms)).toBe(true);
-    expect(res.body.eligibility.requiredForms).toEqual(['form_424A']);
+    expect(res.body.eligibility.requiredForms).toEqual([
+      'form_sf424',
+      'form_424A',
+    ]);
     expect(res.body.missingFieldsSummary).toEqual(['m']);
     expect(res.body.analyzerFields).toBeDefined();
   });
