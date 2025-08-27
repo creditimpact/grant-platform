@@ -99,8 +99,8 @@ router.post('/files/upload', (req, res) => {
     });
     if (updatedKeys.length) {
       const logFn = logger.debug ? logger.debug.bind(logger) : logger.info.bind(logger);
-      logFn('merge: analyzer overrides existing fields', {
-        overriddenKeys: updatedKeys,
+      logFn('safeMerge updatedKeys', {
+        updatedKeys,
         requestId: req.headers['x-request-id'],
       });
     }

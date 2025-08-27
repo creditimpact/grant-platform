@@ -79,8 +79,8 @@ router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
   const { merged, updatedKeys } = safeMerge(existingFields, normalizedPayload, {
     source: 'questionnaire',
   });
-  logger.info('merge: questionnaire overrides existing fields', {
-    overriddenKeys: updatedKeys,
+  logger.info('safeMerge updatedKeys', {
+    updatedKeys,
     requestId: req.headers['x-request-id'],
   });
   const normalizedMerged = normalizeAnswers(merged);
