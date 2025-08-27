@@ -55,6 +55,39 @@ describe('pipeline submit-case', () => {
     formTemplates.getLatestTemplate.mockRestore();
   });
 
+  test('enforces pdfTemplates required fields', async () => {
+    const formTemplates = require('../utils/formTemplates');
+    jest
+      .spyOn(formTemplates, 'getLatestTemplate')
+      .mockResolvedValue({ version: 1, schema: {} });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ requiredForms: ['form_8974'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          filled_form: { employer_identification_number: '11-1111111' },
+        }),
+      });
+
+    const res = await request(app)
+      .post('/api/submit-case')
+      .field('businessName', 'Biz')
+      .field('email', 'a@b.com')
+      .field('phone', '1234567');
+
+    expect(res.status).toBe(200);
+    expect(res.body.generatedForms).toHaveLength(0);
+    expect(res.body.incompleteForms).toHaveLength(1);
+    expect(res.body.incompleteForms[0].missingFields).toEqual([
+      'name',
+      'credit_amount',
+    ]);
+    formTemplates.getLatestTemplate.mockRestore();
+  });
+
   test('renders draft from filled_form', async () => {
     global.fetch
       .mockResolvedValueOnce({

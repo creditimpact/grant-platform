@@ -24,6 +24,32 @@ describe('pdfRenderer', () => {
     expect(buf.includes('%%EOF')).toBe(true);
   });
 
+  test('renders 6765 template', async () => {
+    const buf = await renderPdf({
+      formId: 'form_6765',
+      filledForm: { taxpayer_name: 'ACME', ein: '12-3456789', total_qre: 1000 },
+    });
+    expect(Buffer.isBuffer(buf)).toBe(true);
+    expect(buf.length).toBeGreaterThan(0);
+    expect(buf.slice(0, 5).toString()).toBe('%PDF-');
+    expect(buf.includes('%%EOF')).toBe(true);
+  });
+
+  test('renders 8974 template', async () => {
+    const buf = await renderPdf({
+      formId: 'form_8974',
+      filledForm: {
+        employer_identification_number: '98-7654321',
+        name: 'ACME',
+        credit_amount: 2000,
+      },
+    });
+    expect(Buffer.isBuffer(buf)).toBe(true);
+    expect(buf.length).toBeGreaterThan(0);
+    expect(buf.slice(0, 5).toString()).toBe('%PDF-');
+    expect(buf.includes('%%EOF')).toBe(true);
+  });
+
   test('logs missing fields and draws overlay when enabled', async () => {
     logger.logs.length = 0;
     process.env.PDF_DEBUG_OVERLAY = 'true';
