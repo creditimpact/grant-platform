@@ -1,15 +1,47 @@
 {
   "form_name": "form_sf424",
+  "required": [
+    "applicant_legal_name",
+    "ein",
+    "descriptive_title",
+    "project_start_date",
+    "project_end_date",
+    "authorized_rep_name",
+    "authorized_rep_title",
+    "authorized_rep_date_signed",
+    "funding_total"
+  ],
   "fields": [
-    { "key": "applicant_name" },
+    { "key": "applicant_legal_name" },
     { "key": "ein" },
-    {
-      "key": "business_summary",
-      "prompt": "Summarize the company's activity in one concise sentence using profile + analyzer text. Output plain text only."
-    },
-    {
-      "key": "entity_type",
-      "prompt": "From profile/analyzer, infer the legal entity type (LLC, C-Corp, S-Corp, Sole Proprietor). Return a canonical label."
-    }
+    { "key": "descriptive_title", "prompt": "Provide a concise project title." },
+    { "key": "areas_affected", "prompt": "List areas affected by the project." },
+    { "key": "project_start_date", "type": "date" },
+    { "key": "project_end_date", "type": "date" },
+    { "key": "funding_federal" },
+    { "key": "funding_applicant" },
+    { "key": "funding_state" },
+    { "key": "funding_local" },
+    { "key": "funding_other" },
+    { "key": "funding_program_income" },
+    { "key": "authorized_rep_name" },
+    { "key": "authorized_rep_title" },
+    { "key": "authorized_rep_date_signed", "type": "date" },
+    { "key": "type_of_submission_application", "type": "boolean" },
+    { "key": "type_of_submission_preapplication", "type": "boolean" },
+    { "key": "type_of_applicant_code_A", "type": "boolean" },
+    { "key": "type_of_applicant_code_B", "type": "boolean" },
+    { "key": "type_of_applicant_code_C", "type": "boolean" },
+    { "key": "type_of_applicant_code_D", "type": "boolean" },
+    { "key": "type_of_applicant_code_E", "type": "boolean" },
+    { "key": "type_of_applicant_code_F", "type": "boolean" },
+    { "key": "type_of_applicant_code_G", "type": "boolean" },
+    { "key": "type_of_applicant_code_H", "type": "boolean" },
+    { "key": "type_of_applicant_code_I", "type": "boolean" },
+    { "key": "type_of_applicant_code_J", "type": "boolean" },
+    { "key": "type_of_applicant_code_K", "type": "boolean" },
+    { "key": "type_of_applicant_code_L", "type": "boolean" },
+    { "key": "type_of_applicant_code_M", "type": "boolean" },
+    { "key": "type_of_applicant_code_N", "type": "boolean" }
   ]
 }

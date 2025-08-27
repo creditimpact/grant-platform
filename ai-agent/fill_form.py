@@ -431,6 +431,12 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
     source = str(data.get("source_of_funds", "")).lower()
     data["source_of_funds_direct"] = source == "direct"
     data["source_of_funds_insured"] = source == "insured"
+    submission = str(data.get("type_of_submission", "")).lower()
+    data["type_of_submission_application"] = submission == "application"
+    data["type_of_submission_preapplication"] = submission == "preapplication"
+    code = str(data.get("type_of_applicant_code", "")).upper()
+    for letter in "ABCDEFGHIJKLMN":
+        data[f"type_of_applicant_code_{letter}"] = code == letter
     path = FORM_DIR / f"{form_key}.json"
     with path.open("r", encoding="utf-8") as f:
         template = json.load(f)
@@ -453,5 +459,23 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
     if reasoning:
         filled["reasoning_log"] = reasoning
     fields = filled.get("fields", {})
-    filled["fields"] = _flatten_dict(fields)
+    flat = _flatten_dict(fields)
+    funding_keys = [k for k in flat if k.startswith("funding_") and k != "funding_total"]
+    total = 0.0
+    has_val = False
+    for k in funding_keys:
+        v = flat.get(k)
+        if isinstance(v, str):
+            v = v.replace("$", "").replace(",", "")
+        try:
+            num = float(v)
+        except (TypeError, ValueError):
+            continue
+        flat[k] = num
+        total += num
+        if num:
+            has_val = True
+    if has_val:
+        flat["funding_total"] = total
+    filled["fields"] = flat
     return filled
