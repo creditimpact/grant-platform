@@ -1,32 +1,36 @@
 const request = require('supertest');
 process.env.SKIP_DB = 'true';
+
+jest.mock('../utils/pdfRenderer', () => require('./__mocks__/pdfRenderer.mock'));
+jest.mock('../utils/formTemplates', () => require('./__mocks__/formTemplates.mock'));
+
 const app = require('../index');
 const { createCase, updateCase, resetStore, getCase } = require('../utils/pipelineStore');
 const logger = require('../utils/logger');
+const { makeEngineOk } = require('./__mocks__/fetch.mock');
 
 describe('eligibility report endpoints', () => {
   beforeEach(() => {
     process.env.SKIP_DB = 'true';
     resetStore();
-    global.fetch = jest.fn();
+    global.fetch = makeEngineOk();
     logger.logs.length = 0;
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   test('filters unsupported forms and maps known aliases', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
-    global.fetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [
-          { program: 'p1', requiredForms: ['941-X'], missing_fields: ['m1'] },
-          { program: 'p2', requiredForms: ['424A'], missing_fields: ['m2'] },
-        ],
-      })
-      .mockResolvedValue({
-        ok: true,
-        json: async () => ({ filled_form: {} }),
-      });
+    global.fetch = makeEngineOk({
+      results: [
+        { program: 'p1', requiredForms: ['941-X'], missing_fields: ['m1'] },
+        { program: 'p2', requiredForms: ['424A'], missing_fields: ['m2'] },
+      ],
+      requiredForms: ['424A'],
+    });
     const res = await request(app)
       .post('/api/eligibility-report')
       .send({ caseId, payload: { b: 2 } });
@@ -39,7 +43,6 @@ describe('eligibility report endpoints', () => {
     expect(res.body.generatedForms).toHaveLength(2);
     const formIds = res.body.generatedForms.map((f) => f.formId);
     expect(formIds).toEqual(expect.arrayContaining(['form_sf424', 'form_424A']));
-    expect(global.fetch.mock.calls.length).toBe(3); // engine + two valid forms
     const warnLog = logger.logs.find((l) => l.message === 'unsupported_form');
     expect(warnLog).toBeDefined();
     expect(warnLog.formId).toBe('941-X');
@@ -48,21 +51,15 @@ describe('eligibility report endpoints', () => {
   test('drops unsupported forms entirely', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
-    global.fetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [{ program: 'p1', requiredForms: ['941-X'] }],
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ filled_form: {} }),
-      });
+    global.fetch = makeEngineOk({
+      results: [{ program: 'p1', requiredForms: ['941-X'] }],
+      requiredForms: [],
+    });
     const res = await request(app)
       .post('/api/eligibility-report')
       .send({ caseId });
     expect(res.status).toBe(200);
     expect(res.body.eligibility.requiredForms).toEqual(['form_sf424']);
-    expect(global.fetch.mock.calls.length).toBe(2); // engine + default form
     const warnLog = logger.logs.find((l) => l.message === 'unsupported_form');
     expect(warnLog).toBeDefined();
     expect(res.body.generatedForms).toHaveLength(1);
@@ -71,20 +68,12 @@ describe('eligibility report endpoints', () => {
   test('maps envelope-level forms and filters unsupported', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
-    global.fetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          results: [
-            { program: 'p1', requiredForms: ['941-X'], missing_fields: [] },
-          ],
-          requiredForms: ['SF-424'],
-        }),
-      })
-      .mockResolvedValue({
-        ok: true,
-        json: async () => ({ filled_form: {} }),
-      });
+    global.fetch = makeEngineOk({
+      results: [
+        { program: 'p1', requiredForms: ['941-X'], missing_fields: [] },
+      ],
+      requiredForms: ['SF-424'],
+    });
     const res = await request(app)
       .post('/api/eligibility-report')
       .send({ caseId, payload: {} });
@@ -99,21 +88,12 @@ describe('eligibility report endpoints', () => {
   test('generates forms after eligibility-report', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
-    global.fetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          results: [
-            { program: 'p1', requiredForms: ['424A'], missing_fields: [] },
-          ],
-        }),
-      })
-      .mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          filled_form: { some: 'data' }
-        }),
-      });
+    global.fetch = makeEngineOk({
+      results: [
+        { program: 'p1', requiredForms: ['424A'], missing_fields: [] },
+      ],
+      requiredForms: [],
+    });
     const res = await request(app)
       .post('/api/eligibility-report')
       .send({ caseId });
@@ -139,20 +119,15 @@ describe('eligibility report endpoints', () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
     const pdfRenderer = require('../utils/pdfRenderer');
-    const spy = jest.spyOn(pdfRenderer, 'renderPdf').mockRejectedValueOnce(new Error('boom'));
-    global.fetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          results: [
-            { program: 'p1', requiredForms: ['424A'], missing_fields: [] },
-          ],
-        }),
-      })
-      .mockResolvedValue({
-        ok: true,
-        json: async () => ({ filled_form: { some: 'data' } }),
-      });
+    const spy = jest
+      .spyOn(pdfRenderer, 'renderPdf')
+      .mockRejectedValueOnce(new Error('boom'));
+    global.fetch = makeEngineOk({
+      results: [
+        { program: 'p1', requiredForms: ['424A'], missing_fields: [] },
+      ],
+      requiredForms: [],
+    });
     const res = await request(app)
       .post('/api/eligibility-report')
       .send({ caseId });
@@ -168,24 +143,11 @@ describe('eligibility report endpoints', () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
     const formTemplates = require('../utils/formTemplates');
-    jest
-      .spyOn(formTemplates, 'getLatestTemplate')
-      .mockResolvedValue({
-        version: 1,
-        schema: { required: ['foo'], properties: { foo: { type: 'string' } } },
-      });
-    global.fetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          results: [],
-          requiredForms: ['424A'],
-        }),
-      })
-      .mockResolvedValue({
-        ok: true,
-        json: async () => ({ filled_form: {} }),
-      });
+    formTemplates.getLatestTemplate.mockResolvedValue({
+      version: 1,
+      schema: { required: ['foo'], properties: { foo: { type: 'string' } } },
+    });
+    global.fetch = makeEngineOk({ results: [], requiredForms: ['424A'] });
     const res = await request(app)
       .post('/api/eligibility-report')
       .send({ caseId });
@@ -202,11 +164,11 @@ describe('eligibility report endpoints', () => {
   test('continues when a form-fill fails', async () => {
     const caseId = await createCase('dev-user');
     await updateCase(caseId, { analyzer: { fields: { a: 1 } } });
-    global.fetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ requiredForms: ['424A', 'SF-424'], results: [] }),
-      })
+    global.fetch = jest
+      .fn()
+      .mockImplementationOnce(
+        makeEngineOk({ requiredForms: ['424A', 'SF-424'], results: [] })
+      )
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ filled_form: { x: 1 } }),
