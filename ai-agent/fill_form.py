@@ -40,6 +40,17 @@ ENTITY_TYPE_MAP = {
 }
 
 
+def _flatten_dict(d: Dict[str, Any], parent_key: str = "", sep: str = "_") -> Dict[str, Any]:
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(_flatten_dict(v, new_key, sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
 def _canonical_entity_type(value: str) -> str:
     key = value.strip().lower().replace(".", "").replace(",", "")
     return ENTITY_TYPE_MAP.get(key, value.strip())
@@ -394,6 +405,22 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
     """Load ``form_key`` template and merge ``data`` into the fields."""
     if file_bytes:
         data.update(extract_fields(file_bytes))
+    # derive common checkboxes from known canonical fields
+    et = data.get("entity_type")
+    if isinstance(et, str):
+        canon = _canonical_entity_type(et)
+        data["entity_type"] = canon
+        if canon:
+            data["corporate"] = canon not in ["Sole Proprietor"]
+            data["individual"] = not data["corporate"]
+    atype = str(data.get("assistance_type", "")).lower()
+    data["loan"] = atype == "loan"
+    data["grant"] = atype == "grant"
+    data["loan_guaranty"] = atype in {"loan_guaranty", "loan guaranty"}
+    data["other_assistance"] = atype == "other"
+    source = str(data.get("source_of_funds", "")).lower()
+    data["source_of_funds_direct"] = source == "direct"
+    data["source_of_funds_insured"] = source == "insured"
     path = FORM_DIR / f"{form_key}.json"
     with path.open("r", encoding="utf-8") as f:
         template = json.load(f)
@@ -415,4 +442,6 @@ def fill_form(form_key: str, data: Dict[str, Any], file_bytes: bytes | None = No
     filled = _fill_template(template, data, reasoning, form_name=form_key)
     if reasoning:
         filled["reasoning_log"] = reasoning
+    fields = filled.get("fields", {})
+    filled["fields"] = _flatten_dict(fields)
     return filled
