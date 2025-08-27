@@ -46,6 +46,7 @@ export interface IncompleteForm {
 export interface CaseSnapshot {
   caseId: string | null;
   requiredForms?: string[];
+  requiredDocuments?: string[];
   status?: CaseStatus;
   documents?: CaseDoc[];
   analyzerFields?: Record<string, unknown>;

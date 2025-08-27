@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCase, getCase } = require('../utils/pipelineStore');
+const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
 const { getRequiredDocuments } = require('../utils/requiredDocuments');
 
 const router = express.Router();
@@ -34,6 +34,7 @@ async function caseStatusHandler(req, res) {
     generatedForms: c.generatedForms,
     incompleteForms: c.incompleteForms,
     documents: c.documents,
+    requiredDocuments: c.requiredDocuments,
     normalized: c.normalized,
   });
 }
@@ -62,6 +63,7 @@ router.post('/case/init', async (req, res) => {
     generatedForms: c.generatedForms,
     incompleteForms: c.incompleteForms,
     documents: c.documents,
+    requiredDocuments: c.requiredDocuments,
     normalized: c.normalized,
   });
 });
@@ -72,7 +74,11 @@ router.get('/case/required-documents', async (req, res) => {
   if (!caseId) return res.status(400).json({ error: 'caseId required' });
   const c = await getCase(userId, caseId);
   if (!c) return res.status(404).json({ error: 'Case not found' });
-  const requiredDocs = getRequiredDocuments(c);
+  let requiredDocs = c.requiredDocuments;
+  if (!requiredDocs || !requiredDocs.length) {
+    requiredDocs = getRequiredDocuments(c);
+    await updateCase(caseId, { requiredDocuments: requiredDocs });
+  }
   res.json({ required: requiredDocs });
 });
 

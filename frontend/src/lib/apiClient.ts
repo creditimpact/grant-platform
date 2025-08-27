@@ -145,6 +145,9 @@ function transformCase(data: any): CaseSnapshot {
   return {
     caseId: data.caseId,
     requiredForms: Array.isArray(data.requiredForms) ? data.requiredForms : undefined,
+    requiredDocuments: Array.isArray(data.requiredDocuments)
+      ? data.requiredDocuments
+      : undefined,
     status: data.status,
     documents: data.documents || [],
     analyzerFields: data.analyzerFields || data.analyzer?.fields || {},
