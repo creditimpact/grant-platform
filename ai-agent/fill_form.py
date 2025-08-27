@@ -750,6 +750,179 @@ def fill_form(
         if mismatches:
             logger.error("form_fill_calculation_mismatch", extra={"form": form_key, "fields": mismatches})
 
+    elif form_key == "form_424A":
+        flat.update({k: v for k, v in data.items() if k not in flat})
+        mismatches: list[dict[str, float]] = []
+        required_missing: list[str] = []
+
+        def _maybe_mismatch(key: str, expected: float):
+            if key in data and data.get(key) not in (None, ""):
+                actual = flat.get(key)
+                if round(actual or 0.0, 2) != round(expected, 2):
+                    mismatches.append({
+                        "path": key,
+                        "expected": round(expected, 2),
+                        "actual": actual,
+                    })
+
+        # Normalize values
+        for k, v in list(flat.items()):
+            if k.endswith(("_program", "_assistance_listing", "_remarks")):
+                if isinstance(v, str):
+                    flat[k] = v.strip()
+            else:
+                flat[k] = None if v in (None, "") else _to_float(v)
+
+        # Section A calculations
+        for i in range(1, 5):
+            c = flat.get(f"a_row{i}_unobligated_federal") or 0.0
+            d = flat.get(f"a_row{i}_unobligated_non_federal") or 0.0
+            e = flat.get(f"a_row{i}_new_federal") or 0.0
+            f_val = flat.get(f"a_row{i}_new_non_federal") or 0.0
+            total = c + d + e + f_val
+            key_total = f"a_row{i}_total"
+            _maybe_mismatch(key_total, total)
+            flat[key_total] = round(total, 2)
+            if any([c, d, e, f_val]):
+                if not flat.get(f"a_row{i}_program"):
+                    required_missing.append(f"a_row{i}_program")
+                if not flat.get(f"a_row{i}_assistance_listing"):
+                    required_missing.append(f"a_row{i}_assistance_listing")
+
+        cols = [
+            "unobligated_federal",
+            "unobligated_non_federal",
+            "new_federal",
+            "new_non_federal",
+            "total",
+        ]
+        for col in cols:
+            expected = sum(flat.get(f"a_row{i}_{col}") or 0.0 for i in range(1, 5))
+            key = f"a_row5_{col}"
+            _maybe_mismatch(key, expected)
+            flat[key] = round(expected, 2)
+
+        # Section B calculations
+        base_cats = [
+            "personnel",
+            "fringe_benefits",
+            "travel",
+            "equipment",
+            "supplies",
+            "contractual",
+            "construction",
+            "other",
+        ]
+        for cat in base_cats:
+            total = 0.0
+            for j in range(1, 6):
+                key = f"b_{cat}_col{j}"
+                val = flat.get(key)
+                flat[key] = None if val in (None, "") else _to_float(val)
+                total += flat.get(key) or 0.0
+            key_total = f"b_{cat}_total"
+            _maybe_mismatch(key_total, total)
+            flat[key_total] = round(total, 2)
+
+        # total direct (6i)
+        for j in range(1, 6):
+            expected = sum(flat.get(f"b_{cat}_col{j}") or 0.0 for cat in base_cats)
+            key = f"b_total_direct_col{j}"
+            _maybe_mismatch(key, expected)
+            flat[key] = round(expected, 2)
+        expected = sum(flat.get(f"b_{cat}_total") or 0.0 for cat in base_cats)
+        _maybe_mismatch("b_total_direct_total", expected)
+        flat["b_total_direct_total"] = round(expected, 2)
+
+        # indirect (6j)
+        for j in range(1, 6):
+            key = f"b_indirect_col{j}"
+            val = flat.get(key)
+            flat[key] = None if val in (None, "") else _to_float(val)
+        ind_total = sum(flat.get(f"b_indirect_col{j}") or 0.0 for j in range(1, 6))
+        _maybe_mismatch("b_indirect_total", ind_total)
+        flat["b_indirect_total"] = round(ind_total, 2)
+
+        # totals line (6k)
+        for j in range(1, 6):
+            expected = (flat.get(f"b_total_direct_col{j}") or 0.0) + (flat.get(f"b_indirect_col{j}") or 0.0)
+            key = f"b_totals_col{j}"
+            _maybe_mismatch(key, expected)
+            flat[key] = round(expected, 2)
+        expected = (flat.get("b_total_direct_total") or 0.0) + (flat.get("b_indirect_total") or 0.0)
+        _maybe_mismatch("b_totals_total", expected)
+        flat["b_totals_total"] = round(expected, 2)
+
+        # program income
+        prog_income = 0.0
+        for j in range(1, 6):
+            key = f"b_program_income_col{j}"
+            val = flat.get(key)
+            flat[key] = None if val in (None, "") else _to_float(val)
+            prog_income += flat.get(key) or 0.0
+        _maybe_mismatch("b_program_income_total", prog_income)
+        flat["b_program_income_total"] = round(prog_income, 2)
+
+        if all((flat.get(f"b_{cat}_total") or 0.0) == 0.0 for cat in base_cats) and (flat.get("b_indirect_total") or 0.0) == 0.0:
+            required_missing.append("section_b_budget_categories")
+
+        # Section C
+        for line in range(8, 12):
+            applicant = flat.get(f"c_row{line}_applicant") or 0.0
+            state = flat.get(f"c_row{line}_state") or 0.0
+            other = flat.get(f"c_row{line}_other") or 0.0
+            total = applicant + state + other
+            key = f"c_row{line}_totals"
+            _maybe_mismatch(key, total)
+            flat[key] = round(total, 2)
+        for field in ["applicant", "state", "other", "totals"]:
+            expected = sum(flat.get(f"c_row{line}_{field}") or 0.0 for line in range(8, 12))
+            key = f"c_row12_{field}"
+            _maybe_mismatch(key, expected)
+            flat[key] = round(expected, 2)
+        if not flat.get("c_row12_program"):
+            flat["c_row12_program"] = "TOTAL"
+
+        # Section D
+        for t in ["federal", "non_federal"]:
+            total = 0.0
+            for q in ["q1", "q2", "q3", "q4"]:
+                key = f"d_cash_needs_{t}_{q}"
+                val = flat.get(key)
+                flat[key] = None if val in (None, "") else _to_float(val)
+                total += flat.get(key) or 0.0
+            key = f"d_cash_needs_{t}_total"
+            _maybe_mismatch(key, total)
+            flat[key] = round(total, 2)
+        for q in ["q1", "q2", "q3", "q4", "total"]:
+            expected = (flat.get(f"d_cash_needs_federal_{q}") or 0.0) + (flat.get(f"d_cash_needs_non_federal_{q}") or 0.0)
+            key = f"d_cash_needs_total_{q}"
+            _maybe_mismatch(key, expected)
+            flat[key] = round(expected, 2)
+
+        # Section E
+        for line in range(16, 20):
+            total = 0.0
+            for y in range(1, 5):
+                key = f"e_row{line}_y{y}"
+                val = flat.get(key)
+                flat[key] = None if val in (None, "") else _to_float(val)
+                total += flat.get(key) or 0.0
+            key = f"e_row{line}_total"
+            _maybe_mismatch(key, total)
+            flat[key] = round(total, 2)
+        for field in ["y1", "y2", "y3", "y4", "total"]:
+            expected = sum(flat.get(f"e_row{line}_{field}") or 0.0 for line in range(16, 20))
+            key = f"e_row20_{field}"
+            _maybe_mismatch(key, expected)
+            flat[key] = round(expected, 2)
+        if not flat.get("e_row20_program"):
+            flat["e_row20_program"] = "TOTAL"
+
+        filled["required_ok"] = not required_missing
+        filled["missing_keys"] = required_missing
+        filled["calc_mismatches"] = mismatches
+
     elif form_key == "form_6765":
         for k, v in list(flat.items()):
             if k.startswith("line_") and k.endswith("_value"):
