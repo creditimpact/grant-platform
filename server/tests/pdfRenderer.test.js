@@ -81,6 +81,42 @@ describe('pdfRenderer', () => {
     expect(buf.includes('%%EOF')).toBe(true);
   });
 
+  test('renders RD 400-1 template without missing overlay', async () => {
+    logger.logs.length = 0;
+    process.env.PDF_DEBUG_OVERLAY = 'true';
+    const buf = await renderPdf({
+      formId: 'form_RD_400_1',
+      filledForm: {
+        recipient_name: 'ACME',
+        recipient_address_street: '123 Main St',
+        recipient_address_city: 'Town',
+        recipient_address_state: 'CA',
+        recipient_address_zip: '12345',
+        agreement_date: '2024-01-01',
+        recipient_signature: 'Alice',
+        recipient_title: 'CEO',
+        signing_date: '2024-01-02',
+        corporate_recipient_name: 'ACME',
+        president_signature: 'Bob',
+        secretary_attest: 'Eve',
+        include_equal_opportunity_clause: 'yes',
+        notify_unions: 'yes',
+        advertising_statement_included: 'yes',
+        reporting_access_agreed: 'yes',
+        exec_order_compliance_agreed: 'yes',
+        subcontractor_flowdown_agreed: 'yes',
+        debarred_contractor_blocked: 'yes',
+      },
+    });
+    const pdfString = buf.toString();
+    expect(pdfString).not.toContain('MISSING:recipient_name');
+    const log = logger.logs.find(
+      (l) => l.message === 'pdf_render_missing_field' && l.key === 'recipient_name'
+    );
+    expect(log).toBeUndefined();
+    delete process.env.PDF_DEBUG_OVERLAY;
+  });
+
   test('logs missing fields for RD 400-8', async () => {
     logger.logs.length = 0;
     await renderPdf({ formId: 'form_RD_400_8', filledForm: {} });

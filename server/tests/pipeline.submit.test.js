@@ -149,6 +149,85 @@ describe('pipeline submit-case', () => {
     formTemplates.getLatestTemplate.mockRestore();
   });
 
+  test('renders RD 400-1 when complete', async () => {
+    const formTemplates = require('../utils/formTemplates');
+    jest
+      .spyOn(formTemplates, 'getLatestTemplate')
+      .mockResolvedValue({ version: 1, schema: {} });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ requiredForms: ['form_RD_400_1'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          filled_form: {
+            recipient_name: 'ACME',
+            recipient_address_street: '123 Main',
+            recipient_address_city: 'Town',
+            recipient_address_state: 'CA',
+            recipient_address_zip: '12345',
+            agreement_date: '2024-01-01',
+            recipient_title: 'CEO',
+            signing_date: '2024-01-02',
+          },
+        }),
+      });
+
+    const res = await request(app)
+      .post('/api/submit-case')
+      .field('businessName', 'Biz')
+      .field('email', 'a@b.com')
+      .field('phone', '1234567');
+
+    expect(res.status).toBe(200);
+    expect(res.body.generatedForms).toHaveLength(1);
+    expect(res.body.generatedForms[0].formId).toBe('form_RD_400_1');
+    expect(res.body.generatedForms[0].url).toBeTruthy();
+    formTemplates.getLatestTemplate.mockRestore();
+  });
+
+  test('blocks RD 400-1 render when title missing', async () => {
+    const formTemplates = require('../utils/formTemplates');
+    jest
+      .spyOn(formTemplates, 'getLatestTemplate')
+      .mockResolvedValue({ version: 1, schema: {} });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ requiredForms: ['form_RD_400_1'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          filled_form: {
+            recipient_name: 'ACME',
+            recipient_address_street: '123 Main',
+            recipient_address_city: 'Town',
+            recipient_address_state: 'CA',
+            recipient_address_zip: '12345',
+            agreement_date: '2024-01-01',
+            signing_date: '2024-01-02',
+          },
+        }),
+      });
+
+    const res = await request(app)
+      .post('/api/submit-case')
+      .field('businessName', 'Biz')
+      .field('email', 'a@b.com')
+      .field('phone', '1234567');
+
+    expect(res.status).toBe(200);
+    expect(res.body.generatedForms).toHaveLength(0);
+    expect(res.body.incompleteForms).toHaveLength(1);
+    expect(res.body.incompleteForms[0].missingFields).toContain(
+      'recipient_title'
+    );
+    formTemplates.getLatestTemplate.mockRestore();
+  });
+
   test('blocks RD 400-4 render when title missing', async () => {
     const formTemplates = require('../utils/formTemplates');
     jest

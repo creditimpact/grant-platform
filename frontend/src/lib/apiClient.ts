@@ -4,6 +4,7 @@ import type {
   CaseSnapshot,
   EligibilityReport,
   GeneratedForm,
+  IncompleteForm,
   ResultsEnvelope,
 } from './types';
 
@@ -118,6 +119,15 @@ function toGeneratedForms(arr: any): GeneratedForm[] {
   }));
 }
 
+function toIncompleteForms(arr: any): IncompleteForm[] {
+  return (Array.isArray(arr) ? arr : []).map((f: any) => ({
+    formId: f.formId ?? f.formKey ?? '',
+    name: f.name ?? f.formId ?? f.formKey ?? '',
+    missingFields: Array.isArray(f.missingFields) ? f.missingFields : [],
+    message: f.message,
+  }));
+}
+
 function transformCase(data: any): CaseSnapshot {
   const rawResults =
     Array.isArray(data.eligibility?.results)
@@ -141,6 +151,7 @@ function transformCase(data: any): CaseSnapshot {
     questionnaire,
     eligibility: rawResults.length ? normalizeEligibility(rawResults) : [],
     generatedForms: toGeneratedForms(data.generatedForms),
+    incompleteForms: toIncompleteForms(data.incompleteForms),
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   };
