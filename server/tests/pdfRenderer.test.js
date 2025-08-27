@@ -38,7 +38,12 @@ describe('pdfRenderer', () => {
   test('renders 6765 template', async () => {
     const buf = await renderPdf({
       formId: 'form_6765',
-      filledForm: { taxpayer_name: 'ACME', ein: '12-3456789', total_qre: 1000 },
+      filledForm: {
+        names_shown_on_return: 'ACME',
+        identifying_number: '12-3456789',
+        line_20_value: 0,
+        line_21_value: 0,
+      },
     });
     expect(Buffer.isBuffer(buf)).toBe(true);
     expect(buf.length).toBeGreaterThan(0);

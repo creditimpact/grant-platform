@@ -108,6 +108,12 @@ const form8974Checkboxes = {
   line11_third_party_payer: { page: 0, x: 380, y: 360, size: 9 },
   line11_section_3121q_notice: { page: 0, x: 430, y: 360, size: 9 },
 };
+
+const {
+  coords: form6765Coords,
+  checkboxes: form6765Checkboxes,
+  required: form6765Required,
+} = require('./form6765');
 // mappings for PDF rendering templates
 // each entry defines how a given form should be rendered
 // using either AcroForm fields or absolute positioning
@@ -303,12 +309,9 @@ const pdfTemplates = {
   form_6765: {
     base: 'form_6765.pdf',
     mode: 'absolute',
-    coords: {
-      taxpayer_name: { page: 0, x: 50, y: 700 },
-      ein: { page: 0, x: 300, y: 700 },
-      total_qre: { page: 0, x: 50, y: 680 },
-    },
-    required: ['taxpayer_name', 'ein', 'total_qre'],
+    coords: form6765Coords,
+    checkboxes: form6765Checkboxes,
+    required: form6765Required,
   },
   form_8974: {
     base: 'form_8974.pdf',

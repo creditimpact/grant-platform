@@ -267,4 +267,64 @@ describe('pipeline submit-case', () => {
     expect(log).toBeDefined();
     formTemplates.getLatestTemplate.mockRestore();
   });
+
+  test('renders 6765 when complete', async () => {
+    const formTemplates = require('../utils/formTemplates');
+    jest
+      .spyOn(formTemplates, 'getLatestTemplate')
+      .mockResolvedValue({ version: 1, schema: {} });
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ requiredForms: ['form_6765'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          filled_form: {
+            names_shown_on_return: 'Acme Robotics Inc.',
+            identifying_number: '12-3456789',
+            question_a_elect_reduced_credit: true,
+            line_14_value: 0,
+            line_15_value: 0,
+            line_16_value: 0,
+            line_20_value: 450000,
+            line_21_value: 600000,
+            line_22_value: 100000,
+            line_23_value: 350000,
+            line_24_value: 49000,
+            line_25_value: 49000,
+            line_26_value: 38710,
+            line_27_value: 0,
+            line_28_value: 38710,
+            line_29_value: 0,
+            line_30_value: 38710,
+            line_31_value: 0,
+            line_32_value: 38710,
+            line_33a_checked: true,
+            line_34_value: 38710,
+            line_35_value: 0,
+            line_36_value: 38710,
+            line_42_value: 300000,
+            line_43_value: 50000,
+            line_44_value: 0,
+            line_45_value: 100000,
+            line_46_value: 0,
+            line_47_value: 100000,
+            line_48_value: 450000,
+          },
+        }),
+      });
+
+    const res = await request(app)
+      .post('/api/submit-case')
+      .field('businessName', 'Biz')
+      .field('email', 'a@b.com')
+      .field('phone', '1234567');
+
+    expect(res.status).toBe(200);
+    expect(res.body.generatedForms).toHaveLength(1);
+    expect(res.body.generatedForms[0].formId).toBe('form_6765');
+    formTemplates.getLatestTemplate.mockRestore();
+  });
 });

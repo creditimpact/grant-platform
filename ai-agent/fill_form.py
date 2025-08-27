@@ -750,6 +750,159 @@ def fill_form(
         if mismatches:
             logger.error("form_fill_calculation_mismatch", extra={"form": form_key, "fields": mismatches})
 
+    elif form_key == "form_6765":
+        for k, v in list(flat.items()):
+            if k.startswith("line_") and k.endswith("_value"):
+                flat[k] = _to_float(v)
+            elif k.endswith("_pct"):
+                pct = _to_float(str(v).replace("%", ""))
+                if pct > 1:
+                    pct /= 100.0
+                flat[k] = pct
+        bool_keys = [
+            "question_a_elect_reduced_credit",
+            "question_b_under_common_control",
+            "line_33a_checked",
+            "line_33b_checked",
+            "line_39_value",
+            "line_40_value",
+            "line_41_value",
+        ]
+        for bk in bool_keys:
+            if bk in flat:
+                flat[bk] = bool(flat[bk])
+        if flat.get("question_b_under_common_control"):
+            flat["attachment_required_common_control"] = True
+        mismatches: list[str] = []
+        line4 = max(flat.get("line_2_value", 0.0) - flat.get("line_3_value", 0.0), 0.0)
+        if "line_4_value" in flat and round(flat.get("line_4_value", 0.0), 2) != round(line4, 2):
+            mismatches.append("line_4_value")
+        flat["line_4_value"] = round(line4, 2)
+        line8 = flat.get("line_7_value", 0.0) * flat.get("line_6_pct", 0.0)
+        if "line_8_value" in flat and round(flat.get("line_8_value", 0.0), 2) != round(line8, 2):
+            mismatches.append("line_8_value")
+        flat["line_8_value"] = round(line8, 2)
+        line9 = max(flat.get("line_5_value", 0.0) - flat["line_8_value"], 0.0)
+        if "line_9_value" in flat and round(flat.get("line_9_value", 0.0), 2) != round(line9, 2):
+            mismatches.append("line_9_value")
+        flat["line_9_value"] = round(line9, 2)
+        line10 = flat.get("line_5_value", 0.0) * 0.5
+        if "line_10_value" in flat and round(flat.get("line_10_value", 0.0), 2) != round(line10, 2):
+            mismatches.append("line_10_value")
+        flat["line_10_value"] = round(line10, 2)
+        line11 = min(flat["line_9_value"], line10)
+        if "line_11_value" in flat and round(flat.get("line_11_value", 0.0), 2) != round(line11, 2):
+            mismatches.append("line_11_value")
+        flat["line_11_value"] = round(line11, 2)
+        line12 = (
+            flat.get("line_1_value", 0.0) + flat["line_4_value"] + flat["line_11_value"]
+        )
+        if "line_12_value" in flat and round(flat.get("line_12_value", 0.0), 2) != round(line12, 2):
+            mismatches.append("line_12_value")
+        flat["line_12_value"] = round(line12, 2)
+        if flat.get("question_a_elect_reduced_credit"):
+            line13 = line12 * 0.158
+        else:
+            line13 = line12 * 0.20
+        if "line_13_value" in flat and round(flat.get("line_13_value", 0.0), 2) != round(line13, 2):
+            mismatches.append("line_13_value")
+        flat["line_13_value"] = round(line13, 2)
+        line17 = max(flat.get("line_15_value", 0.0) - flat.get("line_16_value", 0.0), 0.0)
+        if "line_17_value" in flat and round(flat.get("line_17_value", 0.0), 2) != round(line17, 2):
+            mismatches.append("line_17_value")
+        flat["line_17_value"] = round(line17, 2)
+        line18 = flat.get("line_14_value", 0.0) + line17
+        if "line_18_value" in flat and round(flat.get("line_18_value", 0.0), 2) != round(line18, 2):
+            mismatches.append("line_18_value")
+        flat["line_18_value"] = round(line18, 2)
+        line19 = line18 * 0.20
+        if "line_19_value" in flat and round(flat.get("line_19_value", 0.0), 2) != round(line19, 2):
+            mismatches.append("line_19_value")
+        flat["line_19_value"] = round(line19, 2)
+        line22 = flat.get("line_21_value", 0.0) / 6.0 if flat.get("line_21_value") else 0.0
+        flat["line_22_value"] = round(line22, 2)
+        if flat.get("line_21_value"):
+            line23 = max(flat.get("line_20_value", 0.0) - line22, 0.0)
+            if "line_23_value" in flat and round(flat.get("line_23_value", 0.0), 2) != round(line23, 2):
+                mismatches.append("line_23_value")
+            line24 = line23 * 0.14
+            flat["line_23_value"] = round(line23, 2)
+        else:
+            line23 = 0.0
+            flat["line_23_value"] = 0.0
+            line24 = flat.get("line_20_value", 0.0) * 0.06
+        if "line_24_value" in flat and round(flat.get("line_24_value", 0.0), 2) != round(line24, 2):
+            mismatches.append("line_24_value")
+        flat["line_24_value"] = round(line24, 2)
+        line25 = line19 + line24
+        if "line_25_value" in flat and round(flat.get("line_25_value", 0.0), 2) != round(line25, 2):
+            mismatches.append("line_25_value")
+        flat["line_25_value"] = round(line25, 2)
+        if flat.get("question_a_elect_reduced_credit"):
+            line26 = line25 * 0.79
+        else:
+            line26 = line25
+        if "line_26_value" in flat and round(flat.get("line_26_value", 0.0), 2) != round(line26, 2):
+            mismatches.append("line_26_value")
+        flat["line_26_value"] = round(line26, 2)
+        base = flat.get("line_13_value", 0.0) or flat.get("line_26_value", 0.0)
+        source = "A" if flat.get("line_13_value", 0.0) else "B"
+        line28 = max(base - flat.get("line_27_value", 0.0), 0.0)
+        if "line_28_value" in flat and round(flat.get("line_28_value", 0.0), 2) != round(line28, 2):
+            mismatches.append("line_28_value")
+        flat["line_28_value"] = round(line28, 2)
+        flat["line_28_source"] = source
+        line30 = line28 + flat.get("line_29_value", 0.0)
+        if "line_30_value" in flat and round(flat.get("line_30_value", 0.0), 2) != round(line30, 2):
+            mismatches.append("line_30_value")
+        flat["line_30_value"] = round(line30, 2)
+        if flat.get("line_31_value"):
+            line32 = line30 - flat.get("line_31_value", 0.0)
+        else:
+            line32 = line30
+        if "line_32_value" in flat and round(flat.get("line_32_value", 0.0), 2) != round(line32, 2):
+            mismatches.append("line_32_value")
+        flat["line_32_value"] = round(line32, 2)
+        if flat.get("line_33a_checked"):
+            line34 = min(flat.get("line_34_value", 0.0), 500000.0)
+            flat["line_34_value"] = round(line34, 2)
+            if flat.get("entity_type") in {"Partnership", "S-Corp"} or flat.get("line_35_value") in (None, "", 0):
+                line36 = min(line28, line34)
+            else:
+                line36 = min(line28, line34, flat.get("line_35_value", 0.0))
+            if "line_36_value" in flat and round(flat.get("line_36_value", 0.0), 2) != round(line36, 2):
+                mismatches.append("line_36_value")
+            flat["line_36_value"] = round(line36, 2)
+            flat["line1_amount_form_6765"] = flat["line_36_value"]
+        line47 = flat.get("line_45_value", 0.0) + flat.get("line_46_value", 0.0)
+        if "line_47_value" in flat and round(flat.get("line_47_value", 0.0), 2) != round(line47, 2):
+            mismatches.append("line_47_value")
+        flat["line_47_value"] = round(line47, 2)
+        line48 = (
+            flat.get("line_42_value", 0.0)
+            + flat.get("line_43_value", 0.0)
+            + flat.get("line_44_value", 0.0)
+            + line47
+        )
+        if "line_48_value" in flat and round(flat.get("line_48_value", 0.0), 2) != round(line48, 2):
+            mismatches.append("line_48_value")
+        flat["line_48_value"] = round(line48, 2)
+        required = ["names_shown_on_return", "identifying_number"]
+        section_a = any(flat.get(k) not in (None, "") for k in ["line_5_value", "line_6_pct", "line_7_value"])
+        if section_a:
+            required.extend(["line_5_value", "line_6_pct", "line_7_value"])
+        else:
+            if flat.get("line_20_value") not in (None, ""):
+                required.append("line_20_value")
+                if flat.get("line_21_value"):
+                    required.append("line_21_value")
+        if flat.get("line_33a_checked"):
+            required.append("line_34_value")
+        missing_keys = [k for k in required if flat.get(k) in (None, "")]
+        filled["required_ok"] = not missing_keys
+        filled["missing_keys"] = missing_keys
+        filled["calc_mismatches"] = mismatches
+
     if getattr(settings, "OPENAI_API_KEY", None):
         if "business_summary" not in flat:
             prompt = "Provide a brief business summary based on available information."

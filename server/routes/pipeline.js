@@ -13,6 +13,7 @@ const { getServiceHeaders } = require('../utils/serviceHeaders');
 const { saveDraft } = require('../utils/drafts');
 const { renderPdf } = require('../utils/pdfRenderer');
 const { validateForm8974Calcs } = require('../utils/form8974');
+const { validateForm6765Calcs } = require('../utils/form6765');
 
 const router = express.Router();
 
@@ -161,6 +162,25 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
       }
       if (formName === 'form_8974') {
         const calcMismatch = validateForm8974Calcs(formData);
+        if (calcMismatch.length) {
+          logger.error('form_fill_calculation_mismatch', {
+            formId: formName,
+            requestId: req.id,
+            missingKeys: calcMismatch,
+            caseId,
+          });
+          incompleteForms.push({
+            formId: formName,
+            formKey: formName,
+            version,
+            missingFields: calcMismatch,
+            message: `Calculation mismatch: ${calcMismatch.join(', ')}`,
+            name: formNames[formName] || formName,
+          });
+          continue;
+        }
+      } else if (formName === 'form_6765') {
+        const calcMismatch = validateForm6765Calcs(formData);
         if (calcMismatch.length) {
           logger.error('form_fill_calculation_mismatch', {
             formId: formName,
