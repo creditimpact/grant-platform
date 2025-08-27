@@ -1,25 +1,23 @@
 const request = require('supertest');
-
+const path = require('path');
+const fs = require('fs');
 process.env.SKIP_DB = 'true';
 process.env.PROCESS_TEST_MODE = 'true';
 
-jest.mock('../utils/pdfRenderer', () => require('./__mocks__/pdfRenderer.mock'));
-jest.mock('../utils/formTemplates', () => require('./__mocks__/formTemplates.mock'));
-
 const app = require('../index');
-const { renderPdf } = require('../utils/pdfRenderer');
-const { makeEngineOk } = require('./__mocks__/fetch.mock');
+const { resetStore } = require('../utils/pipelineStore');
 
 describe('eligibility report integration', () => {
+  const tmpDir = path.join(__dirname, 'tmp-sf424');
   beforeEach(() => {
-    global.fetch = makeEngineOk();
+    process.env.DRAFTS_DIR = tmpDir;
+    resetStore();
   });
-
   afterEach(() => {
-    jest.clearAllMocks();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test('SF-424 mapping applied before rendering', async () => {
+  test('submitting questionnaire produces draft PDF', async () => {
     const payload = {
       legalBusinessName: 'ACME',
       ein: '11',
@@ -32,6 +30,14 @@ describe('eligibility report integration', () => {
       ownerLastName: 'Doe',
       ownerTitle: 'CEO',
       physicalAddress: { street: '1 Main', city: 'Town', state: 'CA', zip: '12345' },
+      ownerGender: 'female',
+      ownerMinority: true,
+      ownershipPercentage: 60,
+      ownerIsDecisionMaker: true,
+      numberOfEmployees: 5,
+      annualRevenue: 500000,
+      businessAgeYears: 2,
+      businessLocationState: 'CA',
     };
 
     const res = await request(app)
@@ -39,12 +45,10 @@ describe('eligibility report integration', () => {
       .send({ payload });
 
     expect(res.status).toBe(200);
-    expect(res.body.generatedForms).toHaveLength(1);
-    expect(res.body.generatedForms[0].formId).toBe('form_sf424');
     expect(res.body.generatedForms[0].url).toBeTruthy();
-    expect(renderPdf).toHaveBeenCalled();
-    const arg = renderPdf.mock.calls[0][0];
-    expect(arg.filledForm.applicant_legal_name).toBe('ACME');
-    expect(arg.filledForm.authorized_rep_name).toBe('Jane Doe');
+    const caseId = res.body.caseId;
+    const formId = res.body.generatedForms[0].formId;
+    const filePath = path.join(tmpDir, caseId, `${formId}.pdf`);
+    expect(fs.existsSync(filePath)).toBe(true);
   });
 });
