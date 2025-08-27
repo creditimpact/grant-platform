@@ -1,45 +1,29 @@
 const request = require('supertest');
-const path = require('path');
-const { spawnSync } = require('child_process');
 process.env.SKIP_DB = 'true';
-const fetchMock = jest.fn();
-global.fetch = fetchMock;
 const app = require('../index');
 const { createCase, updateCase, resetStore } = require('../utils/pipelineStore');
 
-const engineDir = path.join(__dirname, '..', '..', 'eligibility-engine');
-
-const runEngine = (payload) => {
-  const script = `import json,sys
-from normalization.ingest import normalize_payload
-from engine import analyze_eligibility
-payload=json.loads(sys.stdin.read())
-print(json.dumps(analyze_eligibility(normalize_payload(payload))))`;
-  const res = spawnSync('python', ['-c', script], {
-    cwd: engineDir,
-    env: { ...process.env, PYTHONPATH: engineDir },
-    input: JSON.stringify(payload),
-  });
-  return JSON.parse(res.stdout.toString());
-};
-
 describe('analyzer to engine smoke test', () => {
   beforeEach(() => {
-    process.env.SKIP_DB = 'true';
     resetStore();
-    fetchMock.mockReset();
   });
 
   test('integration path', async () => {
     const caseId = await createCase('dev');
-    await updateCase(caseId, { analyzer: { fields: { country: 'US', employees: '5', revenue_drop_2020_pct: '55%', revenue_drop_2021_pct: '25%', shutdown_2020: 'no', shutdown_2021: 'yes', qualified_wages_2020: '$1000', qualified_wages_2021: '$1000', ppp_double_dip: 'false' } } });
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: async () => [
-        { program: 'demo', requiredForms: [], missing_fields: [] },
-      ],
+    await updateCase(caseId, {
+      analyzer: {
+        fields: {
+          owner_gender: 'female',
+          owner_minority: true,
+          ownership_percentage: 60,
+          owner_is_decision_maker: true,
+          business_location_state: 'CA',
+          number_of_employees: 5,
+          annual_revenue: 500000,
+          business_age_years: 2,
+        },
+      },
     });
-
     const res = await request(app).post('/api/eligibility-report').send({ caseId });
     expect(res.status).toBe(200);
     expect(res.body.eligibility.results.length).toBeGreaterThan(0);

@@ -30,6 +30,7 @@
   },
   "jest": {
     "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "globalSetup": "<rootDir>/tests/globalSetup.js"
   }
 }
