@@ -122,7 +122,16 @@ async def check(request_model: AgentCheckRequest) -> AgentCheckResponse:
 
 @app.post("/form-fill")
 async def form_fill(request_model: FormFillRequest) -> FormFillResponse:
-    normalized_data, norm_steps = normalize_dates_in_mapping(request_model.user_payload)
+    payload: dict[str, Any] = dict(request_model.user_payload)
+    if request_model.analyzer_fields:
+        filled_keys: list[str] = []
+        for k, v in request_model.analyzer_fields.items():
+            if k not in payload or payload[k] in (None, ""):
+                payload[k] = v
+                filled_keys.append(k)
+        if filled_keys:
+            logger.debug("analyzer_backfill", extra={"keys": filled_keys})
+    normalized_data, norm_steps = normalize_dates_in_mapping(payload)
     filled = fill_form(request_model.form_name, normalized_data)
 
     merged_fields, merge_steps = merge_preserving_user(

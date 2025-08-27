@@ -18,3 +18,33 @@ def test_user_values_win_and_reasoning_logs_sources():
     steps = data["reasoning"]["reasoning_steps"]
     assert any("kept user value" in s and "employer_identification_number" in s for s in steps)
     assert any("filled" in s and "reporting_quarter" in s for s in steps)
+
+
+def test_analyzer_fills_missing_field():
+    resp = client.post(
+        "/form-fill",
+        json={
+            "form_name": "form_8974",
+            "user_payload": {},
+            "analyzer_fields": {"employer_identification_number": "12-3456789"},
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    fields = data["filled_form"]["fields"]
+    assert fields["employer_identification_number"] == "12-3456789"
+
+
+def test_user_overrides_analyzer_field():
+    resp = client.post(
+        "/form-fill",
+        json={
+            "form_name": "form_8974",
+            "user_payload": {"employer_identification_number": "98-7654321"},
+            "analyzer_fields": {"employer_identification_number": "12-3456789"},
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    fields = data["filled_form"]["fields"]
+    assert fields["employer_identification_number"] == "98-7654321"
