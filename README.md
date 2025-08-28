@@ -54,9 +54,12 @@ Environment variables configuring service locations:
 
 ```
 AI_ANALYZER_URL=http://localhost:8002
-ELIGIBILITY_ENGINE_URL=https://eligibility-engine:4001
+ELIGIBILITY_ENGINE_URL=http://localhost:8002
+ELIGIBILITY_ENGINE_PATH=/check
 AI_AGENT_URL=https://ai-agent:5001
 ```
+
+The eligibility engine is expected to expose a `POST /check` endpoint.
 
 The AI analyzer optionally reads `TESSERACT_CMD` to locate the Tesseract OCR binary
 if it isn't on the system `PATH`.
