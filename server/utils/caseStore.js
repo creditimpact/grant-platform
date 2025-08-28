@@ -111,8 +111,14 @@ async function computeDocuments(answers = {}) {
 
   try {
     const config = loadGrantConfig();
-    const baseUrl = process.env.ELIGIBILITY_ENGINE_URL || 'https://localhost:4001';
-    const response = await fetch(`${baseUrl.replace(/\/$/, '')}/check`, {
+    const baseUrl =
+      process.env.ELIGIBILITY_ENGINE_URL || 'https://localhost:4001';
+    const engineUrl = baseUrl.replace(/\/$/, '');
+    logger.info('eligibility_engine_request', {
+      url: engineUrl,
+      payload: answers,
+    });
+    const response = await fetch(engineUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(answers),

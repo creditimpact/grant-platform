@@ -127,8 +127,14 @@ router.post('/eligibility-report', async (req, res) => {
   }
   base = normalizeAnswers(base);
 
-  const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
-  const engineUrl = `${engineBase.replace(/\/$/, '')}/check`;
+  const engineBase =
+    process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
+  const engineUrl = engineBase.replace(/\/$/, '');
+  logger.info('eligibility_engine_request', {
+    url: engineUrl,
+    payload: base,
+    requestId: req.id,
+  });
   let resp;
   try {
     resp = await fetchFn(engineUrl, {
