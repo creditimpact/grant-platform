@@ -44,7 +44,7 @@ The backend exposes a unified flow that processes grant applications end‑to‑
 
 1. **POST `/api/files/upload`** – Upload a document. The server forwards the file to the AI Analyzer (`AI_ANALYZER_URL/analyze`) to extract and normalize fields.
 2. **POST `/api/questionnaire`** – Persist user supplied answers and merge them with analyzer fields.
-3. **POST `/api/eligibility-report`** – Run the Eligibility Engine (`ELIGIBILITY_ENGINE_URL/check`) to compute program eligibility and required forms.
+3. **POST `/api/eligibility-report`** – Run the Eligibility Engine (`ELIGIBILITY_ENGINE_URL`) to compute program eligibility and required forms.
 4. **Digital signature & submission** – Hooks exist after form filling for optional signing and external submission.
 5. **GET `/api/status/:caseId`** – Fetch case status, analyzer fields, eligibility results and generated documents for the applicant dashboard.
 
