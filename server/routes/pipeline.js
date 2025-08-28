@@ -122,11 +122,20 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
     const normalized = normalizeAnswers({ ...extracted, ...basePayload });
     await updateCase(caseId, { status: 'analyzed', normalized, analyzer: extracted });
 
-    const engineBase = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
-    const engineUrl = `${engineBase.replace(/\/$/, '')}/check`;
+    const engineBase =
+      process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
+    const engineUrl = engineBase.replace(/\/$/, '');
+    logger.info('eligibility_engine_request', {
+      url: engineUrl,
+      payload: normalized,
+      requestId: req.id,
+    });
     const eligResp = await fetchFn(engineUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...getServiceHeaders('ELIGIBILITY_ENGINE', req) },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getServiceHeaders('ELIGIBILITY_ENGINE', req),
+      },
       body: JSON.stringify(normalized),
     });
     if (!eligResp.ok) {
