@@ -122,9 +122,20 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
     const normalized = normalizeAnswers({ ...extracted, ...basePayload });
     await updateCase(caseId, { status: 'analyzed', normalized, analyzer: extracted });
 
-    const engineBase =
-      process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
-    const engineUrl = engineBase.replace(/\/$/, '');
+    if (
+      !normalized ||
+      typeof normalized !== 'object' ||
+      Object.keys(normalized).length === 0
+    ) {
+      return res.status(400).json({ message: 'Missing eligibility payload' });
+    }
+
+    const BASE = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:8002';
+    const PATH = process.env.ELIGIBILITY_ENGINE_PATH || '/check';
+    const engineUrl = new URL(PATH, BASE).toString();
+    console.log('[eligibility] engine url', engineUrl);
+    console.log('[eligibility] outgoing payload keys', Object.keys(normalized));
+
     logger.info('eligibility_engine_request', {
       url: engineUrl,
       payload: normalized,
@@ -140,6 +151,7 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
     });
     if (!eligResp.ok) {
       const text = await eligResp.text();
+      console.error('[eligibility] engine non-200', eligResp.status, text);
       await updateCase(caseId, { status: 'error', error: text });
       return res.status(502).json({ message: `Eligibility engine error ${eligResp.status}`, details: text });
     }
