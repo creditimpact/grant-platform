@@ -12,9 +12,11 @@ jest.mock("@/lib/apiClient", () => ({
 beforeEach(() => {
   (api.get as jest.Mock).mockReset();
   (api.post as jest.Mock).mockReset();
+  localStorage.clear();
 });
 
 test("renders and dedupes documents", async () => {
+  localStorage.setItem("preupload_done_123", "1");
   (api.get as jest.Mock).mockResolvedValue({
     data: [
       {
@@ -53,6 +55,7 @@ test("renders and dedupes documents", async () => {
 });
 
 test("uploads document and refreshes status", async () => {
+  localStorage.setItem("preupload_done_case123", "1");
   (api.get as jest.Mock)
     .mockResolvedValueOnce({
       data: [

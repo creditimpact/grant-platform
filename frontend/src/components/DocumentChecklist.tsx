@@ -1,6 +1,8 @@
+"use client";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/apiClient";
 import Tooltip from "@/components/Tooltip";
+import PreUploadWizard from "@/components/PreUploadWizard";
 
 export interface ChecklistItem {
   doc_type: string;
@@ -100,6 +102,15 @@ export default function DocumentChecklist({
 }: {
   caseId: string;
 }) {
+  const storageKey = `preupload_done_${caseId}`;
+  const [wizardDone, setWizardDone] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem(storageKey) === "1";
+    } catch {
+      return false;
+    }
+  });
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
 
@@ -157,6 +168,19 @@ export default function DocumentChecklist({
   const grant = items
     .filter((i) => i.source === "grant")
     .sort((a, b) => a.doc_type.localeCompare(b.doc_type));
+
+  if (!wizardDone) {
+    return (
+      <PreUploadWizard
+        onContinue={() => {
+          setWizardDone(true);
+          try {
+            window.localStorage.setItem(storageKey, "1");
+          } catch {}
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
