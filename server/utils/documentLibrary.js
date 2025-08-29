@@ -11,6 +11,10 @@ const DOC_CATALOG = path.join(DOC_TYPES_DIR, "catalog.json");
 let cache = null;
 let docTypeCache = null;
 
+const DOC_TYPES = {
+  IRS_941X: { title: "IRS Form 941-X", accept: [".pdf"], minBytes: 10_000 },
+};
+
 function loadLibrary() {
   if (!cache) {
     cache = JSON.parse(fs.readFileSync(LIB_PATH, "utf8"));
@@ -61,4 +65,4 @@ function getRequiredDocs(grantKey, caseDocs = []) {
   });
 }
 
-module.exports = { loadLibrary, getRequiredDocs, loadDocTypes, getDocType };
+module.exports = { loadLibrary, getRequiredDocs, loadDocTypes, getDocType, DOC_TYPES };

@@ -16,10 +16,23 @@ def _load_doc_types() -> dict:
                 out[key] = json.load(rf)
         else:
             out[key] = spec
+        if "detector" in out[key] and "identify" not in out[key]:
+            det = out[key].pop("detector")
+            out[key]["identify"] = {
+                "keywords_any": det.get("keywords", []),
+                "regex_any": det.get("regex", []),
+            }
     return out
 
 
 DOC_TYPES = _load_doc_types()
+
+# map key -> (module, function)
+EXTRACTORS = {
+    "Form_1120X": ("irs_1120x", "extract"),
+    "Tax_Payment_Receipt": ("tax_payment_receipt", "extract"),
+    "IRS_941X": ("irs_941x", "extract"),
+}
 
 def identify(doc_text: str) -> dict:
     """Return {'type_key': str, 'confidence': float} or {}"""
@@ -36,3 +49,17 @@ def identify(doc_text: str) -> dict:
         if score > 0 and (not best or score > best["confidence"]):
             best = {"type_key": key, "confidence": score}
     return best or {}
+
+
+def detect(text: str) -> dict:
+    det = identify(text)
+    if not det:
+        return {"type": {}, "extracted": {}}
+    key = det["type_key"]
+    mod_name, func_name = EXTRACTORS.get(key, (None, None))
+    extracted = {}
+    if mod_name:
+        mod = __import__(f"src.extractors.{mod_name}", fromlist=[func_name])
+        func = getattr(mod, func_name)
+        extracted = func(text)
+    return {"type": {"key": key, "confidence": det.get("confidence", 0)}, "extracted": extracted}

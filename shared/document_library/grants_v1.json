@@ -12,6 +12,7 @@
           "notes": "Show payments for the claimed period"
         },
         { "doc_type": "Tax_Payment_Receipt", "min_count": 1 },
+        { "doc_type": "IRS_941X", "min_count": 0, "max_count": 10, "label": "Form 941-X (if corrections/claims)" },
         {
           "key": "filed_returns_original_and_amended",
           "label": "Original & amended tax returns",
@@ -42,6 +43,7 @@
         { "key": "revenue_decline_proof", "label": "Revenue decline statements", "accept_mime": ["application/pdf"], "examples": ["P&L 2019-2021"] },
         { "key": "shutdown_orders", "label": "Government shutdown orders (if relevant)", "accept_mime": ["application/pdf", "image/png", "image/jpeg"] , "optional": true, "examples": ["city/state order PDF"] },
         { "key": "ppp_docs", "label": "PPP forgiveness & allocations", "accept_mime": ["application/pdf"] , "examples": ["SBA forgiveness letter"] }
+        , { "doc_type": "IRS_941X", "min_count": 1, "max_count": 10, "label": "Form 941-X for applicable quarters" }
       ]
     }
   }

@@ -25,6 +25,10 @@
     },
     "Tax_Payment_Receipt": {
       "$ref": "Tax_Payment_Receipt.json"
+    },
+    "IRS_941X": {
+      "$ref": "IRS_941X.json",
+      "display_name": "IRS Form 941-X"
     }
   }
 }

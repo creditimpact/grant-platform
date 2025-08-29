@@ -17,6 +17,7 @@ from ai_analyzer.upload_utils import validate_upload
 from src.detectors import identify
 from src.extractors.irs_1120x import extract as extract_1120x
 from src.extractors.tax_payment_receipt import extract as extract_tax_payment_receipt
+from src.extractors.irs_941x import extract as extract_941x
 try:  # pragma: no cover - optional OpenAI dependency
     from openai import OpenAI  # type: ignore
     openai_client = (
@@ -374,6 +375,8 @@ async def analyze_text_flow(
         response["fields"] = extract_1120x(text)
     elif det.get("type_key") == "Tax_Payment_Receipt":
         response["fields"] = extract_tax_payment_receipt(text)
+    elif det.get("type_key") == "IRS_941X":
+        response["fields"] = extract_941x(text)
     extra = {"source": source}
     if filename:
         extra["upload_filename"] = filename
