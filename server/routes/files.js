@@ -13,6 +13,7 @@ const { getServiceHeaders } = require('../utils/serviceHeaders');
 const logger = require('../utils/logger');
 const { safeMerge } = require('../utils/safeMerge');
 const { normalizeAnswers } = require('../utils/normalizeAnswers');
+const { getRequiredDocs } = require('../utils/documentLibrary');
 
 const router = express.Router();
 
@@ -40,7 +41,7 @@ router.post('/files/upload', (req, res) => {
     }
 
     const userId = 'dev-user';
-    let { caseId, key } = req.body || {};
+    let { caseId, key, evidence_key, grant_key, grantKey } = req.body || {};
     if (caseId) {
       const existing = await getCase(userId, caseId);
       if (!existing) return res.status(404).json({ message: 'Case not found' });
@@ -62,6 +63,8 @@ router.post('/files/upload', (req, res) => {
     form.append('file', blob, req.file.originalname);
     if (caseId) form.append('caseId', caseId);
     if (key) form.append('key', key);
+    if (evidence_key) form.append('evidence_key', evidence_key);
+    if (grant_key || grantKey) form.append('grant_key', grant_key || grantKey);
 
     if (process.env.NODE_ENV !== 'production') {
       for (const [key] of form) {
@@ -92,6 +95,16 @@ router.post('/files/upload', (req, res) => {
 
     const fields = await resp.json();
     const c = await getCase(userId, caseId);
+    const currentGrantKey = grant_key || grantKey || c?.grantKey;
+    if (currentGrantKey) {
+      const required = getRequiredDocs(currentGrantKey) || [];
+      const allowedKeys = new Set(required.map((d) => d.key));
+      if (evidence_key && !allowedKeys.has(evidence_key)) {
+        return res
+          .status(400)
+          .json({ error: 'evidence_key not expected for this grant' });
+      }
+    }
     const existingFields = (c.analyzer && c.analyzer.fields) || {};
     const { merged: mergedFields, updatedKeys } = safeMerge(existingFields, fields, {
       source: 'analyzer',
@@ -107,7 +120,8 @@ router.post('/files/upload', (req, res) => {
     const normalized = normalizeAnswers(mergedFields);
     const now = new Date().toISOString();
     const docMeta = {
-      key,
+      key: evidence_key || key,
+      evidence_key: evidence_key,
       filename: req.file.originalname,
       size: req.file.size,
       contentType: req.file.mimetype,

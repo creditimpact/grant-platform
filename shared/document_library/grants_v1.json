@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "grants": {
+    "business_tax_refund": {
+      "display_name": "Business Tax Refund",
+      "required_documents": [
+        {
+          "key": "tax_payment_proofs",
+          "label": "Tax payment receipts / proofs",
+          "accept_mime": ["application/pdf", "image/jpeg", "image/png"],
+          "examples": ["IRS payment confirmation PDF", "bank receipt"],
+          "notes": "Show payments for the claimed period"
+        },
+        {
+          "key": "filed_returns_original_and_amended",
+          "label": "Original & amended tax returns",
+          "accept_mime": ["application/pdf"],
+          "examples": ["Filed 1120, 1120X"],
+          "notes": "Include all periods relevant to refund"
+        },
+        {
+          "key": "supporting_books_invoices",
+          "label": "Supporting books, contracts, invoices",
+          "accept_mime": ["application/pdf", "image/jpeg", "image/png"],
+          "examples": ["GL extracts", "lease agreement", "vendor invoices"]
+        },
+        {
+          "key": "customer_refund_proof",
+          "label": "Proof of refunds to customers (if applicable)",
+          "accept_mime": ["application/pdf", "image/jpeg", "image/png"],
+          "optional": true,
+          "examples": ["refund ledger", "bank statements"]
+        }
+      ]
+    },
+
+    "erc": {
+      "display_name": "Employee Retention Credit (ERC)",
+      "required_documents": [
+        { "key": "payroll_registers", "label": "Payroll registers & Forms 941", "accept_mime": ["application/pdf"] , "examples": ["quarterly 941 PDFs"] },
+        { "key": "revenue_decline_proof", "label": "Revenue decline statements", "accept_mime": ["application/pdf"], "examples": ["P&L 2019-2021"] },
+        { "key": "shutdown_orders", "label": "Government shutdown orders (if relevant)", "accept_mime": ["application/pdf", "image/png", "image/jpeg"] , "optional": true, "examples": ["city/state order PDF"] },
+        { "key": "ppp_docs", "label": "PPP forgiveness & allocations", "accept_mime": ["application/pdf"] , "examples": ["SBA forgiveness letter"] }
+      ]
+    }
+  }
+}

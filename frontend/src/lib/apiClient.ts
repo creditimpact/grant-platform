@@ -33,6 +33,20 @@ export async function getRequiredDocuments(caseId: string): Promise<string[]> {
   return res.data.required;
 }
 
+export async function getRequiredDocs(grantKey: string) {
+  const { data } = await api.get(
+    `/grants/${grantKey}/required-documents`
+  );
+  return data.required_documents as Array<{
+    key: string;
+    label: string;
+    optional?: boolean;
+    accept_mime: string[];
+    notes?: string;
+    examples: string[];
+  }>;
+}
+
 // -------------------- FILE UPLOAD --------------------
 export async function uploadFile(formData: FormData): Promise<CaseSnapshot> {
   const res = await api.post('/files/upload', formData);
