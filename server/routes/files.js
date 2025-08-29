@@ -14,6 +14,7 @@ const logger = require('../utils/logger');
 const { safeMerge } = require('../utils/safeMerge');
 const { normalizeAnswers, currency } = require('../utils/normalizeAnswers');
 const { getRequiredDocs, getDocType } = require('../utils/documentLibrary');
+const { normalizeFields } = require('../utils/fieldNormalizer');
 
 const router = express.Router();
 
@@ -95,6 +96,7 @@ router.post('/files/upload', (req, res) => {
 
     const analysis = await resp.json();
     const { doc_type, fields: docFields, doc_confidence, ...businessFields } = analysis;
+    const normalizedDocFields = normalizeFields(docFields || {});
     const c = await getCase(userId, caseId);
     const currentGrantKey = grant_key || grantKey || c?.grantKey;
     if (currentGrantKey) {
@@ -107,9 +109,10 @@ router.post('/files/upload', (req, res) => {
       }
     }
     const existingFields = (c.analyzer && c.analyzer.fields) || {};
+    const mergedInput = { ...businessFields, ...normalizedDocFields };
     const { merged: mergedFields, updatedKeys } = safeMerge(
       existingFields,
-      businessFields,
+      mergedInput,
       {
         source: 'analyzer',
         questionnaire: c.questionnaire?.data || {},
@@ -142,7 +145,7 @@ router.post('/files/upload', (req, res) => {
           return res.status(400).json({ error: `missing field ${f}` });
         }
       }
-      const normFields = { ...docFields };
+      const normFields = { ...normalizedDocFields };
       if (normFields.payment_amount != null) {
         normFields.payment_amount = currency(normFields.payment_amount);
       }
@@ -151,9 +154,13 @@ router.post('/files/upload', (req, res) => {
           .toISOString()
           .split('T')[0];
       }
+      let status = 'extracted';
+      if (key && doc_type && key !== doc_type) {
+        status = 'mismatch';
+      }
       documents.push({
         doc_type,
-        status: 'extracted',
+        status,
         evidence_key: evidence_key || key,
         analyzer_fields: normFields,
         file_name: req.file.originalname,
@@ -172,9 +179,44 @@ router.post('/files/upload', (req, res) => {
       });
     }
 
+    // Re-run eligibility engine with merged data
+    const eligibilityPayload = {
+      ...(c.questionnaire?.data || {}),
+      ...normalized,
+    };
+    let eligibility = c.eligibility || { results: [] };
+    try {
+      const BASE = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
+      const PATH = process.env.ELIGIBILITY_ENGINE_PATH || '/check';
+      const engineUrl = new URL(PATH, BASE).toString();
+      const eligResp = await fetchFn(engineUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getServiceHeaders('ELIGIBILITY_ENGINE', req),
+        },
+        body: JSON.stringify(eligibilityPayload),
+      });
+      if (eligResp.ok) {
+        const body = await eligResp.json();
+        const results = Array.isArray(body)
+          ? body
+          : Array.isArray(body?.results)
+              ? body.results
+              : [];
+        eligibility = {
+          results,
+          lastUpdated: new Date().toISOString(),
+        };
+      }
+    } catch (e) {
+      // ignore eligibility errors
+    }
+
     await updateCase(caseId, {
       analyzer: { fields: normalized, lastUpdated: now },
       documents,
+      eligibility,
     });
     res.json({
       caseId,
@@ -182,6 +224,7 @@ router.post('/files/upload', (req, res) => {
       documents,
       analyzer: { fields: normalized, lastUpdated: now },
       analyzerFields: normalized,
+      eligibility,
       requiredDocuments: c.requiredDocuments,
     });
   });
