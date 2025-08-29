@@ -1,6 +1,0 @@
-﻿```
-frontend (3000) --> server (5050) --> eligibility-engine (4001)
-                       \--> ai-agent (5001)
-                       \--> ai-analyzer (8002)
-server <--> MongoDB (27017)
-```

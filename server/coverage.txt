@@ -1,0 +1,164 @@
+TAP version 13
+# [dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+# C:\\Users\\yedid\\Desktop\\grant-platform\\server\\config\\env.js:36
+#     throw new Error(`Environment variable ${name} must be a positive integer`);
+#     ^
+# Error: Environment variable PORT must be a positive integer
+#     at requireInt (C:\\Users\\yedid\\Desktop\\grant-platform\\server\\config\\env.js:36:11)
+#     at Object.<anonymous> (C:\\Users\\yedid\\Desktop\\grant-platform\\server\\config\\env.js:73:14)
+#     at Module._compile (node:internal/modules/cjs/loader:1529:14)
+#     at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+#     at Module.load (node:internal/modules/cjs/loader:1275:32)
+#     at Module._load (node:internal/modules/cjs/loader:1096:12)
+#     at Module.require (node:internal/modules/cjs/loader:1298:19)
+#     at require (node:internal/modules/helpers:182:18)
+#     at Object.<anonymous> (C:\\Users\\yedid\\Desktop\\grant-platform\\server\\index.js:4:13)
+#     at Module._compile (node:internal/modules/cjs/loader:1529:14)
+# Node.js v20.19.2
+# Subtest: C:\\Users\\yedid\\Desktop\\grant-platform\\server\\tests\\auth.test.js
+not ok 1 - C:\\Users\\yedid\\Desktop\\grant-platform\\server\\tests\\auth.test.js
+  ---
+  duration_ms: 141.6044
+  location: 'C:\\Users\\yedid\\Desktop\\grant-platform\\server\\tests\\auth.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# computeDocuments failed: request to https://localhost:4001/check failed, reason: 
+# Subtest: base document requirements
+ok 2 - base document requirements
+  ---
+  duration_ms: 113.9388
+  ...
+# computeDocuments failed: request to https://localhost:4001/check failed, reason: 
+# Subtest: corporation requires incorporation docs
+ok 3 - corporation requires incorporation docs
+  ---
+  duration_ms: 4.3961
+  ...
+# computeDocuments failed: request to https://localhost:4001/check failed, reason: 
+# Subtest: employees trigger payroll records
+ok 4 - employees trigger payroll records
+  ---
+  duration_ms: 2.5603
+  ...
+# computeDocuments failed: request to https://localhost:4001/check failed, reason: 
+# Subtest: previous grants require documentation
+ok 5 - previous grants require documentation
+  ---
+  duration_ms: 2.3754
+  ...
+# Subtest: env validation fails when required vars missing
+ok 6 - env validation fails when required vars missing
+  ---
+  duration_ms: 103.462
+  ...
+# Subtest: env validation parses values
+ok 7 - env validation parses values
+  ---
+  duration_ms: 70.005
+  ...
+# Subtest: mutual TLS allows authorized clients only
+not ok 8 - mutual TLS allows authorized clients only
+  ---
+  duration_ms: 4.1126
+  location: 'C:\\Users\\yedid\\Desktop\\grant-platform\\server\\tests\\mtls.test.js:10:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, mkdtemp '/tmp/mtls-XXXXXX'"
+  code: 'ENOENT'
+  stack: |-
+    Object.mkdtempSync (node:fs:2993:18)
+    TestContext.<anonymous> (C:\Users\yedid\Desktop\grant-platform\server\tests\mtls.test.js:11:18)
+    Test.runInAsyncScope (node:async_hooks:206:9)
+    Test.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    node:internal/test_runner/harness:255:12
+    node:internal/process/task_queues:140:7
+    AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    AsyncResource.runMicrotask (node:internal/process/task_queues:137:8)
+  ...
+# [dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+# C:\\Users\\yedid\\Desktop\\grant-platform\\server\\config\\env.js:36
+#     throw new Error(`Environment variable ${name} must be a positive integer`);
+#     ^
+# Error: Environment variable PORT must be a positive integer
+#     at requireInt (C:\\Users\\yedid\\Desktop\\grant-platform\\server\\config\\env.js:36:11)
+#     at Object.<anonymous> (C:\\Users\\yedid\\Desktop\\grant-platform\\server\\config\\env.js:73:14)
+#     at Module._compile (node:internal/modules/cjs/loader:1529:14)
+#     at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+#     at Module.load (node:internal/modules/cjs/loader:1275:32)
+#     at Module._load (node:internal/modules/cjs/loader:1096:12)
+#     at Module.require (node:internal/modules/cjs/loader:1298:19)
+#     at require (node:internal/modules/helpers:182:18)
+#     at Object.<anonymous> (C:\\Users\\yedid\\Desktop\\grant-platform\\server\\index.js:4:13)
+#     at Module._compile (node:internal/modules/cjs/loader:1529:14)
+# Node.js v20.19.2
+# Subtest: C:\\Users\\yedid\\Desktop\\grant-platform\\server\\tests\\status.test.js
+not ok 5 - C:\\Users\\yedid\\Desktop\\grant-platform\\server\\tests\\status.test.js
+  ---
+  duration_ms: 128.6291
+  location: 'C:\\Users\\yedid\\Desktop\\grant-platform\\server\\tests\\status.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: normalizeQuestionnaire handles frontend field names and ISO dates
+ok 10 - normalizeQuestionnaire handles frontend field names and ISO dates
+  ---
+  duration_ms: 6.9964
+  ...
+# Subtest: normalizeQuestionnaire handles rural development fields
+ok 11 - normalizeQuestionnaire handles rural development fields
+  ---
+  duration_ms: 1.6708
+  ...
+# Subtest: normalizeQuestionnaire converts MM/DD/YYYY dates to ISO
+ok 12 - normalizeQuestionnaire converts MM/DD/YYYY dates to ISO
+  ---
+  duration_ms: 0.8538
+  ...
+# Subtest: normalizeQuestionnaire reports missing required fields
+ok 13 - normalizeQuestionnaire reports missing required fields
+  ---
+  duration_ms: 0.5404
+  ...
+# Subtest: normalizeQuestionnaire flags invalid fields
+ok 14 - normalizeQuestionnaire flags invalid fields
+  ---
+  duration_ms: 0.5744
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 11
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 949.423
+# start of coverage report
+# -----------------------------------------------------------------------------------------------
+# file                     | line % | branch % | funcs % | uncovered lines
+# -----------------------------------------------------------------------------------------------
+# config\env.js            |  93.67 |    50.00 |  100.00 | 20-21 27-28 44
+# index.js                 |  63.64 |    25.00 |    0.00 | 41-49 57 62 66 81-99 102-110
+# models\Case.js           | 100.00 |   100.00 |  100.00 | 
+# tests\auth.test.js       |  22.88 |   100.00 |    0.00 | 10-16 22-26 30-44 48-68 72-99 103-117
+# tests\caseStore.test.js  | 100.00 |   100.00 |  100.00 | 
+# tests\env.test.js        | 100.00 |   100.00 |  100.00 | 
+# tests\mtls.test.js       |  77.36 |    66.67 |   50.00 | 41-52
+# tests\status.test.js     |  50.00 |   100.00 |    0.00 | 7-13
+# tests\testEnvSetup.js    | 100.00 |   100.00 |  100.00 | 
+# tests\validation.test.js | 100.00 |   100.00 |  100.00 | 
+# utils\caseStore.js       |  83.44 |    83.33 |   50.00 | 122-137 145-151 153-155
+# utils\logger.js          |  92.31 |    71.43 |   50.00 | 26 28-29
+# utils\tlsAgent.js        |  80.00 |    40.00 |  100.00 | 13-16
+# utils\validation.js      |  91.62 |    97.62 |   90.00 | 78-79 154-165
+# -----------------------------------------------------------------------------------------------
+# all files                |  79.41 |    81.90 |   61.90 |
+# -----------------------------------------------------------------------------------------------
+# end of coverage report
