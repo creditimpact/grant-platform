@@ -8,7 +8,13 @@ describe('analyzer to engine smoke test', () => {
     resetStore();
   });
 
+  afterAll(() => {
+    // Best-effort cleanup to avoid open handles
+    resetStore();
+  });
+
   test('integration path', async () => {
+    const { URL } = require('url');
     const caseId = await createCase('dev');
     await updateCase(caseId, {
       analyzer: {
@@ -24,7 +30,22 @@ describe('analyzer to engine smoke test', () => {
         },
       },
     });
-    const res = await request(app).post('/api/eligibility-report').send({ caseId });
+    const engineUrl = new URL(
+      process.env.ELIGIBILITY_ENGINE_PATH || '/check',
+      process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001'
+    ).toString();
+    // eslint-disable-next-line no-console
+    console.log('[test:e2e.smoke] engineUrl=', engineUrl, 'caseId=', caseId);
+
+    const res = await request(app)
+      .post('/api/eligibility-report')
+      .send({ caseId })
+      .timeout({ response: 20000, deadline: 30000 });
+    // eslint-disable-next-line no-console
+    console.log('[test:e2e.smoke] status=', res.status);
+    if (res.status !== 200) {
+      throw new Error(`eligibility-report returned ${res.status}: ${res.text || ''}`);
+    }
     expect(res.status).toBe(200);
     expect(res.body.eligibility.results.length).toBeGreaterThan(0);
   });

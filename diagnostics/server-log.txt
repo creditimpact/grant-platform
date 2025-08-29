@@ -1,0 +1,46 @@
+﻿[dotenv@17.2.1] injecting env (12) from server\.env.development -- tip: נ“¡ observe env with Radar: https://dotenvx.com/radar
+נ”¹ Connecting to MongoDB using URI only
+Connecting to MongoDB at mongodb://localhost:27017/test 
+(node:28140) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28140) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+ג… MongoDB connection established (host: localhost)
+{"timestamp":"2025-08-29T14:11:34.198Z","level":"info","message":"mongo_connected","host":"localhost"}
+{"timestamp":"2025-08-29T14:11:34.214Z","level":"info","message":"Server running on port 5050"}
+{"timestamp":"2025-08-29T14:11:59.475Z","level":"info","message":"request","requestId":"03db45e4-55cf-4048-b8d2-ecea615e220d","method":"POST","route":"/api/case/init","status":200,"latencyMs":120.581}
+{"timestamp":"2025-08-29T14:11:59.479Z","level":"info","message":"::1 - - [29/Aug/2025:14:11:59 +0000] \"POST /api/case/init HTTP/1.1\" 200 597 \"-\" \"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.4768\""}
+{"timestamp":"2025-08-29T14:11:59.755Z","level":"info","message":"safeMerge updatedKeys","updatedKeys":["legalBusinessName","ownerTitle","projectStart","business_name","fundingRequest","projectTitle","authorizedRepDateSigned","physicalAddress","ein","ownerFirstName","ownerLastName","projectEnd"]}
+{"timestamp":"2025-08-29T14:11:59.790Z","level":"info","message":"request","requestId":"550b496a-1206-4924-ad02-a3828199e74a","method":"POST","route":"/api/questionnaire","status":200,"latencyMs":39.398}
+{"timestamp":"2025-08-29T14:11:59.790Z","level":"info","message":"::1 - - [29/Aug/2025:14:11:59 +0000] \"POST /api/questionnaire HTTP/1.1\" 200 1873 \"-\" \"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.4768\""}
+[eligibility] engine url http://localhost:4001/check payload keys [
+  'legalBusinessName',
+  'ownerTitle',
+  'projectStart',
+  'business_name',
+  'fundingRequest',
+  'projectTitle',
+  'authorizedRepDateSigned',
+  'physicalAddress',
+  'ein',
+  'ownerFirstName',
+  'ownerLastName',
+  'projectEnd',
+  'applicant_name'
+]
+{"timestamp":"2025-08-29T14:11:59.934Z","level":"info","message":"eligibility_engine_request","url":"http://localhost:4001/check","payload":{"legalBusinessName":"[REDACTED]","ownerTitle":"CEO","projectStart":"2024-05-01","business_name":"[REDACTED]","fundingRequest":"100000","projectTitle":"Cancer Biomarker Toolkit","authorizedRepDateSigned":"2024-06-01","physicalAddress":"[REDACTED]","ein":"12-3456789","ownerFirstName":"[REDACTED]","ownerLastName":"[REDACTED]","projectEnd":"2025-05-01","applicant_name":"[REDACTED]"},"requestId":"652fd24e-58d5-47a4-bc5f-da7631ef68cc"}
+{"timestamp":"2025-08-29T14:12:00.117Z","level":"info","message":"form_fill_attempt","formId":"form_sf424","requestId":"652fd24e-58d5-47a4-bc5f-da7631ef68cc"}
+{"timestamp":"2025-08-29T14:12:00.118Z","level":"info","message":"form_fill_inputs_preview","formId":"form_sf424","requestId":"652fd24e-58d5-47a4-bc5f-da7631ef68cc","preMapKeys":["applicant_name","authorizedRepDateSigned","business_name","ein","fundingRequest","legalBusinessName","ownerFirstName","ownerLastName","ownerTitle","physicalAddress","projectEnd","projectStart","projectTitle"],"projectTitle":"Cancer Biomarker Toolkit"}
+{"timestamp":"2025-08-29T14:12:00.215Z","level":"info","message":"form_fill_payload_preview","formId":"form_sf424","payloadKeys":["address_city","address_line1","address_state","address_zip","applicant_legal_name","applicant_name","authorizedRepDateSigned","authorized_rep_date_signed","authorized_rep_name","authorized_rep_title","business_name","descriptive_title","ein","fundingRequest","funding_total","legalBusinessName","ownerFirstName","ownerLastName","ownerTitle","physicalAddress","projectEnd","projectStart","projectTitle","project_end_date","project_start_date"],"preview":{"applicant_legal_name":"[REDACTED]","ein":"12-3456789","descriptive_title":"74e92e64","project_start_date":"5/1/2024","project_end_date":"5/1/2025","funding_total":100000,"authorized_rep_name":"[REDACTED]","authorized_rep_date_signed":"6/1/2024"}}
+{"timestamp":"2025-08-29T14:12:00.218Z","level":"error","message":"form_fill_failed","formId":"form_sf424","requestId":"652fd24e-58d5-47a4-bc5f-da7631ef68cc","error":"TypeError: Failed to parse URL from http://localhost:5001 /form-fill\n    at node:internal/deps/undici/undici:13510:13\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async C:\\Users\\yedid\\Desktop\\grant-platform\\server\\routes\\eligibility.js:246:27\n    at async Promise.all (index 0)\n    at async C:\\Users\\yedid\\Desktop\\grant-platform\\server\\routes\\eligibility.js:216:3"}
+[eligibility] normalized results { count: 1, requiredForms: [ 'form_sf424' ] }
+{"timestamp":"2025-08-29T14:12:00.226Z","level":"info","message":"request","requestId":"652fd24e-58d5-47a4-bc5f-da7631ef68cc","method":"POST","route":"/api/eligibility-report","status":200,"latencyMs":302.179}
+{"timestamp":"2025-08-29T14:12:00.226Z","level":"info","message":"::1 - - [29/Aug/2025:14:12:00 +0000] \"POST /api/eligibility-report HTTP/1.1\" 200 1421 \"-\" \"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.4768\""}
+{"timestamp":"2025-08-29T14:12:00.252Z","level":"info","message":"request","requestId":"9c339850-4c3c-4843-9668-9b12f42a2a45","method":"GET","route":"/api/case/status?caseId=case-1756476719362","status":200,"latencyMs":4.376}
+{"timestamp":"2025-08-29T14:12:00.253Z","level":"info","message":"::1 - - [29/Aug/2025:14:12:00 +0000] \"GET /api/case/status?caseId=case-1756476719362 HTTP/1.1\" 200 2441 \"-\" \"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.4768\""}
+[files.upload] analyzerUrl=http://localhost:8002 /analyze
+[files.upload] form field: file
+[files.upload] form field: caseId
+[files.upload] form field: key
+{"timestamp":"2025-08-29T14:12:37.965Z","level":"info","message":"request","requestId":"20096483-a23f-473b-b3f2-f14b1e836717","method":"POST","route":"/api/files/upload","status":502,"latencyMs":14.151}
+{"timestamp":"2025-08-29T14:12:37.965Z","level":"info","message":"::1 - - [29/Aug/2025:14:12:37 +0000] \"POST /api/files/upload HTTP/1.1\" 502 109 \"-\" \"curl/8.14.1\""}
+

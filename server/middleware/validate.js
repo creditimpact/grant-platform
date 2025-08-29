@@ -54,7 +54,8 @@ function validate(schema) {
     if (errors.length) {
       return res.status(400).json({ message: 'Validation error', details: errors });
     }
-    req.body = data;
+    // Preserve all original fields while ensuring validated keys are present/normalized
+    req.body = { ...req.body, ...data };
     next();
   };
 }

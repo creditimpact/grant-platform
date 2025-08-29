@@ -1,17 +1,36 @@
 const FormTemplate = require('../models/FormTemplate');
+const mongoose = require('mongoose');
 
 // simple in-memory cache for latest templates
 const cache = new Map();
 
+function dbReady() {
+  try {
+    return mongoose.connection && mongoose.connection.readyState === 1;
+  } catch {
+    return false;
+  }
+}
+
 async function getLatestTemplate(key) {
+  if (process.env.SKIP_DB === 'true' || !dbReady()) return null;
   if (cache.has(key)) return cache.get(key);
-  const tmpl = await FormTemplate.findOne({ key }).sort({ version: -1 }).exec();
-  if (tmpl) cache.set(key, tmpl);
-  return tmpl;
+  try {
+    const tmpl = await FormTemplate.findOne({ key }).sort({ version: -1 }).exec();
+    if (tmpl) cache.set(key, tmpl);
+    return tmpl;
+  } catch {
+    return null;
+  }
 }
 
 async function getTemplate(key, version) {
-  return FormTemplate.findOne({ key, version }).exec();
+  if (process.env.SKIP_DB === 'true' || !dbReady()) return null;
+  try {
+    return await FormTemplate.findOne({ key, version }).exec();
+  } catch {
+    return null;
+  }
 }
 
 function cacheTemplate(doc) {

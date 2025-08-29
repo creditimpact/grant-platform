@@ -131,11 +131,10 @@ router.post('/eligibility-report', async (req, res) => {
     return res.status(400).json({ message: 'Missing eligibility payload' });
   }
 
-  const BASE = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:8002';
+  const BASE = process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
   const PATH = process.env.ELIGIBILITY_ENGINE_PATH || '/check';
   const engineUrl = new URL(PATH, BASE).toString();
-  console.log('[eligibility] engine url', engineUrl);
-  console.log('[eligibility] outgoing payload keys', Object.keys(base));
+  console.log('[eligibility] engine url', engineUrl, 'payload keys', Object.keys(base));
 
   logger.info('eligibility_engine_request', {
     url: engineUrl,
@@ -217,6 +216,14 @@ router.post('/eligibility-report', async (req, res) => {
   await Promise.all(
     mappedForms.map(async (formName) => {
       logFn('form_fill_attempt', { formId: formName, requestId: req.id });
+      // Pre-mapping diagnostics to trace input → mapper
+      logger.info('form_fill_inputs_preview', {
+        formId: formName,
+        requestId: req.id,
+        preMapKeys: Object.keys(base).sort(),
+        projectTitle: base.projectTitle,
+        descriptive_title: base.descriptive_title,
+      });
       try {
         const payload = mapForForm(formName, base, {
           testMode: process.env.PROCESS_TEST_MODE === 'true',
@@ -233,6 +240,7 @@ router.post('/eligibility-report', async (req, res) => {
             funding_total: payload.funding_total,
             authorized_rep_name: payload.authorized_rep_name,
             authorized_rep_title: payload.authorized_rep_title,
+            authorized_rep_date_signed: payload.authorized_rep_date_signed,
           },
         });
         const agentResp = await fetchFn(agentUrl, {

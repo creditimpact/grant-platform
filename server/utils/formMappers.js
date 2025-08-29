@@ -9,19 +9,41 @@ function mapSF424(a, { testMode = false } = {}) {
     ? a.ownerTitle
     : a.authorizedRepTitle;
 
+  // Ensure descriptive_title is present
+  let descriptive_title = a.projectTitle || a.descriptive_title;
+  if (!descriptive_title && testMode) {
+    descriptive_title = 'Test Project Title';
+  }
+  if (!descriptive_title && !testMode) {
+    const err = new Error('missing_descriptive_title');
+    err.code = 'MISSING_FIELD';
+    err.field = 'descriptive_title';
+    throw err;
+  }
+
+  // Handle authorized_rep_date_signed
+  const dateSignedInput = a.authorizedRepDateSigned || a.authorized_rep_date_signed;
+  const authorized_rep_date_signed = testMode
+    ? toMMDDYYYY(new Date())
+    : (dateSignedInput ? toMMDDYYYY(dateSignedInput) : undefined);
+  if (!authorized_rep_date_signed && !testMode) {
+    const err = new Error('missing_authorized_rep_date_signed');
+    err.code = 'MISSING_FIELD';
+    err.field = 'authorized_rep_date_signed';
+    throw err;
+  }
+
   return {
     applicant_legal_name,
     applicant_name: applicant_legal_name,
     ein: a.ein,
-    descriptive_title: a.projectTitle,
-    project_start_date: toMMDDYYYY(a.projectStart),
-    project_end_date: toMMDDYYYY(a.projectEnd),
-    funding_total: currency(a.fundingRequest),
+    descriptive_title,
+    project_start_date: toMMDDYYYY(a.projectStart || a.project_start_date),
+    project_end_date: toMMDDYYYY(a.projectEnd || a.project_end_date),
+    funding_total: currency(a.fundingRequest ?? a.funding_total),
     authorized_rep_name,
     authorized_rep_title,
-    authorized_rep_date_signed: testMode
-      ? toMMDDYYYY(new Date())
-      : undefined,
+    authorized_rep_date_signed,
     address_line1: a.physicalAddress?.street,
     address_city: a.physicalAddress?.city,
     address_state: a.physicalAddress?.state,

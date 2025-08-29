@@ -9,7 +9,7 @@ try {
 
 process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost';
 process.env.ELIGIBILITY_ENGINE_URL =
-  process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:8002';
+  process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:4001';
 process.env.ELIGIBILITY_ENGINE_PATH =
   process.env.ELIGIBILITY_ENGINE_PATH || '/check';
 process.env.AI_ANALYZER_URL = process.env.AI_ANALYZER_URL || 'http://localhost:8002';

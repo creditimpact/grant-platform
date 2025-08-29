@@ -1,0 +1,32 @@
+﻿[
+    {
+        "port":  3000,
+        "address":  "::",
+        "pid":  27724,
+        "process":  "node"
+    },
+    {
+        "port":  4001,
+        "address":  "127.0.0.1",
+        "pid":  15500,
+        "process":  "python"
+    },
+    {
+        "port":  5000,
+        "address":  "::",
+        "pid":  37024,
+        "process":  "node"
+    },
+    {
+        "port":  5001,
+        "address":  "127.0.0.1",
+        "pid":  35572,
+        "process":  "python"
+    },
+    {
+        "port":  8002,
+        "address":  "127.0.0.1",
+        "pid":  46780,
+        "process":  "python"
+    }
+]
