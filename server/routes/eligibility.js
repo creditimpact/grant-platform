@@ -13,6 +13,8 @@ const { saveDraft } = require('../utils/drafts');
 const { renderPdf } = require('../utils/pdfRenderer');
 const { validateForm8974Calcs } = require('../utils/form8974');
 const { validateForm6765Calcs } = require('../utils/form6765');
+const { buildChecklist } = require('../utils/checklistBuilder');
+const { loadGrantsLibrary } = require('../utils/documentLibrary');
 const {
   normalizeAnswers,
   toMMDDYYYY,
@@ -117,10 +119,12 @@ router.post('/eligibility-report', async (req, res) => {
   let { caseId, payload = {} } = req.body || {};
   let base = payload;
   let analyzerFields = {};
+  let existingCase = null;
   if (caseId) {
-    const c = await getCase(userId, caseId);
-    if (!c) return res.status(404).json({ message: 'Case not found' });
-    analyzerFields = c.analyzer?.fields || {};
+    existingCase = await getCase(userId, caseId);
+    if (!existingCase)
+      return res.status(404).json({ message: 'Case not found' });
+    analyzerFields = existingCase.analyzer?.fields || {};
     base = { ...analyzerFields, ...payload };
   } else {
     caseId = await createCase(userId);
@@ -203,6 +207,15 @@ router.post('/eligibility-report', async (req, res) => {
     lastUpdated: new Date().toISOString(),
   };
   await updateCase(caseId, { eligibility });
+  const shortlisted = results
+    .filter((r) => r?.score != null && r.score >= 0)
+    .map((r) => r.key);
+  const grantsLibrary = await loadGrantsLibrary();
+  const { required } = await buildChecklist({
+    shortlistedGrants: shortlisted,
+    grantsLibrary,
+    caseDocuments: existingCase?.documents || [],
+  });
   if (!req.body.caseId) {
     await updateCase(caseId, {
       analyzer: { fields: base, lastUpdated: new Date().toISOString() },
@@ -397,7 +410,11 @@ router.post('/eligibility-report', async (req, res) => {
       }
     })
   );
-  await updateCase(caseId, { generatedForms: filledForms, incompleteForms });
+  await updateCase(caseId, {
+    generatedForms: filledForms,
+    incompleteForms,
+    requiredDocuments: required,
+  });
   const c = await getCase(userId, caseId);
   const missing = aggregateMissing(results);
   if (process.env.NODE_ENV !== 'production') {

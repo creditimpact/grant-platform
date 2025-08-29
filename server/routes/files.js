@@ -13,8 +13,13 @@ const { getServiceHeaders } = require('../utils/serviceHeaders');
 const logger = require('../utils/logger');
 const { safeMerge } = require('../utils/safeMerge');
 const { normalizeAnswers, currency } = require('../utils/normalizeAnswers');
-const { getRequiredDocs, getDocType } = require('../utils/documentLibrary');
+const {
+  getRequiredDocs,
+  getDocType,
+  loadGrantsLibrary,
+} = require('../utils/documentLibrary');
 const { normalizeFields } = require('../utils/fieldNormalizer');
+const { buildChecklist } = require('../utils/checklistBuilder');
 
 const router = express.Router();
 
@@ -213,10 +218,21 @@ router.post('/files/upload', (req, res) => {
       // ignore eligibility errors
     }
 
+    const shortlisted = (eligibility.results || [])
+      .filter((r) => r?.score != null && r.score >= 0)
+      .map((r) => r.key);
+    const grantsLibrary = await loadGrantsLibrary();
+    const { required } = await buildChecklist({
+      shortlistedGrants: shortlisted,
+      grantsLibrary,
+      caseDocuments: documents,
+    });
+
     await updateCase(caseId, {
       analyzer: { fields: normalized, lastUpdated: now },
       documents,
       eligibility,
+      requiredDocuments: required,
     });
     res.json({
       caseId,
@@ -225,7 +241,7 @@ router.post('/files/upload', (req, res) => {
       analyzer: { fields: normalized, lastUpdated: now },
       analyzerFields: normalized,
       eligibility,
-      requiredDocuments: c.requiredDocuments,
+      requiredDocuments: required,
     });
   });
 });
