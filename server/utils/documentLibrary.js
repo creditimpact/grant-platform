@@ -1,4 +1,5 @@
 const fs = require("fs");
+const fsPromises = require("fs/promises");
 const path = require("path");
 
 const LIB_PATH = path.resolve(
@@ -87,4 +88,33 @@ function getRequiredDocs(grantKey, caseDocs = []) {
   return Array.from(seen.values());
 }
 
-module.exports = { loadLibrary, getRequiredDocs, loadDocTypes, getDocType, DOC_TYPES };
+async function loadGrantsLibrary() {
+  const raw = await fsPromises.readFile(LIB_PATH, "utf8");
+  const parsed = JSON.parse(raw);
+  const globalCommon = (parsed.common_documents || []).map(
+    (d) => d.doc_type || d.key || d
+  );
+  const out = {};
+  for (const [key, cfg] of Object.entries(parsed.grants || {})) {
+    const grantCommon = (cfg.common_docs || cfg.common_documents || []).map(
+      (d) => d.doc_type || d.key || d
+    );
+    const required = (cfg.required_docs || cfg.required_documents || []).map(
+      (d) => d.doc_type || d.key || d
+    );
+    out[key] = {
+      common_docs: Array.from(new Set([...globalCommon, ...grantCommon])),
+      required_docs: required,
+    };
+  }
+  return out;
+}
+
+module.exports = {
+  loadLibrary,
+  getRequiredDocs,
+  loadDocTypes,
+  getDocType,
+  DOC_TYPES,
+  loadGrantsLibrary,
+};

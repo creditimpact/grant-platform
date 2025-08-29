@@ -1,6 +1,8 @@
 const express = require('express');
-const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
+const { createCase, getCase } = require('../utils/pipelineStore');
 const { buildChecklist } = require('../utils/checklistBuilder');
+const Case = require('../models/Case');
+const { loadGrantsLibrary } = require('../utils/documentLibrary');
 
 const router = express.Router();
 
@@ -69,15 +71,34 @@ router.post('/case/init', async (req, res) => {
 });
 
 router.get('/case/required-documents', async (req, res) => {
+  const requestId = req.get('X-Request-Id');
   const { caseId } = req.query;
-  const userId = 'dev-user';
-  if (!caseId) return res.status(400).json({ error: 'caseId required' });
-  const c = await getCase(userId, caseId);
-  if (!c) return res.status(404).json({ error: 'Case not found' });
-  const grants = c.eligibility?.shortlist || [];
-  const requiredDocs = buildChecklist(grants, c.documents || []);
-  await updateCase(caseId, { requiredDocuments: requiredDocs });
-  res.json({ required: requiredDocs });
+  if (!caseId) return res.status(400).json({ error: 'missing caseId' });
+
+  try {
+    const doc = await Case.findOne({ caseId }).lean();
+    if (!doc) return res.status(404).json({ error: 'unknown case' });
+
+    const shortlisted = (doc.eligibility?.results || [])
+      .filter((r) => r?.score != null && r.score >= 0)
+      .map((r) => r.key);
+
+    const grantsLibrary = await loadGrantsLibrary();
+    const { required } = await buildChecklist({
+      shortlistedGrants: shortlisted,
+      grantsLibrary,
+      caseDocuments: doc.documents || [],
+    });
+
+    return res.json({
+      caseId,
+      required,
+      meta: { shortlisted_grants: shortlisted, count: required.length },
+    });
+  } catch (err) {
+    console.error('[required-documents]', { requestId, err });
+    return res.status(500).json({ error: 'server_error', requestId });
+  }
 });
 
 module.exports = router;

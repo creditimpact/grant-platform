@@ -1,42 +1,65 @@
 const request = require('supertest');
-process.env.SKIP_DB = 'true';
 const app = require('../index');
-const { createCase, updateCase, resetStore } = require('../utils/pipelineStore');
+const Case = require('../models/Case');
 
 describe('GET /api/case/required-documents', () => {
-  beforeEach(() => {
-    resetStore();
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
-  test('builds checklist for single grant shortlist', async () => {
-    const caseId = await createCase('dev-user');
-    await updateCase(caseId, {
-      eligibility: { results: [], requiredForms: [], shortlist: ['business_tax_refund'] },
+  test('returns merged checklist with statuses', async () => {
+    const mockCase = {
+      caseId: 'CASE123',
+      documents: [{ doc_type: 'IRS_941X', status: 'uploaded' }],
+      eligibility: {
+        results: [
+          { key: 'erc', score: 90 },
+          { key: 'business_tax_refund', score: 75 },
+        ],
+      },
+    };
+
+    jest.spyOn(Case, 'findOne').mockReturnValue({
+      lean: () => Promise.resolve(mockCase),
     });
-    const res = await request(app).get(`/api/case/required-documents?caseId=${caseId}`);
+
+    const res = await request(app)
+      .get('/api/case/required-documents')
+      .query({ caseId: 'CASE123' });
+
     expect(res.status).toBe(200);
-    const docs = res.body.required;
-    const keys = docs.map((d) => d.doc_type);
-    expect(keys).toContain('Tax_Payment_Receipt'); // common doc
-    expect(keys).toContain('tax_payment_proofs'); // grant specific
-    const receipt = docs.find((d) => d.doc_type === 'Tax_Payment_Receipt');
+    expect(res.body.caseId).toBe('CASE123');
+    expect(res.body.meta.shortlisted_grants).toEqual([
+      'erc',
+      'business_tax_refund',
+    ]);
+
+    const irs = res.body.required.find((d) => d.doc_type === 'IRS_941X');
+    expect(irs.grants.sort()).toEqual(['business_tax_refund', 'erc']);
+    expect(irs.status).toBe('uploaded');
+
+    const receipt = res.body.required.find(
+      (d) => d.doc_type === 'Tax_Payment_Receipt'
+    );
+    expect(receipt.source).toBe('grant');
+    expect(receipt.grants).toEqual(['business_tax_refund']);
     expect(receipt.status).toBe('not_uploaded');
   });
 
-  test('deduplicates docs across multiple grants', async () => {
-    const caseId = await createCase('dev-user');
-    await updateCase(caseId, {
-      eligibility: { results: [], requiredForms: [], shortlist: ['business_tax_refund', 'erc'] },
-    });
-    const res = await request(app).get(`/api/case/required-documents?caseId=${caseId}`);
-    expect(res.status).toBe(200);
-    const docs = res.body.required;
-    const count941 = docs.filter((d) => d.doc_type === 'IRS_941X').length;
-    expect(count941).toBe(1); // deduped
+  test('400 when caseId missing', async () => {
+    const res = await request(app).get('/api/case/required-documents');
+    expect(res.status).toBe(400);
   });
 
   test('404 when case not found', async () => {
-    const res = await request(app).get('/api/case/required-documents?caseId=missing');
+    jest
+      .spyOn(Case, 'findOne')
+      .mockReturnValue({ lean: () => Promise.resolve(null) });
+
+    const res = await request(app)
+      .get('/api/case/required-documents')
+      .query({ caseId: 'missing' });
     expect(res.status).toBe(404);
   });
 });
+

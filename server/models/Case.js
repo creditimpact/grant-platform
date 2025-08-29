@@ -16,6 +16,7 @@ const documentSchema = new mongoose.Schema(
 );
 
 const caseSchema = new mongoose.Schema({
+  caseId: { type: String, unique: true, sparse: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   status: { type: String, default: 'open' },
   answers: { type: mongoose.Schema.Types.Mixed, default: {} },

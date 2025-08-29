@@ -1,47 +1,92 @@
-const { loadLibrary, loadDocTypes } = require('./documentLibrary');
+/**
+ * Build a deduplicated checklist for a case given grants library & case state.
+ * @param {Object} params
+ * @param {string[]} params.shortlistedGrants - grant keys (e.g. ["erc", "business_tax_refund"])
+ * @param {Object} params.grantsLibrary - parsed grants_v1.json
+ * @param {Array<Object>} [params.caseDocuments] - existing Case.documents[]
+ * @param {Function} [params.describe] - optional (docType) => { description, example_url }
+ * @returns {{ required: Array<Object> }}
+ */
+async function buildChecklist({
+  shortlistedGrants,
+  grantsLibrary,
+  caseDocuments = [],
+  describe,
+}) {
+  const lower = (s) => (s || '').toLowerCase();
 
-// Build a merged checklist of required documents for a set of grant keys.
-// `grants` is an array of grant identifiers (e.g. ['erc']).
-// `caseDocs` is the array of documents already uploaded for the case.
-// The returned value is an array of objects:
-//   { doc_type, description, example_url, status }
-// Where `status` is "uploaded" or "not_uploaded" based on presence in caseDocs.
-function buildChecklist(grants = [], caseDocs = []) {
-  const lib = loadLibrary();
-  const docTypes = loadDocTypes();
-  const items = new Map();
+  const commonDocs = new Set();
+  const grantDocsMap = new Map(); // docTypeLower -> { doc_type, grants: Set() }
 
-  function addDoc(d) {
-    const key = d.doc_type || d.key;
-    if (!key) return;
-    if (items.has(key)) return;
-    const spec = docTypes[key] || {};
-    const uploaded = caseDocs.find(
-      (c) => (c.doc_type || c.docType || c.key) === key
-    );
-    items.set(key, {
-      doc_type: key,
-      description: spec.display_name || d.label || d.description || key,
-      example_url:
-        (spec.examples && spec.examples[0]) ||
-        (d.examples && d.examples[0]) ||
-        null,
-      status: uploaded ? uploaded.status || 'uploaded' : 'not_uploaded',
+  for (const g of shortlistedGrants || []) {
+    const cfg = grantsLibrary[g] || {};
+    for (const d of cfg.common_docs || []) commonDocs.add(lower(d));
+    for (const d of cfg.required_docs || []) {
+      const k = lower(d);
+      if (!grantDocsMap.has(k)) {
+        grantDocsMap.set(k, { doc_type: d, grants: new Set([g]) });
+      } else {
+        grantDocsMap.get(k).grants.add(g);
+      }
+    }
+  }
+
+  // Merge & dedupe
+  const merged = new Map(); // key -> item
+  // a) common first
+  for (const dLower of commonDocs) {
+    const docType = grantDocsMap.get(dLower)?.doc_type || dLower.toUpperCase();
+    merged.set(dLower, {
+      doc_type: docType,
+      source: 'common',
+      grants: [],
     });
   }
-
-  // Common documents
-  (lib.common_documents || []).forEach(addDoc);
-
-  // Grant specific documents
-  for (const gKey of grants) {
-    const g = lib.grants[gKey];
-    if (!g) continue;
-    const list = g.required_documents || g.required_docs || [];
-    list.forEach(addDoc);
+  // b) grant-specific (may override source to "grant" if exists in common)
+  for (const [k, val] of grantDocsMap) {
+    const existing = merged.get(k);
+    const grantsArr = Array.from(val.grants);
+    if (existing) {
+      existing.source = 'grant';
+      existing.grants = Array.from(
+        new Set([...(existing.grants || []), ...grantsArr])
+      );
+    } else {
+      merged.set(k, {
+        doc_type: val.doc_type,
+        source: 'grant',
+        grants: grantsArr,
+      });
+    }
   }
 
-  return Array.from(items.values());
+  // Hydrate status from caseDocuments
+  const statusByType = new Map();
+  for (const d of caseDocuments || []) {
+    if (d && d.doc_type) {
+      statusByType.set(lower(d.doc_type), d.status || 'uploaded');
+    }
+  }
+
+  // Enrich with status + descriptions
+  const describeDoc = describe || (() => ({}));
+  const items = Array.from(merged.values()).map((i) => {
+    const meta = describeDoc(i.doc_type) || {};
+    const status = statusByType.get(lower(i.doc_type)) || 'not_uploaded';
+    const out = { ...i, status };
+    if (meta.description) out.description = meta.description;
+    if (meta.example_url) out.example_url = meta.example_url;
+    return out;
+  });
+
+  // Sort: common → grant, then by doc_type
+  items.sort((a, b) => {
+    if (a.source !== b.source) return a.source === 'common' ? -1 : 1;
+    return a.doc_type.localeCompare(b.doc_type);
+  });
+
+  return { required: items };
 }
 
 module.exports = { buildChecklist };
+
