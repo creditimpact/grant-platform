@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders Tax_Payment_Receipt preview 1`] = `
+<DocumentFragment>
+  <div
+    class="space-y-3"
+  >
+    <div
+      class="rounded-xl border p-4"
+    >
+      <div
+        class="font-medium"
+      >
+        Tax Payment Receipt / Payment Confirmation 
+      </div>
+      <ul
+        class="text-sm mt-1 space-y-1"
+      >
+        <li>
+          Payment Confirmation • $1,234.56 • 2023-04-15 • #ABC12345
+        </li>
+      </ul>
+    </div>
+  </div>
+</DocumentFragment>
+`;

@@ -11,6 +11,7 @@
           "examples": ["IRS payment confirmation PDF", "bank receipt"],
           "notes": "Show payments for the claimed period"
         },
+        { "doc_type": "Tax_Payment_Receipt", "min_count": 1 },
         {
           "key": "filed_returns_original_and_amended",
           "label": "Original & amended tax returns",

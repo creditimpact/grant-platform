@@ -1,0 +1,36 @@
+{
+  "type": "Tax_Payment_Receipt",
+  "display_name": "Tax Payment Receipt / Payment Confirmation",
+  "category": "tax_payment",
+  "version": 1,
+  "identify": {
+    "keywords_any": [
+      "Payment Confirmation",
+      "Payment confirmation number",
+      "IRS",
+      "Department of Revenue",
+      "Tax Payment",
+      "Payment amount"
+    ],
+    "regex_any": [
+      "Payment\\s*Confirmation\\s*(No\\.|Number)?\\s*[:#]?\\s*[A-Z0-9\\-]{6,}",
+      "Amount\\s*of\\s*Payment\\s*\\$?[0-9,]+(\\.[0-9]{2})?",
+      "\\b(20\\d{2}|19\\d{2})[-/](0?[1-9]|1[0-2])[-/](0?[1-9]|[12][0-9]|3[01])\\b"
+    ]
+  },
+  "extract": {
+    "fields": {
+      "confirmation_number": {"type": "string", "required": true},
+      "payment_amount": {"type": "currency", "required": true, "currency": "USD"},
+      "payment_date": {"type": "date", "required": true},
+      "payment_type": {
+        "type": "enum",
+        "required": false,
+        "values": ["federal", "state", "city", "other"]
+      }
+    }
+  },
+  "examples": [
+    "https://www.scribd.com/document/412190301/Payment-Confirmation"
+  ]
+}
