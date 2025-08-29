@@ -1,6 +1,6 @@
 const express = require('express');
 const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
-const { getRequiredDocuments } = require('../utils/requiredDocuments');
+const { buildChecklist } = require('../utils/checklistBuilder');
 
 const router = express.Router();
 
@@ -74,11 +74,9 @@ router.get('/case/required-documents', async (req, res) => {
   if (!caseId) return res.status(400).json({ error: 'caseId required' });
   const c = await getCase(userId, caseId);
   if (!c) return res.status(404).json({ error: 'Case not found' });
-  let requiredDocs = c.requiredDocuments;
-  if (!requiredDocs || !requiredDocs.length) {
-    requiredDocs = getRequiredDocuments(c);
-    await updateCase(caseId, { requiredDocuments: requiredDocs });
-  }
+  const grants = c.eligibility?.shortlist || [];
+  const requiredDocs = buildChecklist(grants, c.documents || []);
+  await updateCase(caseId, { requiredDocuments: requiredDocs });
   res.json({ required: requiredDocs });
 });
 

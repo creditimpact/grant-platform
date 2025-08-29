@@ -1,5 +1,11 @@
 {
   "version": 1,
+  "common_documents": [
+    {
+      "doc_type": "Tax_Payment_Receipt",
+      "label": "Tax payment receipt / confirmation"
+    }
+  ],
   "grants": {
     "business_tax_refund": {
       "display_name": "Business Tax Refund",

@@ -1,5 +1,4 @@
 const PipelineCase = require('../models/PipelineCase');
-const { ALWAYS_REQUIRED } = require('./requiredDocuments');
 
 const useMemory = process.env.SKIP_DB === 'true';
 const memoryStore = new Map();
@@ -14,9 +13,9 @@ async function createCase(userId, caseId) {
       status: 'open',
       analyzer: { fields: {}, lastUpdated: null },
       questionnaire: { data: {}, lastUpdated: null },
-      eligibility: { results: [], requiredForms: [], lastUpdated: null },
+      eligibility: { results: [], requiredForms: [], shortlist: [], lastUpdated: null },
       documents: [],
-      requiredDocuments: [...ALWAYS_REQUIRED],
+      requiredDocuments: [],
       generatedForms: [],
       incompleteForms: [],
       normalized: {},
