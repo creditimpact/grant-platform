@@ -1,10 +1,18 @@
 {
   "version": 1,
   "common_documents": [
+    { "doc_type": "Tax_Payment_Receipt", "label": "Tax payment receipt / confirmation" },
+    { "doc_type": "W9", "label": "IRS W-9" },
+    { "doc_type": "EIN_Letter", "label": "EIN Letter (CP-575)" },
     {
-      "doc_type": "Tax_Payment_Receipt",
-      "label": "Tax payment receipt / confirmation"
-    }
+      "doc_type": "Basic_Financials",
+      "label": "Basic Financials (P&L / Balance Sheet)"
+    },
+    {
+      "doc_type": "Basic_Tax_Return",
+      "label": "Basic Tax Return (1120 / Schedule C)"
+    },
+    { "doc_type": "Bank_Statements", "label": "Bank Statements (3–6 months)" }
   ],
   "grants": {
     "business_tax_refund": {
