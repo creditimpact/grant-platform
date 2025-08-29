@@ -39,9 +39,11 @@ function StatusBadge({ status }: { status: ChecklistItem["status"] }) {
 function ChecklistRow({
   doc,
   onUpload,
+  uploading,
 }: {
   doc: ChecklistItem;
   onUpload: (doc: ChecklistItem, file: File) => Promise<void>;
+  uploading: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const needUpload = doc.status === "not_uploaded" || doc.status === "mismatch";
@@ -66,23 +68,27 @@ function ChecklistRow({
       <div className="flex items-center gap-2">
         <StatusBadge status={doc.status} />
         {needUpload && (
-          <>
-            <input
-              type="file"
-              ref={inputRef}
-              className="hidden"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (file) await onUpload(doc, file);
-              }}
-            />
-            <button
-              className="px-2 py-1 text-sm bg-blue-500 text-white rounded"
-              onClick={() => inputRef.current?.click()}
-            >
-              Upload
-            </button>
-          </>
+          uploading ? (
+            <span className="text-sm text-gray-500">Uploading…</span>
+          ) : (
+            <>
+              <input
+                type="file"
+                ref={inputRef}
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) await onUpload(doc, file);
+                }}
+              />
+              <button
+                className="px-2 py-1 text-sm bg-blue-500 text-white rounded"
+                onClick={() => inputRef.current?.click()}
+              >
+                Upload
+              </button>
+            </>
+          )
         )}
       </div>
     </li>
@@ -95,6 +101,7 @@ export default function DocumentChecklist({
   caseId: string;
 }) {
   const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [uploading, setUploading] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchDocs();
@@ -127,12 +134,23 @@ export default function DocumentChecklist({
   }
 
   async function handleUpload(doc: ChecklistItem, file: File) {
+    setUploading((u) => ({ ...u, [doc.doc_type]: true }));
     const form = new FormData();
     form.append("file", file);
-    form.append("doc_type", doc.doc_type);
+    form.append("key", doc.doc_type);
     form.append("caseId", caseId);
-    await api.post("/files/upload", form);
-    await fetchDocs();
+    try {
+      await api.post("/files/upload", form);
+      await fetchDocs();
+    } catch (e) {
+      alert("Upload failed");
+    } finally {
+      setUploading((u) => {
+        const next = { ...u };
+        delete next[doc.doc_type];
+        return next;
+      });
+    }
   }
 
   const common = items.filter((i) => i.source === "common");
@@ -146,7 +164,12 @@ export default function DocumentChecklist({
         <h3 className="font-semibold mb-2">Common Documents</h3>
         <ul className="space-y-2">
           {common.map((doc) => (
-            <ChecklistRow key={doc.doc_type} doc={doc} onUpload={handleUpload} />
+            <ChecklistRow
+              key={doc.doc_type}
+              doc={doc}
+              onUpload={handleUpload}
+              uploading={!!uploading[doc.doc_type]}
+            />
           ))}
         </ul>
       </div>
@@ -159,6 +182,7 @@ export default function DocumentChecklist({
                 key={doc.doc_type}
                 doc={doc}
                 onUpload={handleUpload}
+                uploading={!!uploading[doc.doc_type]}
               />
             ))}
           </ul>
