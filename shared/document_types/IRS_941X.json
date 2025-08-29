@@ -1,0 +1,551 @@
+{
+  "detector": {
+    "keywords": ["Form 941-X", "Adjusted Employer's QUARTERLY Federal Tax Return", "OMB No. 1545-0029"],
+    "regex": ["Form\\s*941[- ]X", "Adjusted Employer.?s\\s+QUARTERLY\\s+Federal\\s+Tax\\s+Return", "OMB\\s*No\\.\\s*1545-0029"]
+  },
+  "required_fields": ["header_information.employer_identification_number", "return_correction_info.quarter", "return_correction_info.calendar_year"],
+  "version": 1,
+  "form": {
+    "name": "Form 941-X",
+    "title": "Adjusted Employer's QUARTERLY Federal Tax Return or Claim for Refund",
+    "revision": "Rev. April 2025",
+    "department": "Department of the Treasury",
+    "agency": "Internal Revenue Service",
+    "omb_number": "1545-0029"
+  },
+  "header_information": {
+    "employer_identification_number": {
+      "label": "Employer identification number (EIN)",
+      "value": ""
+    },
+    "company_info": {
+      "name": {
+        "label": "Name (not your trade name)",
+        "value": ""
+      },
+      "trade_name": {
+        "label": "Trade name (if any)",
+        "value": ""
+      },
+      "address": {
+        "number_street": {
+          "label": "Number Street Suite or room number",
+          "value": ""
+        },
+        "city_state_zip": {
+          "city": "",
+          "state": "",
+          "zip_code": ""
+        },
+        "foreign": {
+          "country_name": "",
+          "province_county": "",
+          "postal_code": ""
+        }
+      }
+    }
+  },
+  "return_correction_info": {
+    "return_type": {
+      "label": "Check the type of return you're correcting",
+      "form_941": false,
+      "form_941_ss": false
+    },
+    "quarter": {
+      "label": "Check the ONE quarter you're correcting",
+      "q1": {
+        "label": "1: January, February, March",
+        "selected": false
+      },
+      "q2": {
+        "label": "2: April, May, June",
+        "selected": false
+      },
+      "q3": {
+        "label": "3: July, August, September",
+        "selected": false
+      },
+      "q4": {
+        "label": "4: October, November, December",
+        "selected": false
+      }
+    },
+    "calendar_year": {
+      "label": "Enter the calendar year of the quarter you're correcting (YYYY)",
+      "value": ""
+    },
+    "date_discovered": {
+      "label": "Enter the date you discovered errors (MM/DD/YYYY)",
+      "value": ""
+    }
+  },
+  "part_1_process_selection": {
+    "title": "Select ONLY one process",
+    "option_1": {
+      "label": "Adjusted employment tax return",
+      "description": "Check this box if you underreported tax amounts. Also check this box if you overreported tax amounts and you would like to use the adjustment process to correct the errors. You must check this box if you're correcting both underreported and overreported tax amounts on this form. The amount shown on line 27, if less than zero, may only be applied as a credit to your Form 941 or Form 944 for the tax period in which you're filing this form.",
+      "selected": false
+    },
+    "option_2": {
+      "label": "Claim",
+      "description": "Check this box if you overreported tax amounts only and you would like to use the claim process to ask for a refund or abatement of the amount shown on line 27. Don't check this box if you're correcting ANY underreported tax amounts on this form.",
+      "selected": false
+    }
+  },
+  "part_2_certifications": {
+    "line_3": {
+      "label": "I certify that I've filed or will file Forms W-2, Wage and Tax Statement, or Forms W-2c, Corrected Wage and Tax Statement, as required.",
+      "certified": false
+    },
+    "line_4": {
+      "condition": "If you checked line 1 because you're adjusting overreported federal income tax, social security tax, Medicare tax, or Additional Medicare Tax, check all that apply. You must check at least one box.",
+      "certifications": {
+        "4a": {
+          "label": "I repaid or reimbursed each affected employee for the overcollected federal income tax or Additional Medicare Tax for the current year and the overcollected social security tax and Medicare tax for current and prior years. For adjustments of employee social security tax and Medicare tax overcollected in prior years, I have a written statement from each affected employee stating that they haven't claimed (or the claim was rejected) and won't claim a refund or credit for the overcollection.",
+          "checked": false
+        },
+        "4b": {
+          "label": "The adjustments of social security tax and Medicare tax are for the employer's share only. I couldn't find the affected employees or each affected employee didn't give me a written statement that they haven't claimed (or the claim was rejected) and won't claim a refund or credit for the overcollection.",
+          "checked": false
+        },
+        "4c": {
+          "label": "The adjustment is for federal income tax, social security tax, Medicare tax, or Additional Medicare Tax that I didn't withhold from employee wages.",
+          "checked": false
+        }
+      }
+    },
+    "line_5": {
+      "condition": "If you checked line 2 because you're claiming a refund or abatement of overreported federal income tax, social security tax, Medicare tax, or Additional Medicare Tax, check all that apply. You must check at least one box.",
+      "certifications": {
+        "5a": {
+          "label": "I repaid or reimbursed each affected employee for the overcollected social security tax and Medicare tax. For claims of employee social security tax and Medicare tax overcollected in prior years, I have a written statement from each affected employee stating that they haven't claimed (or the claim was rejected) and won't claim a refund or credit for the overcollection.",
+          "checked": false
+        },
+        "5b": {
+          "label": "I have a written consent from each affected employee stating that I may file this claim for the employee's share of social security tax and Medicare tax. For refunds of employee social security tax and Medicare tax overcollected in prior years, I also have a written statement from each affected employee stating that they haven't claimed (or the claim was rejected) and won't claim a refund or credit for the overcollection.",
+          "checked": false
+        },
+        "5c": {
+          "label": "The claim for social security tax and Medicare tax is for the employer's share only. I couldn't find the affected employees, or each affected employee didn't give me a written consent to file a claim for the employee's share of social security tax and Medicare tax, or each affected employee didn't give me a written statement that they haven't claimed (or the claim was rejected) and won't claim a refund or credit for the overcollection.",
+          "checked": false
+        },
+        "5d": {
+          "label": "The claim is for federal income tax, social security tax, Medicare tax, or Additional Medicare Tax that I didn't withhold from employee wages.",
+          "checked": false
+        }
+      }
+    }
+  },
+  "part_3_corrections": {
+    "title": "Enter the corrections for this quarter. If any line doesn't apply, leave it blank.",
+    "columns": {
+      "column_1": "Total corrected amount (for ALL employees)",
+      "column_2": "Amount originally reported or as previously corrected (for ALL employees)",
+      "column_3": "Difference (If this amount is a negative number, use a minus sign.)",
+      "column_4": "Tax correction"
+    },
+    "lines": {
+      "line_6": {
+        "label": "Wages, tips, and other compensation (Form 941, line 2)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "note": "Use the amount in Column 1 when you prepare your Forms W-2 or Forms W-2c."
+      },
+      "line_7": {
+        "label": "Federal income tax withheld from wages, tips, and other compensation (Form 941, line 3)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_8": {
+        "label": "Taxable social security wages (Form 941 or 941-SS, line 5a, Column 1)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": "",
+        "calculation": "× 0.124* = ",
+        "note": "If you're correcting your employer share only, use 0.062. See instructions."
+      },
+      "line_9": {
+        "label": "Qualified sick leave wages* (Form 941 or 941-SS, line 5a(i), Column 1)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": "",
+        "calculation": "× 0.062 = ",
+        "note": "Use line 9 only for qualified sick leave wages paid after March 31, 2020, for leave taken before April 1, 2021."
+      },
+      "line_10": {
+        "label": "Qualified family leave wages* (Form 941 or 941-SS, line 5a(ii), Column 1)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": "",
+        "calculation": "× 0.062 = ",
+        "note": "Use line 10 only for qualified family leave wages paid after March 31, 2020, for leave taken before April 1, 2021."
+      },
+      "line_11": {
+        "label": "Taxable social security tips (Form 941 or 941-SS, line 5b, Column 1)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": "",
+        "calculation": "× 0.124* = ",
+        "note": "If you're correcting your employer share only, use 0.062. See instructions."
+      },
+      "line_12": {
+        "label": "Taxable Medicare wages & tips (Form 941 or 941-SS, line 5c, Column 1)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": "",
+        "calculation": "× 0.029* = ",
+        "note": "If you're correcting your employer share only, use 0.0145. See instructions."
+      },
+      "line_13": {
+        "label": "Taxable wages & tips subject to Additional Medicare Tax withholding (Form 941 or 941-SS, line 5d)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": "",
+        "calculation": "× 0.009* = ",
+        "note": "Certain wages and tips reported in Column 3 shouldn't be multiplied by 0.009. See instructions."
+      },
+      "line_14": {
+        "label": "Section 3121(q) Notice and Demand—Tax due on unreported tips (Form 941 or 941-SS, line 5f)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_15": {
+        "label": "Tax adjustments (Form 941 or 941-SS, lines 7 through 9)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_16": {
+        "label": "Qualified small business payroll tax credit for increasing research activities (See instructions; you must attach Form 8974.)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_17": {
+        "label": "Nonrefundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021 (Form 941 or 941-SS, line 11b)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_18a": {
+        "label": "Reserved for future use",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_18b": {
+        "label": "Nonrefundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021 (Form 941 or 941-SS, line 11d)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_18c": {
+        "label": "Nonrefundable portion of COBRA premium assistance credit (Form 941 or 941-SS, line 11e)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_18d": {
+        "label": "Number of individuals provided COBRA premium assistance (Form 941 or 941-SS, line 11f)",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_19": {
+        "label": "Special addition to wages for federal income tax",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_20": {
+        "label": "Special addition to wages for social security taxes",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_21": {
+        "label": "Special addition to wages for Medicare taxes",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_22": {
+        "label": "Special addition to wages for Additional Medicare Tax",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_23": {
+        "label": "Combine the amounts on lines 7 through 22 of Column 4",
+        "value": ""
+      },
+      "line_24": {
+        "label": "Reserved for future use",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_25": {
+        "label": "Refundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021 (Form 941 or 941-SS, line 13c)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_26a": {
+        "label": "Reserved for future use",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_26b": {
+        "label": "Refundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021 (Form 941 or 941-SS, line 13e)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_26c": {
+        "label": "Refundable portion of COBRA premium assistance credit (Form 941 or 941-SS, line 13f)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": "",
+        "column_4": ""
+      },
+      "line_27": {
+        "label": "Total. Combine the amounts on lines 23 through 26c of Column 4",
+        "value": "",
+        "instructions": {
+          "less_than_zero": {
+            "line_1_checked": "If you checked line 1, this is the amount you want applied as a credit to your Form 941 for the tax period in which you're filing this form. (If you're currently filing a Form 944, Employer's ANNUAL Federal Tax Return, see the instructions.)",
+            "line_2_checked": "If you checked line 2, this is the amount you want refunded or abated."
+          },
+          "more_than_zero": "If line 27 is more than zero, this is the amount you owe. Pay this amount by the time you file this return. For information on how to pay, see Amount you owe in the instructions."
+        }
+      },
+      "line_28": {
+        "label": "Qualified health plan expenses allocable to qualified sick leave wages for leave taken before April 1, 2021 (Form 941 or 941-SS, line 19)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_29": {
+        "label": "Qualified health plan expenses allocable to qualified family leave wages for leave taken before April 1, 2021 (Form 941 or 941-SS, line 20)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_30": {
+        "label": "Reserved for future use",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_31a": {
+        "label": "Reserved for future use",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_31b": {
+        "label": "Reserved for future use"
+      },
+      "line_32": {
+        "label": "Reserved for future use",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_33a": {
+        "label": "Reserved for future use",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_33b": {
+        "label": "Reserved for future use",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_34": {
+        "label": "Reserved for future use",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "lines_35_40_caution": "Lines 35–40 apply only to quarters beginning after March 31, 2021.",
+      "line_35": {
+        "label": "Qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021 (Form 941 or 941-SS, line 23)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_36": {
+        "label": "Qualified health plan expenses allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021 (Form 941 or 941-SS, line 24)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_37": {
+        "label": "Amounts under certain collectively bargained agreements allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021 (Form 941 or 941-SS, line 25)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_38": {
+        "label": "Qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021 (Form 941 or 941-SS, line 26)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_39": {
+        "label": "Qualified health plan expenses allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021 (Form 941 or 941-SS, line 27)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      },
+      "line_40": {
+        "label": "Amounts under certain collectively bargained agreements allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021 (Form 941 or 941-SS, line 28)",
+        "column_1": "",
+        "column_2": "",
+        "column_3": ""
+      }
+    }
+  },
+  "part_4_explanations": {
+    "title": "Explain your corrections for this quarter",
+    "line_41": {
+      "label": "Check here if any corrections you entered on a line include both underreported and overreported amounts. Explain both your underreported and overreported amounts on line 43.",
+      "checked": false
+    },
+    "line_42": {
+      "label": "Check here if any corrections involve reclassified workers. Explain on line 43.",
+      "checked": false
+    },
+    "line_43": {
+      "label": "You must give us a detailed explanation of how you determined your corrections. See the instructions.",
+      "explanation": ""
+    }
+  },
+  "part_5_signature": {
+    "title": "Sign here. You must complete all five pages of this form and sign it.",
+    "declaration": "Under penalties of perjury, I declare that I have filed an original Form 941 or Form 941-SS and that I have examined this adjusted return or claim, including accompanying schedules and statements, and to the best of my knowledge and belief, it is true, correct, and complete. Declaration of preparer (other than taxpayer) is based on all information of which preparer has any knowledge.",
+    "signature": {
+      "signature": "",
+      "date": "",
+      "name": "",
+      "title": "",
+      "phone": ""
+    },
+    "paid_preparer": {
+      "self_employed": false,
+      "preparer_name": "",
+      "ptin": "",
+      "preparer_signature": "",
+      "date": "",
+      "firm_name": "",
+      "ein": "",
+      "address": "",
+      "phone": "",
+      "city": "",
+      "state": "",
+      "zip_code": ""
+    }
+  },
+  "process_guidance": {
+    "title": "Which process should you use?",
+    "scenarios": {
+      "underreported_only": {
+        "description": "Underreported tax amounts ONLY",
+        "process": "Use the adjustment process to correct underreported tax amounts.",
+        "instructions": [
+          "Check the box on line 1.",
+          "Pay the amount you owe from line 27 by the time you file Form 941-X."
+        ]
+      },
+      "overreported_only": {
+        "description": "Overreported tax amounts ONLY",
+        "process": "The process you use depends on when you file Form 941-X.",
+        "more_than_90_days": {
+          "condition": "If you're filing Form 941-X MORE THAN 90 days before the period of limitations on credit or refund for Form 941 or Form 941-SS expires",
+          "options": [
+            {
+              "name": "adjustment_process",
+              "description": "Choose the adjustment process if you want the amount shown on line 27 credited to your Form 941 or Form 944 for the period in which you file Form 941-X. Check the box on line 1."
+            },
+            {
+              "name": "claim_process",
+              "description": "Choose the claim process if you want the amount shown on line 27 refunded to you or abated. Check the box on line 2."
+            }
+          ]
+        },
+        "within_90_days": {
+          "condition": "If you're filing Form 941-X WITHIN 90 days of the expiration of the period of limitations on credit or refund for Form 941 or Form 941-SS",
+          "requirement": "You must use the claim process to correct the overreported tax amounts. Check the box on line 2."
+        }
+      },
+      "both_under_and_over": {
+        "description": "BOTH underreported and overreported tax amounts",
+        "process": "The process you use depends on when you file Form 941-X.",
+        "more_than_90_days": {
+          "condition": "If you're filing Form 941-X MORE THAN 90 days before the period of limitations on credit or refund for Form 941 or Form 941-SS expires",
+          "options": [
+            {
+              "name": "adjustment_process_only",
+              "description": "Choose the adjustment process if combining your underreported tax amounts and overreported tax amounts results in a balance due or creates a credit that you want applied to Form 941 or Form 944.",
+              "steps": [
+                "File one Form 941-X, and",
+                "Check the box on line 1 and follow the instructions on line 27."
+              ]
+            },
+            {
+              "name": "both_processes",
+              "description": "Choose both the adjustment process and the claim process if you want the overreported tax amount refunded to you or abated.",
+              "steps": [
+                "File two separate forms.",
+                "For the adjustment process, file one Form 941-X to correct the underreported tax amounts. Check the box on line 1. Pay the amount you owe from line 27 by the time you file Form 941-X.",
+                "For the claim process, file a second Form 941-X to correct the overreported tax amounts. Check the box on line 2."
+              ]
+            }
+          ]
+        },
+        "within_90_days": {
+          "condition": "If you're filing Form 941-X WITHIN 90 days of the expiration of the period of limitations on credit or refund for Form 941 or Form 941-SS",
+          "requirement": "You must use both the adjustment process and the claim process.",
+          "steps": [
+            "File two separate forms.",
+            "For the adjustment process, file one Form 941-X to correct the underreported tax amounts. Check the box on line 1. Pay the amount you owe from line 27 by the time you file Form 941-X.",
+            "For the claim process, file a second Form 941-X to correct the overreported tax amounts. Check the box on line 2."
+          ]
+        }
+      }
+    },
+    "employment_tax_credit_note": "Unless otherwise specified in the separate instructions, an underreported employment tax credit should be treated like an overreported tax amount. An overreported employment tax credit should be treated like an underreported tax amount. For more information, including which process to select on lines 1 and 2, see Correcting an employment tax credit in the separate instructions."
+  },
+  "form_metadata": {
+    "website": "www.irs.gov/Form941X",
+    "catalog_number": "17025J",
+    "pages": 6,
+    "completion_requirement": "You must complete all five pages of this form and sign it"
+  }
+}

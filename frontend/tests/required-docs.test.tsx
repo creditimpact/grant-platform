@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import RequiredDocs from "../src/components/RequiredDocs";
 
-test("renders Tax_Payment_Receipt preview", () => {
+test("renders doc previews", () => {
   const items = [
     {
       key: "Tax_Payment_Receipt",
@@ -14,6 +14,13 @@ test("renders Tax_Payment_Receipt preview", () => {
             payment_date: "2023-04-15",
           },
         },
+      ],
+    },
+    {
+      key: "IRS_941X",
+      label: "IRS Form 941-X (Adjusted Quarterly Return)",
+      uploads: [
+        { fields: { ein: "123456789", year: "2021", quarter: "1" } },
       ],
     },
   ];

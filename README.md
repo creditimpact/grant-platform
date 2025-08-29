@@ -42,6 +42,11 @@ To extend the library:
    `shared/document_library/` (e.g. `grants_v2.json`).
 3. Update services to reference the new version if needed.
 
+Example: to support IRS Form 941-X uploads, add a `shared/document_types/IRS_941X.json`
+with detector keywords and required fields (`employer_identification_number`,
+`quarter`, `calendar_year`), register it in `catalog.json`, and list the
+document under relevant grants in `grants_v1.json`.
+
 ### Veteran Owned Business Grant
 
 This program awards a flat $10,000 to five veteran-owned small businesses each year.

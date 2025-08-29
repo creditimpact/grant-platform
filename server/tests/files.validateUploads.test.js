@@ -56,3 +56,24 @@ test("processes Tax_Payment_Receipt payload", async () => {
   expect(doc.fields.payment_amount).toBe(123.45);
   expect(doc.fields.payment_date).toBe("2023-04-15");
 });
+
+test("processes IRS_941X payload for erc", async () => {
+  global.pipelineFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      doc_type: "IRS_941X",
+      fields: { ein: "123456789", year: "2021", quarter: "1" },
+      doc_confidence: 0.8,
+    }),
+    headers: { get: () => "application/json" },
+  });
+
+  const res = await request(app)
+    .post("/api/files/upload")
+    .field("grant_key", "erc")
+    .attach("file", Buffer.from("dummy"), "941x.pdf");
+  expect(res.status).toBe(200);
+  const doc = res.body.documents[0];
+  expect(doc.docType).toBe("IRS_941X");
+  expect(doc.fields.ein).toBe("123456789");
+});

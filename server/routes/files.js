@@ -131,9 +131,12 @@ router.post('/files/upload', (req, res) => {
       if (!spec) {
         return res.status(400).json({ error: 'Unknown doc_type' });
       }
-      const requiredFields = Object.entries(spec.extract.fields)
-        .filter(([_, cfg]) => cfg.required)
-        .map(([k]) => k);
+      let requiredFields = [];
+      if (spec.extract && spec.extract.fields) {
+        requiredFields = Object.entries(spec.extract.fields)
+          .filter(([_, cfg]) => cfg.required)
+          .map(([k]) => k);
+      }
       for (const f of requiredFields) {
         if (!(f in docFields)) {
           return res.status(400).json({ error: `missing field ${f}` });
