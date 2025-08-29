@@ -68,6 +68,7 @@ app.use('/api', require('./routes/formTemplate'));
 app.use('/api', require('./routes/files'));
 app.use('/api', require('./routes/eligibility'));
 app.use('/api', require('./routes/questionnaire'));
+app.use(require('./routes/documents'));
 
 const PORT = env.PORT || 5000;
 

@@ -27,6 +27,21 @@ project-root/
 
 The document upload flow accepts **PDF**, **JPG/JPEG**, and **PNG** files up to 5MB each.
 
+## Document Library
+
+A versioned evidence library lives under `shared/document_library/`. The schema
+in `schema.json` validates the grant catalog, and `grants_v1.json` lists the
+required documents per grant key. The AI analyzer reads document type detectors
+from `shared/document_types/catalog.json`.
+
+To extend the library:
+
+1. Add a new document type detector in
+   `shared/document_types/catalog.json`.
+2. Define the evidence requirements in a new versioned file under
+   `shared/document_library/` (e.g. `grants_v2.json`).
+3. Update services to reference the new version if needed.
+
 ### Veteran Owned Business Grant
 
 This program awards a flat $10,000 to five veteran-owned small businesses each year.

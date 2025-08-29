@@ -1,0 +1,27 @@
+{
+  "$schema": "https://example.com/schemas/document-types-v1.json",
+  "version": 1,
+  "types": {
+    "Form_1120X": {
+      "display_name": "IRS Form 1120X (Amended U.S. Corporation Income Tax Return)",
+      "identify": {
+        "keywords_any": ["Form 1120X", "Amended U.S. Corporation Income Tax Return"],
+        "regex_any": ["(?i)\\bForm\\s+1120X\\b"],
+        "check_pages": [1, 2]
+      },
+      "extract_fields": [
+        "ein", "company_name", "tax_year_ending",
+        "address_line", "city_state_zip",
+        "total_income_c", "total_deductions_c",
+        "taxable_income_c", "total_tax_c",
+        "overpayment", "tax_due"
+      ],
+      "normalize": {
+        "tax_year_ending": "date",
+        "ein": "ein",
+        "overpayment": "currency",
+        "tax_due": "currency"
+      }
+    }
+  }
+}

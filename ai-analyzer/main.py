@@ -14,6 +14,8 @@ from ai_analyzer.ocr_utils import extract_text, OCRExtractionError
 from ai_analyzer.nlp_parser import extract_fields, normalize_text
 from ai_analyzer.config import settings  # type: ignore
 from ai_analyzer.upload_utils import validate_upload
+from src.detectors import identify
+from src.extractors.irs_1120x import extract as extract_1120x
 try:  # pragma: no cover - optional OpenAI dependency
     from openai import OpenAI  # type: ignore
     openai_client = (
@@ -364,6 +366,11 @@ async def analyze_text_flow(
         "raw_text_preview": normalized[:2000],
         "source": source,
     }
+    det = identify(text)
+    response["document_type"] = det.get("type_key")
+    response["document_confidence"] = det.get("confidence", 0)
+    if det.get("type_key") == "Form_1120X":
+        response["extracted_fields"] = extract_1120x(text)
     extra = {"source": source}
     if filename:
         extra["upload_filename"] = filename
