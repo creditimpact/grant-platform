@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders doc previews 1`] = `
-<DocumentFragment>
+<div>
   <div
     class="space-y-3"
   >
@@ -12,6 +12,7 @@ exports[`renders doc previews 1`] = `
         class="font-medium"
       >
         Tax Payment Receipt / Payment Confirmation
+         
       </div>
       <ul
         class="text-sm mt-1 space-y-1"
@@ -28,6 +29,7 @@ exports[`renders doc previews 1`] = `
         class="font-medium"
       >
         IRS Form 941-X (Adjusted Quarterly Return)
+         
       </div>
       <ul
         class="text-sm mt-1 space-y-1"
@@ -38,5 +40,5 @@ exports[`renders doc previews 1`] = `
       </ul>
     </div>
   </div>
-</DocumentFragment>
+</div>
 `;
