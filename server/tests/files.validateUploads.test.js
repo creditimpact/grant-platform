@@ -52,9 +52,9 @@ test("processes Tax_Payment_Receipt payload", async () => {
     .attach("file", Buffer.from("dummy"), "receipt.pdf");
   expect(res.status).toBe(200);
   const doc = res.body.documents[0];
-  expect(doc.docType).toBe("Tax_Payment_Receipt");
-  expect(doc.fields.payment_amount).toBe(123.45);
-  expect(doc.fields.payment_date).toBe("2023-04-15");
+  expect(doc.doc_type).toBe("Tax_Payment_Receipt");
+  expect(doc.analyzer_fields.payment_amount).toBe(123.45);
+  expect(doc.analyzer_fields.payment_date).toBe("2023-04-15");
 });
 
 test("processes IRS_941X payload for erc", async () => {
@@ -74,6 +74,36 @@ test("processes IRS_941X payload for erc", async () => {
     .attach("file", Buffer.from("dummy"), "941x.pdf");
   expect(res.status).toBe(200);
   const doc = res.body.documents[0];
-  expect(doc.docType).toBe("IRS_941X");
-  expect(doc.fields.ein).toBe("123456789");
+  expect(doc.doc_type).toBe("IRS_941X");
+  expect(doc.analyzer_fields.ein).toBe("123456789");
+});
+
+test('uploaded doc updates checklist status', async () => {
+  global.pipelineFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      doc_type: 'IRS_941X',
+      fields: { ein: '123456789', year: '2021', quarter: '1' },
+    }),
+    headers: { get: () => 'application/json' },
+  });
+  const { createCase, updateCase } = require('../utils/pipelineStore');
+  const caseId = await createCase('dev-user');
+  await updateCase(caseId, {
+    eligibility: { results: [], requiredForms: [], shortlist: ['erc'] },
+  });
+  let res = await request(app).get(`/api/case/required-documents?caseId=${caseId}`);
+  let item = res.body.required.find((d) => d.doc_type === 'IRS_941X');
+  expect(item.status).toBe('not_uploaded');
+
+  res = await request(app)
+    .post('/api/files/upload')
+    .field('caseId', caseId)
+    .field('grant_key', 'erc')
+    .attach('file', Buffer.from('dummy'), '941x.pdf');
+  expect(res.status).toBe(200);
+
+  res = await request(app).get(`/api/case/required-documents?caseId=${caseId}`);
+  item = res.body.required.find((d) => d.doc_type === 'IRS_941X');
+  expect(item.status).toBe('extracted');
 });

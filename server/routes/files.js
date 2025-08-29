@@ -152,17 +152,20 @@ router.post('/files/upload', (req, res) => {
           .split('T')[0];
       }
       documents.push({
-        docType: doc_type,
-        fields: normFields,
-        fileUrl: req.file.originalname,
+        doc_type,
+        status: 'extracted',
+        evidence_key: evidence_key || key,
+        analyzer_fields: normFields,
+        file_name: req.file.originalname,
         uploadedAt: now,
         requestId: req.headers['x-request-id'],
       });
     } else {
       documents.push({
-        key: evidence_key || key,
-        evidence_key: evidence_key,
-        filename: req.file.originalname,
+        doc_type: evidence_key || key,
+        status: 'uploaded',
+        evidence_key: evidence_key || key,
+        file_name: req.file.originalname,
         size: req.file.size,
         contentType: req.file.mimetype,
         uploadedAt: now,
