@@ -22,6 +22,9 @@
         "overpayment": "currency",
         "tax_due": "currency"
       }
+    },
+    "Tax_Payment_Receipt": {
+      "$ref": "Tax_Payment_Receipt.json"
     }
   }
 }

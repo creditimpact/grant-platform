@@ -12,8 +12,8 @@ const { createCase, getCase, updateCase } = require('../utils/pipelineStore');
 const { getServiceHeaders } = require('../utils/serviceHeaders');
 const logger = require('../utils/logger');
 const { safeMerge } = require('../utils/safeMerge');
-const { normalizeAnswers } = require('../utils/normalizeAnswers');
-const { getRequiredDocs } = require('../utils/documentLibrary');
+const { normalizeAnswers, currency } = require('../utils/normalizeAnswers');
+const { getRequiredDocs, getDocType } = require('../utils/documentLibrary');
 
 const router = express.Router();
 
@@ -93,7 +93,8 @@ router.post('/files/upload', (req, res) => {
       return res.send(text);
     }
 
-    const fields = await resp.json();
+    const analysis = await resp.json();
+    const { doc_type, fields: docFields, doc_confidence, ...businessFields } = analysis;
     const c = await getCase(userId, caseId);
     const currentGrantKey = grant_key || grantKey || c?.grantKey;
     if (currentGrantKey) {
@@ -106,10 +107,14 @@ router.post('/files/upload', (req, res) => {
       }
     }
     const existingFields = (c.analyzer && c.analyzer.fields) || {};
-    const { merged: mergedFields, updatedKeys } = safeMerge(existingFields, fields, {
-      source: 'analyzer',
-      questionnaire: c.questionnaire?.data || {},
-    });
+    const { merged: mergedFields, updatedKeys } = safeMerge(
+      existingFields,
+      businessFields,
+      {
+        source: 'analyzer',
+        questionnaire: c.questionnaire?.data || {},
+      },
+    );
     if (updatedKeys.length) {
       const logFn = logger.debug ? logger.debug.bind(logger) : logger.info.bind(logger);
       logFn('safeMerge updatedKeys', {
@@ -119,15 +124,48 @@ router.post('/files/upload', (req, res) => {
     }
     const normalized = normalizeAnswers(mergedFields);
     const now = new Date().toISOString();
-    const docMeta = {
-      key: evidence_key || key,
-      evidence_key: evidence_key,
-      filename: req.file.originalname,
-      size: req.file.size,
-      contentType: req.file.mimetype,
-      uploadedAt: now,
-    };
-    const documents = [...(c.documents || []), docMeta];
+    let documents = [...(c.documents || [])];
+
+    if (doc_type && docFields) {
+      const spec = getDocType(doc_type);
+      if (!spec) {
+        return res.status(400).json({ error: 'Unknown doc_type' });
+      }
+      const requiredFields = Object.entries(spec.extract.fields)
+        .filter(([_, cfg]) => cfg.required)
+        .map(([k]) => k);
+      for (const f of requiredFields) {
+        if (!(f in docFields)) {
+          return res.status(400).json({ error: `missing field ${f}` });
+        }
+      }
+      const normFields = { ...docFields };
+      if (normFields.payment_amount != null) {
+        normFields.payment_amount = currency(normFields.payment_amount);
+      }
+      if (normFields.payment_date) {
+        normFields.payment_date = new Date(normFields.payment_date)
+          .toISOString()
+          .split('T')[0];
+      }
+      documents.push({
+        docType: doc_type,
+        fields: normFields,
+        fileUrl: req.file.originalname,
+        uploadedAt: now,
+        requestId: req.headers['x-request-id'],
+      });
+    } else {
+      documents.push({
+        key: evidence_key || key,
+        evidence_key: evidence_key,
+        filename: req.file.originalname,
+        size: req.file.size,
+        contentType: req.file.mimetype,
+        uploadedAt: now,
+      });
+    }
+
     await updateCase(caseId, {
       analyzer: { fields: normalized, lastUpdated: now },
       documents,

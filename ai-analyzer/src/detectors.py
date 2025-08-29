@@ -1,10 +1,25 @@
 from pathlib import Path
 import json, re
 
-CATALOG_PATH = Path(__file__).resolve().parents[2] / "shared" / "document_types" / "catalog.json"
+CATALOG_DIR = Path(__file__).resolve().parents[2] / "shared" / "document_types"
+CATALOG_PATH = CATALOG_DIR / "catalog.json"
 
-with open(CATALOG_PATH, "r", encoding="utf-8") as f:
-    DOC_TYPES = json.load(f)["types"]
+
+def _load_doc_types() -> dict:
+    with open(CATALOG_PATH, "r", encoding="utf-8") as f:
+        raw = json.load(f)["types"]
+    out = {}
+    for key, spec in raw.items():
+        if isinstance(spec, dict) and "$ref" in spec:
+            ref_path = CATALOG_DIR / spec["$ref"]
+            with open(ref_path, "r", encoding="utf-8") as rf:
+                out[key] = json.load(rf)
+        else:
+            out[key] = spec
+    return out
+
+
+DOC_TYPES = _load_doc_types()
 
 def identify(doc_text: str) -> dict:
     """Return {'type_key': str, 'confidence': float} or {}"""
