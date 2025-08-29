@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { api } from "@/lib/apiClient";
+import { api, uploadFile } from "@/lib/apiClient";
 import Tooltip from "@/components/Tooltip";
 import PreUploadWizard from "@/components/PreUploadWizard";
 
@@ -113,9 +113,28 @@ export default function DocumentChecklist({
   });
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [notice, setNotice] = useState(false);
 
   useEffect(() => {
     fetchDocs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caseId]);
+
+  useEffect(() => {
+    async function handleEligibility(e: CustomEvent) {
+      if (e.detail?.caseId !== caseId) return;
+      await fetchDocs();
+      setNotice(true);
+    }
+    window.addEventListener(
+      'eligibility-changed',
+      handleEligibility as unknown as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        'eligibility-changed',
+        handleEligibility as unknown as EventListener,
+      );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caseId]);
 
@@ -151,8 +170,7 @@ export default function DocumentChecklist({
     form.append("key", doc.doc_type);
     form.append("caseId", caseId);
     try {
-      await api.post("/files/upload", form);
-      await fetchDocs();
+      await uploadFile(form);
     } catch (e) {
       alert("Upload failed");
     } finally {
@@ -184,6 +202,12 @@ export default function DocumentChecklist({
 
   return (
     <div className="space-y-4">
+      {notice && (
+        <p role="alert" className="text-sm text-blue-600">
+          Your required documents have been updated based on new eligibility
+          results.
+        </p>
+      )}
       <div>
         <h3 className="font-semibold mb-2">Common Documents</h3>
         <ul className="space-y-2">

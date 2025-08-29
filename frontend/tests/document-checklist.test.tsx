@@ -1,17 +1,17 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import DocumentChecklist from "@/components/DocumentChecklist";
-import { api } from "@/lib/apiClient";
+import { api, uploadFile } from "@/lib/apiClient";
 
 jest.mock("@/lib/apiClient", () => ({
   api: {
     get: jest.fn(),
-    post: jest.fn(),
   },
+  uploadFile: jest.fn(),
 }));
 
 beforeEach(() => {
   (api.get as jest.Mock).mockReset();
-  (api.post as jest.Mock).mockReset();
+  (uploadFile as jest.Mock).mockReset();
   localStorage.clear();
 });
 
@@ -77,8 +77,12 @@ test("uploads document and refreshes status", async () => {
         },
       ],
     });
-
-  (api.post as jest.Mock).mockResolvedValue({});
+  (uploadFile as jest.Mock).mockImplementation(async () => {
+    window.dispatchEvent(
+      new CustomEvent("eligibility-changed", { detail: { caseId: "case123" } }),
+    );
+    return {};
+  });
 
   render(<DocumentChecklist caseId="case123" />);
 
@@ -91,11 +95,41 @@ test("uploads document and refreshes status", async () => {
     fireEvent.change(input, { target: { files: [file] } });
   });
 
-  expect(api.post).toHaveBeenCalledWith("/files/upload", expect.any(FormData));
-  const form = (api.post as jest.Mock).mock.calls[0][1] as FormData;
+  expect(uploadFile).toHaveBeenCalledWith(expect.any(FormData));
+  const form = (uploadFile as jest.Mock).mock.calls[0][0] as FormData;
   expect(form.get("caseId")).toBe("case123");
   expect(form.get("key")).toBe("W9");
 
   expect(await screen.findByText("uploaded")).toBeInTheDocument();
   expect((api.get as jest.Mock)).toHaveBeenCalledTimes(2);
+});
+
+test('refreshes when eligibility changes', async () => {
+  localStorage.setItem('preupload_done_abc', '1');
+  (api.get as jest.Mock)
+    .mockResolvedValueOnce({
+      data: [
+        { doc_type: 'W9', source: 'common', grants: [], status: 'not_uploaded' },
+      ],
+    })
+    .mockResolvedValueOnce({
+      data: [
+        { doc_type: 'W9', source: 'common', grants: [], status: 'uploaded' },
+      ],
+    });
+
+  render(<DocumentChecklist caseId="abc" />);
+  expect(await screen.findByText('W9')).toBeInTheDocument();
+
+  act(() => {
+    window.dispatchEvent(
+      new CustomEvent('eligibility-changed', { detail: { caseId: 'abc' } }),
+    );
+  });
+
+  expect(await screen.findByText('uploaded')).toBeInTheDocument();
+  expect((api.get as jest.Mock)).toHaveBeenCalledTimes(2);
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Your required documents have been updated',
+  );
 });

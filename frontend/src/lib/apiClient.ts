@@ -50,7 +50,13 @@ export async function getRequiredDocs(grantKey: string) {
 // -------------------- FILE UPLOAD --------------------
 export async function uploadFile(formData: FormData): Promise<CaseSnapshot> {
   const res = await api.post('/files/upload', formData);
-  return transformCase(res.data);
+  const snap = transformCase(res.data);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('eligibility-changed', { detail: { caseId: snap.caseId } }),
+    );
+  }
+  return snap;
 }
 
 // -------------------- QUESTIONNAIRE --------------------
@@ -67,7 +73,13 @@ export async function postEligibilityReport(payload: {
   caseId: string;
 }): Promise<CaseSnapshot> {
   const res = await api.post('/eligibility-report', payload);
-  return transformCase(res.data);
+  const snap = transformCase(res.data);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('eligibility-changed', { detail: { caseId: snap.caseId } }),
+    );
+  }
+  return snap;
 }
 
 export async function getEligibilityReport(caseId?: string): Promise<EligibilityReport> {
