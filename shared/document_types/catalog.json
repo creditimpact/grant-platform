@@ -67,6 +67,29 @@
         "state_of_incorporation": "string",
         "registered_agent": "string"
       }
+    },
+    "EIN_Letter": {
+      "detector": {
+        "keywords": [
+          "CP 575",
+          "EIN Confirmation Letter",
+          "Employer Identification Number",
+          "Internal Revenue Service",
+          "Department of the Treasury",
+          "This is your Employer Identification Number"
+        ]
+      },
+      "extractor": "ein_letter",
+      "fields": {
+        "ein": "string",
+        "business_name": "string",
+        "address": "string",
+        "issue_date": "date",
+        "notice_code": "string"
+      },
+      "examples": [
+        "IRS Notice CP-575 EIN assignment letter"
+      ]
     }
   }
 }
