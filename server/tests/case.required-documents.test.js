@@ -46,6 +46,43 @@ describe('GET /api/case/required-documents', () => {
     expect(receipt.status).toBe('not_uploaded');
   });
 
+  test('includes Articles_Of_Incorporation for incorporation grants', async () => {
+    const mockCase = {
+      caseId: 'CASE456',
+      documents: [
+        { doc_type: 'Articles_Of_Incorporation', status: 'uploaded' },
+      ],
+      eligibility: {
+        results: [
+          { key: 'california_small_biz', score: 90 },
+          { key: 'urban_small_biz', score: 80 },
+          { key: 'general_support', score: 70 },
+        ],
+      },
+    };
+
+    jest.spyOn(Case, 'findOne').mockReturnValue({
+      lean: () => Promise.resolve(mockCase),
+    });
+
+    const res = await request(app)
+      .get('/api/case/required-documents')
+      .query({ caseId: 'CASE456' });
+
+    expect(res.status).toBe(200);
+    const docs = res.body.required.filter(
+      (d) => d.doc_type === 'Articles_Of_Incorporation'
+    );
+    expect(docs).toHaveLength(1);
+    const aoi = docs[0];
+    expect(aoi.status).toBe('uploaded');
+    expect(aoi.grants.sort()).toEqual([
+      'california_small_biz',
+      'general_support',
+      'urban_small_biz',
+    ]);
+  });
+
   test('400 when caseId missing', async () => {
     const res = await request(app).get('/api/case/required-documents');
     expect(res.status).toBe(400);

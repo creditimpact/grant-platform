@@ -12,6 +12,18 @@ test("returns required docs for business_tax_refund", async () => {
   expect(res.body.required_documents[0]).toHaveProperty("key");
 });
 
+test("includes Articles_Of_Incorporation for business_tax_refund", async () => {
+  const res = await request(app).get(
+    "/api/grants/business_tax_refund/required-documents"
+  );
+  expect(res.status).toBe(200);
+  const item = res.body.required_documents.find(
+    (d) => d.doc_type === "Articles_Of_Incorporation"
+  );
+  expect(item).toBeDefined();
+  expect(item.min_count).toBe(1);
+});
+
 test("marks Tax_Payment_Receipt as fulfilled", async () => {
   const caseId = await createCase("dev-user");
   await request(app)
