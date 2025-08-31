@@ -1,5 +1,8 @@
 // server/index.js
 
+require('dotenv').config();
+console.log("ELIGIBILITY_ENGINE_URL =", process.env.ELIGIBILITY_ENGINE_URL);
+
 const env = require('./config/env');
 const express = require('express');
 const cors = require('cors');
