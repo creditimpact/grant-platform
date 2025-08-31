@@ -2,6 +2,8 @@
 
 require('dotenv').config();
 console.log("ELIGIBILITY_ENGINE_URL =", process.env.ELIGIBILITY_ENGINE_URL);
+console.log("AI_ANALYZER_URL =", process.env.AI_ANALYZER_URL);
+console.log("AI_AGENT_URL =", process.env.AI_AGENT_URL);
 
 const env = require('./config/env');
 const express = require('express');
