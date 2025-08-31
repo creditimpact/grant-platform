@@ -59,6 +59,45 @@
         { "key": "ppp_docs", "label": "PPP forgiveness & allocations", "accept_mime": ["application/pdf"] , "examples": ["SBA forgiveness letter"] }
         , { "doc_type": "IRS_941X", "min_count": 1, "max_count": 10, "label": "Form 941-X for applicable quarters" }
       ]
+    },
+    "california_small_biz": {
+      "title": "California Small Business Grant",
+      "required_docs": [
+        "Business_License",
+        "Articles_Of_Incorporation",
+        "EIN_Letter",
+        "Financials_Basic",
+        "Tax_Returns",
+        "Business_Plan",
+        "Grant_Use_Statement"
+      ],
+      "common_docs": ["Owner_ID", "Bank_Statements"]
+    },
+    "urban_small_biz": {
+      "title": "Urban Small Business Grant",
+      "required_docs": [
+        "Business_License",
+        "Articles_Of_Incorporation",
+        "EIN_Letter",
+        "Financials_Basic",
+        "Tax_Returns",
+        "Business_Plan",
+        "Grant_Use_Statement"
+      ],
+      "common_docs": ["Owner_ID", "Bank_Statements"]
+    },
+    "general_support": {
+      "title": "General Support Grant",
+      "required_docs": [
+        "Business_License",
+        "Articles_Of_Incorporation",
+        "EIN_Letter",
+        "Financials_Basic",
+        "Tax_Returns",
+        "Business_Plan",
+        "Grant_Use_Statement"
+      ],
+      "common_docs": ["Owner_ID", "Bank_Statements"]
     }
   }
 }
