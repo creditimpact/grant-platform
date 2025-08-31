@@ -2,7 +2,7 @@
   "version": 1,
   "common_documents": [
     { "doc_type": "Tax_Payment_Receipt", "label": "Tax payment receipt / confirmation" },
-    { "doc_type": "W9", "label": "IRS W-9" },
+    { "doc_type": "W9_Form", "label": "IRS W-9" },
     { "doc_type": "EIN_Letter", "label": "EIN Letter (CP-575)" },
     {
       "doc_type": "Basic_Financials",
@@ -68,6 +68,7 @@
         "Business_License",
         "Articles_Of_Incorporation",
         "EIN_Letter",
+        "W9_Form",
         "Financials_Basic",
         "Tax_Returns",
         "Business_Plan",
@@ -81,6 +82,7 @@
         "Business_License",
         "Articles_Of_Incorporation",
         "EIN_Letter",
+        "W9_Form",
         "Financials_Basic",
         "Tax_Returns",
         "Business_Plan",
@@ -94,6 +96,7 @@
         "Business_License",
         "Articles_Of_Incorporation",
         "EIN_Letter",
+        "W9_Form",
         "Financials_Basic",
         "Tax_Returns",
         "Business_Plan",

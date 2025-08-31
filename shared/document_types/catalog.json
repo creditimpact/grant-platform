@@ -90,6 +90,29 @@
       "examples": [
         "IRS Notice CP-575 EIN assignment letter"
       ]
+    },
+    "W9_Form": {
+      "extractor": "w9_form",
+      "detector": {
+        "keywords": [
+          "Form W-9",
+          "Request for Taxpayer Identification Number and Certification",
+          "W-9 (Rev.",
+          "Taxpayer Identification Number",
+          "TIN",
+          "Employer Identification Number",
+          "Social Security Number"
+        ]
+      },
+      "fields": {
+        "legal_name": "string",
+        "business_name": "string",
+        "entity_type": "string",
+        "tin": "string",
+        "address": "string",
+        "signature_date": "date"
+      },
+      "examples": ["IRS Form W-9"]
     }
   }
 }

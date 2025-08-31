@@ -15,12 +15,12 @@ async function buildChecklist({
 }) {
   const lower = (s) => (s || '').toLowerCase();
 
-  const commonDocs = new Set();
+  const commonDocs = new Map(); // lower -> original
   const grantDocsMap = new Map(); // docTypeLower -> { doc_type, grants: Set() }
 
   for (const g of shortlistedGrants || []) {
     const cfg = grantsLibrary[g] || {};
-    for (const d of cfg.common_docs || []) commonDocs.add(lower(d));
+    for (const d of cfg.common_docs || []) commonDocs.set(lower(d), d);
     for (const d of cfg.required_docs || []) {
       const k = lower(d);
       if (!grantDocsMap.has(k)) {
@@ -34,8 +34,8 @@ async function buildChecklist({
   // Merge & dedupe
   const merged = new Map(); // key -> item
   // a) common first
-  for (const dLower of commonDocs) {
-    const docType = grantDocsMap.get(dLower)?.doc_type || dLower.toUpperCase();
+  for (const [dLower, original] of commonDocs) {
+    const docType = grantDocsMap.get(dLower)?.doc_type || original;
     merged.set(dLower, {
       doc_type: docType,
       source: 'common',

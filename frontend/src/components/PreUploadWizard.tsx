@@ -10,9 +10,10 @@ export interface CommonDoc {
 
 const COMMON_DOCS: CommonDoc[] = [
   {
-    doc_type: "W9",
-    title: "IRS W-9",
-    description: "Provides your taxpayer identification number.",
+    doc_type: "W9_Form",
+    title: "IRS Form W-9 (Request for TIN)",
+    description:
+      "Signed IRS W-9 showing your TIN (SSN/EIN), legal name, entity type, and address.",
     example_url: "https://www.irs.gov/pub/irs-pdf/fw9.pdf",
   },
   {
