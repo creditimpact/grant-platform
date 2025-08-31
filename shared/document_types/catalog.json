@@ -29,6 +29,25 @@
     "IRS_941X": {
       "$ref": "IRS_941X.json",
       "display_name": "IRS Form 941-X"
+    },
+    "Business_License": {
+      "detector": {
+        "keywords": [
+          "Application for General Business License",
+          "Business License",
+          "Applicant Information",
+          "Business Information"
+        ]
+      },
+      "extractor": "business_license",
+      "fields": {
+        "applicant_name": "string",
+        "date_of_birth": "date",
+        "home_address": "string",
+        "business_name": "string",
+        "business_address": "string",
+        "type_of_business": "string"
+      }
     }
   }
 }
