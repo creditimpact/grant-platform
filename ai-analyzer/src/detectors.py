@@ -35,6 +35,7 @@ EXTRACTORS = {
     "Business_License": ("business_license", "extract"),
     "Articles_Of_Incorporation": ("articles_of_incorporation", "extract"),
     "EIN_Letter": ("ein_letter", "extract"),
+    "W9_Form": ("w9_form", "extract"),
 }
 
 def identify(doc_text: str) -> dict:

@@ -20,11 +20,11 @@ test("renders and dedupes documents", async () => {
   (api.get as jest.Mock).mockResolvedValue({
     data: [
       {
-        doc_type: "W9",
+        doc_type: "W9_Form",
         source: "common",
         grants: [],
         status: "not_uploaded",
-        description: "W9 form",
+        description: "IRS Form W-9 (Request for TIN)",
         example_url: "http://example.com/w9",
       },
       {
@@ -48,7 +48,7 @@ test("renders and dedupes documents", async () => {
 
   render(<DocumentChecklist caseId="123" />);
 
-  expect(await screen.findByText("W9")).toBeInTheDocument();
+  expect(await screen.findByText("W9_Form")).toBeInTheDocument();
   expect(await screen.findByText("IRS_941X")).toBeInTheDocument();
   expect(screen.getAllByText("IRS_941X")).toHaveLength(1);
   expect(screen.getByText("Required by: GrantA, GrantB")).toBeInTheDocument();
@@ -60,7 +60,7 @@ test("uploads document and refreshes status", async () => {
     .mockResolvedValueOnce({
       data: [
         {
-          doc_type: "W9",
+          doc_type: "W9_Form",
           source: "common",
           grants: [],
           status: "not_uploaded",
@@ -70,7 +70,7 @@ test("uploads document and refreshes status", async () => {
     .mockResolvedValueOnce({
       data: [
         {
-          doc_type: "W9",
+          doc_type: "W9_Form",
           source: "common",
           grants: [],
           status: "uploaded",
@@ -86,7 +86,7 @@ test("uploads document and refreshes status", async () => {
 
   render(<DocumentChecklist caseId="case123" />);
 
-  const input = (await screen.findByText("W9"))
+  const input = (await screen.findByText("W9_Form"))
     .closest("li")!
     .querySelector("input[type=file]") as HTMLInputElement;
 
@@ -98,7 +98,7 @@ test("uploads document and refreshes status", async () => {
   expect(uploadFile).toHaveBeenCalledWith(expect.any(FormData));
   const form = (uploadFile as jest.Mock).mock.calls[0][0] as FormData;
   expect(form.get("caseId")).toBe("case123");
-  expect(form.get("key")).toBe("W9");
+  expect(form.get("key")).toBe("W9_Form");
 
   expect(await screen.findByText("uploaded")).toBeInTheDocument();
   expect((api.get as jest.Mock)).toHaveBeenCalledTimes(2);
@@ -109,17 +109,17 @@ test('refreshes when eligibility changes', async () => {
   (api.get as jest.Mock)
     .mockResolvedValueOnce({
       data: [
-        { doc_type: 'W9', source: 'common', grants: [], status: 'not_uploaded' },
+        { doc_type: 'W9_Form', source: 'common', grants: [], status: 'not_uploaded' },
       ],
     })
     .mockResolvedValueOnce({
       data: [
-        { doc_type: 'W9', source: 'common', grants: [], status: 'uploaded' },
+        { doc_type: 'W9_Form', source: 'common', grants: [], status: 'uploaded' },
       ],
     });
 
   render(<DocumentChecklist caseId="abc" />);
-  expect(await screen.findByText('W9')).toBeInTheDocument();
+  expect(await screen.findByText('W9_Form')).toBeInTheDocument();
 
   act(() => {
     window.dispatchEvent(
