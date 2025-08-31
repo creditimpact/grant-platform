@@ -48,6 +48,25 @@
         "business_address": "string",
         "type_of_business": "string"
       }
+    },
+    "Articles_Of_Incorporation": {
+      "detector": {
+        "keywords": [
+          "Articles of Incorporation",
+          "Articles of Organization",
+          "Certificate of Incorporation",
+          "Certificate of Formation",
+          "Secretary of State"
+        ]
+      },
+      "extractor": "articles_of_incorporation",
+      "fields": {
+        "business_name": "string",
+        "entity_type": "string",
+        "date_of_incorporation": "date",
+        "state_of_incorporation": "string",
+        "registered_agent": "string"
+      }
     }
   }
 }

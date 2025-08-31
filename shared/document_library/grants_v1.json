@@ -26,6 +26,7 @@
           "notes": "Show payments for the claimed period"
         },
         { "doc_type": "Tax_Payment_Receipt", "min_count": 1 },
+        { "doc_type": "Articles_Of_Incorporation", "min_count": 1 },
         { "doc_type": "IRS_941X", "min_count": 0, "max_count": 10, "label": "Form 941-X (if corrections/claims)" },
         {
           "key": "filed_returns_original_and_amended",

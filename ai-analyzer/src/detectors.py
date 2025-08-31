@@ -33,6 +33,7 @@ EXTRACTORS = {
     "Tax_Payment_Receipt": ("tax_payment_receipt", "extract"),
     "IRS_941X": ("irs_941x", "extract"),
     "Business_License": ("business_license", "extract"),
+    "Articles_Of_Incorporation": ("articles_of_incorporation", "extract"),
 }
 
 def identify(doc_text: str) -> dict:
