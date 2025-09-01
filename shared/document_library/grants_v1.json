@@ -5,8 +5,8 @@
     { "doc_type": "W9_Form", "label": "IRS W-9" },
     { "doc_type": "EIN_Letter", "label": "EIN Letter (CP-575)" },
     {
-      "doc_type": "Basic_Financials",
-      "label": "Basic Financials (P&L / Balance Sheet)"
+      "doc_type": "Financial_Statements",
+      "label": "Financial Statements (P&L and Balance Sheet)"
     },
     {
       "doc_type": "Basic_Tax_Return",
@@ -69,7 +69,7 @@
         "Articles_Of_Incorporation",
         "EIN_Letter",
         "W9_Form",
-        "Financials_Basic",
+        "Financial_Statements",
         "Tax_Returns",
         "Business_Plan",
         "Grant_Use_Statement"
@@ -83,7 +83,7 @@
         "Articles_Of_Incorporation",
         "EIN_Letter",
         "W9_Form",
-        "Financials_Basic",
+        "Financial_Statements",
         "Tax_Returns",
         "Business_Plan",
         "Grant_Use_Statement"
@@ -97,7 +97,7 @@
         "Articles_Of_Incorporation",
         "EIN_Letter",
         "W9_Form",
-        "Financials_Basic",
+        "Financial_Statements",
         "Tax_Returns",
         "Business_Plan",
         "Grant_Use_Statement"

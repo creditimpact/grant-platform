@@ -48,10 +48,17 @@ function getRequiredDocs(grantKey, caseDocs = []) {
   const g = lib.grants[grantKey];
   if (!g) return null;
   const types = loadDocTypes();
+  const expandDocType = (d) =>
+    d.doc_type === 'Financial_Statements'
+      ? [
+          { ...d, doc_type: 'Profit_And_Loss_Statement' },
+          { ...d, doc_type: 'Balance_Sheet' },
+        ]
+      : [d];
   const all = [
     ...(lib.common_documents || []),
     ...(g.required_documents || []),
-  ];
+  ].flatMap(expandDocType);
   const seen = new Map();
   for (const d of all) {
     const key = d.doc_type || d.key;

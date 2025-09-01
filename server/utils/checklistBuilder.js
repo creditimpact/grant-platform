@@ -15,18 +15,26 @@ async function buildChecklist({
 }) {
   const lower = (s) => (s || '').toLowerCase();
 
+  const expandDocTypes = (d) =>
+    d === 'Financial_Statements'
+      ? ['Profit_And_Loss_Statement', 'Balance_Sheet']
+      : [d];
+
   const commonDocs = new Map(); // lower -> original
   const grantDocsMap = new Map(); // docTypeLower -> { doc_type, grants: Set() }
 
   for (const g of shortlistedGrants || []) {
     const cfg = grantsLibrary[g] || {};
-    for (const d of cfg.common_docs || []) commonDocs.set(lower(d), d);
+    for (const d of cfg.common_docs || [])
+      for (const doc of expandDocTypes(d)) commonDocs.set(lower(doc), doc);
     for (const d of cfg.required_docs || []) {
-      const k = lower(d);
-      if (!grantDocsMap.has(k)) {
-        grantDocsMap.set(k, { doc_type: d, grants: new Set([g]) });
-      } else {
-        grantDocsMap.get(k).grants.add(g);
+      for (const doc of expandDocTypes(d)) {
+        const k = lower(doc);
+        if (!grantDocsMap.has(k)) {
+          grantDocsMap.set(k, { doc_type: doc, grants: new Set([g]) });
+        } else {
+          grantDocsMap.get(k).grants.add(g);
+        }
       }
     }
   }
