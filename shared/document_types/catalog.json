@@ -157,6 +157,29 @@
         "Balance Sheet showing Assets, Liabilities, Equity"
       ]
     },
+    "Business_Plan": {
+      "extractor": "business_plan",
+      "detector": {
+        "keywords": [
+          "Business Plan",
+          "Executive Summary",
+          "Company Description",
+          "Market Analysis",
+          "Financial Projections",
+          "Funding Request",
+          "Go-to-Market",
+          "Operations Plan"
+        ]
+      },
+      "fields": {
+        "business_name": "string",
+        "executive_summary": "string",
+        "funding_request_amount": "number",
+        "period_years": "number",
+        "last_updated": "date"
+      },
+      "description": "Full business plan including executive summary, company details, market analysis, funding request,\n        and financial projections."
+    },
     "Financial_Statements": {
       "composite": true,
       "expands_to": [
