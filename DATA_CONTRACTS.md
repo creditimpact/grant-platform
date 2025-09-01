@@ -50,6 +50,9 @@ The following table enumerates all canonical keys understood by the eligibility 
 | year_founded | integer | Year the company was founded | Accept 1800..current year | No | `2008` | Analyzer |
 | minority_owned | boolean | Business identified as minority‑owned | Parse yes/no | No | `true` | Analyzer |
 | female_owned | boolean | Business identified as woman‑owned | Parse yes/no | No | `true` | Analyzer |
+| intended_categories | array | Planned categories for grant funds | Lowercase strings | No | `["payroll", "rent"]` | Analyzer |
+| justification | string | Rationale for using funds | Trim whitespace | No | `Retain staff` | Analyzer |
+| date_signed | date | Date the statement was signed | ISO-8601 date | No | `2024-01-01` | Analyzer |
 | ppp_reference | boolean | PPP loan is referenced in documents | Parse yes/no | No | `true` | Analyzer |
 | ertc_reference | boolean | ERTC reference detected in documents | Parse yes/no | No | `true` | Analyzer |
 

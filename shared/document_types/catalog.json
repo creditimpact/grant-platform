@@ -180,6 +180,27 @@
       },
       "description": "Full business plan including executive summary, company details, market analysis, funding request,\n        and financial projections."
     },
+    "Grant_Use_Statement": {
+      "extractor": "grant_use_statement",
+      "detector": {
+        "keywords": [
+          "Use of Funds",
+          "Grant Use Statement",
+          "Intended Use of Grant Funds",
+          "Statement of Intended Use",
+          "Funding Request"
+        ],
+        "regex": ["(?i)use of funds"]
+      },
+      "fields": {
+        "business_name": "string",
+        "funding_request_amount": "number",
+        "intended_categories": "array",
+        "justification": "string",
+        "date_signed": "date"
+      },
+      "description": "Declaration of how grant funds will be used, including categories, amounts, and justification."
+    },
     "Financial_Statements": {
       "composite": true,
       "expands_to": [
