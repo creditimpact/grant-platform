@@ -22,6 +22,8 @@ def _load_doc_types() -> dict:
                 "keywords_any": det.get("keywords", []),
                 "regex_any": det.get("regex", []),
             }
+        if "identify" not in out[key]:
+            out[key]["identify"] = {"keywords_any": [], "regex_any": []}
     return out
 
 
@@ -36,6 +38,8 @@ EXTRACTORS = {
     "Articles_Of_Incorporation": ("articles_of_incorporation", "extract"),
     "EIN_Letter": ("ein_letter", "extract"),
     "W9_Form": ("w9_form", "extract"),
+    "Profit_And_Loss_Statement": ("p_and_l_statement", "extract"),
+    "Balance_Sheet": ("balance_sheet", "extract"),
 }
 
 def identify(doc_text: str) -> dict:

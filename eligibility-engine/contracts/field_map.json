@@ -207,5 +207,65 @@
     "aliases": [],
     "target": "ertc_reference",
     "type": "bool"
+  },
+  "period_start": {
+    "aliases": ["periodStart"],
+    "target": "period_start",
+    "type": "date"
+  },
+  "period_end": {
+    "aliases": ["periodEnd"],
+    "target": "period_end",
+    "type": "date"
+  },
+  "total_revenue": {
+    "aliases": ["revenue", "totalRevenue"],
+    "target": "total_revenue",
+    "type": "currency"
+  },
+  "cogs": {
+    "aliases": ["cost_of_goods_sold", "costOfGoodsSold"],
+    "target": "cogs",
+    "type": "currency"
+  },
+  "gross_profit": {
+    "aliases": ["grossProfit"],
+    "target": "gross_profit",
+    "type": "currency"
+  },
+  "total_expenses": {
+    "aliases": ["expensesTotal", "totalExpenses"],
+    "target": "total_expenses",
+    "type": "currency"
+  },
+  "net_income": {
+    "aliases": ["netIncome", "net_profit", "netProfit", "loss"],
+    "target": "net_income",
+    "type": "currency"
+  },
+  "as_of_date": {
+    "aliases": ["asOf", "as_of", "asOfDate"],
+    "target": "as_of_date",
+    "type": "date"
+  },
+  "total_assets": {
+    "aliases": ["assetsTotal", "totalAssets"],
+    "target": "total_assets",
+    "type": "currency"
+  },
+  "total_liabilities": {
+    "aliases": ["liabilitiesTotal", "totalLiabilities"],
+    "target": "total_liabilities",
+    "type": "currency"
+  },
+  "total_equity": {
+    "aliases": ["equityTotal", "totalEquity", "shareholders_equity", "shareholdersEquity"],
+    "target": "total_equity",
+    "type": "currency"
+  },
+  "currency": {
+    "aliases": [],
+    "target": "currency",
+    "type": "string"
   }
 }

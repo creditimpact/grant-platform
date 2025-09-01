@@ -113,6 +113,57 @@
         "signature_date": "date"
       },
       "examples": ["IRS Form W-9"]
+    },
+    "Profit_And_Loss_Statement": {
+      "extractor": "p_and_l_statement",
+      "detector": {
+        "keywords": [
+          "Profit and Loss",
+          "P&L",
+          "Income Statement",
+          "Statement of Operations"
+        ]
+      },
+      "fields": {
+        "period_start": "date",
+        "period_end": "date",
+        "total_revenue": "number",
+        "cogs": "number",
+        "gross_profit": "number",
+        "total_expenses": "number",
+        "net_income": "number",
+        "currency": "string"
+      },
+      "examples": [
+        "P&L statement showing revenues, expenses and net income"
+      ]
+    },
+    "Balance_Sheet": {
+      "extractor": "balance_sheet",
+      "detector": {
+        "keywords": [
+          "Balance Sheet",
+          "Statement of Financial Position"
+        ]
+      },
+      "fields": {
+        "as_of_date": "date",
+        "total_assets": "number",
+        "total_liabilities": "number",
+        "total_equity": "number",
+        "currency": "string"
+      },
+      "examples": [
+        "Balance Sheet showing Assets, Liabilities, Equity"
+      ]
+    },
+    "Financial_Statements": {
+      "composite": true,
+      "expands_to": [
+        "Profit_And_Loss_Statement",
+        "Balance_Sheet"
+      ],
+      "description": "Complete financial statements (P&L and Balance Sheet)"
     }
   }
 }
