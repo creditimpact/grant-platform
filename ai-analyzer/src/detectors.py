@@ -40,6 +40,7 @@ EXTRACTORS = {
     "W9_Form": ("w9_form", "extract"),
     "Profit_And_Loss_Statement": ("p_and_l_statement", "extract"),
     "Balance_Sheet": ("balance_sheet", "extract"),
+    "Business_Plan": ("business_plan", "extract"),
 }
 
 def identify(doc_text: str) -> dict:

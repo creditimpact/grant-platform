@@ -267,5 +267,30 @@
     "aliases": [],
     "target": "currency",
     "type": "string"
+  },
+  "business_name": {
+    "aliases": ["business_name"],
+    "target": "business_name",
+    "type": "string"
+  },
+  "executive_summary": {
+    "aliases": ["executive_summary"],
+    "target": "executive_summary",
+    "type": "string"
+  },
+  "funding_request_amount": {
+    "aliases": ["funding_request_amount", "grant_amount"],
+    "target": "funding_request_amount",
+    "type": "currency"
+  },
+  "period_years": {
+    "aliases": ["period_years", "projection_years"],
+    "target": "period_years",
+    "type": "int"
+  },
+  "last_updated": {
+    "aliases": ["last_updated"],
+    "target": "last_updated",
+    "type": "date"
   }
 }
