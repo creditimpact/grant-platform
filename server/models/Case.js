@@ -8,7 +8,11 @@ const mongoose = require('mongoose');
 const documentSchema = new mongoose.Schema(
   {
     doc_type: String,
-    status: { type: String, default: 'uploaded' },
+    status: {
+      type: String,
+      enum: ['not_uploaded', 'uploaded', 'extracted', 'mismatch', 'generated', 'approved'],
+      default: 'uploaded',
+    },
     evidence_key: String,
     analyzer_fields: mongoose.Schema.Types.Mixed,
   },

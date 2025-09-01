@@ -332,6 +332,32 @@ def _generate_text(data: Dict[str, Any], example: str | None = None) -> str:
     return " ".join(parts) + "."
 
 
+def render_template(tmpl: str, ctx: Dict[str, Any]) -> str:
+    """Very small Handlebars-style renderer supporting {{var}} and {{#each arr}}"""
+
+    def repl_each(match: re.Match) -> str:
+        key = match.group(1).strip()
+        body = match.group(2)
+        items = ctx.get(key, []) or []
+        out = []
+        for item in items:
+            sub_ctx = dict(ctx)
+            sub_ctx["this"] = item
+            out.append(render_template(body, sub_ctx))
+        return "".join(out)
+
+    # handle each loops
+    tmpl = re.sub(r"\{\{#each\s+([^}]+)\}\}(.*?)\{\{/each\}\}", repl_each, tmpl, flags=re.DOTALL)
+
+    # simple variables
+    def repl_var(match: re.Match) -> str:
+        var = match.group(1).strip()
+        return str(ctx.get(var, ""))
+
+    tmpl = re.sub(r"\{\{([^#/{][^}]*)\}\}", repl_var, tmpl)
+    return tmpl
+
+
 def _fill_template(
     template: Dict[str, Any],
     data: Dict[str, Any],
@@ -552,10 +578,19 @@ def _fill_template(
     if attachments:
         template.setdefault("files", {}).update(attachments)
 
+    ctx = {**data, **merged}
+    tmpl = template.get("template")
+    if isinstance(tmpl, str):
+        template["template"] = render_template(tmpl, ctx)
+
+    processed_sections = []
     for section in template.get("sections", []):
-        child = _fill_template(section, data, reasoning, form_name=form_name)
-        if child.get("files"):
+        child = _fill_template(section, ctx, reasoning, form_name=form_name)
+        if isinstance(child, dict) and child.get("files"):
             template.setdefault("files", {}).update(child["files"])
+        processed_sections.append(child.get("template") if isinstance(child, dict) else child)
+    if processed_sections:
+        template["sections"] = processed_sections
 
     if sources:
         template["sources"] = sources

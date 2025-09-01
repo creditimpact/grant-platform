@@ -292,5 +292,20 @@
     "aliases": ["last_updated"],
     "target": "last_updated",
     "type": "date"
+  },
+  "intended_categories": {
+    "aliases": ["intended_categories"],
+    "target": "intended_categories",
+    "type": "array"
+  },
+  "justification": {
+    "aliases": ["justification"],
+    "target": "justification",
+    "type": "string"
+  },
+  "date_signed": {
+    "aliases": ["date_signed"],
+    "target": "date_signed",
+    "type": "date"
   }
 }
