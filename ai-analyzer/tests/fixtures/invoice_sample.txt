@@ -1,0 +1,17 @@
+ACME Solar Corp
+Tax ID: 12-3456789
+
+INVOICE
+Invoice # INV-1001
+Date: January 5, 2025
+Due Date: February 5, 2025
+
+Bill To: Green Energy LLC
+123 Solar Way
+
+Item Description    Qty    Unit Price    Total
+Solar panels        10     $500.00       $5000.00
+
+Subtotal: $5000.00
+Tax: $400.00
+Total Amount: $5400.00

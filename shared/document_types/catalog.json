@@ -273,6 +273,35 @@
       },
       "description": "Manufacturer’s technical datasheet for equipment, including power rating, efficiency, certifications, and model details."
     },
+    "Invoices_or_Quotes": {
+      "extractor": "invoices_or_quotes",
+      "detector": {
+        "keywords": [
+          "Invoice", "Tax Invoice", "Commercial Invoice",
+          "Quote", "Quotation", "Estimate", "Proposal"
+        ]
+      },
+      "fields": {
+        "doc_variant": "string",
+        "vendor_name": "string",
+        "vendor_tax_id": "string",
+        "customer_name": "string",
+        "customer_address": "string",
+        "invoice_number": "string",
+        "quote_number": "string",
+        "issue_date": "date",
+        "due_date": "date",
+        "quote_valid_until": "date",
+        "item_description": "string",
+        "quantity": "number",
+        "unit_price": "number",
+        "subtotal_amount": "number",
+        "tax_amount": "number",
+        "total_amount": "number",
+        "currency": "string"
+      },
+      "description": "Vendor invoice or quote/estimate showing equipment/services, unit costs, totals, and dates. Used to substantiate project costs."
+    },
     "Financial_Statements": {
       "composite": true,
       "expands_to": [
