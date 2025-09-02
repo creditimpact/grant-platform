@@ -57,7 +57,7 @@ function getRequiredDocs(grantKey, caseDocs = []) {
       : [d];
   const all = [
     ...(lib.common_documents || []),
-    ...(g.required_documents || []),
+    ...(g.required_documents || g.required_docs || []),
   ].flatMap(expandDocType);
   const seen = new Map();
   for (const d of all) {

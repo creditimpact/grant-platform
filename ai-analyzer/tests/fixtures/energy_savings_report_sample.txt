@@ -1,0 +1,20 @@
+Energy Savings Report
+Report Date: August 1, 2025
+Business Name: Acme Manufacturing
+Site Address: 123 Main St, Springfield, CA
+
+Measure Type: HVAC
+
+Baseline Annual Energy Consumption: 180,000 kWh
+Post-Installation Annual Energy Consumption: 132,000 kWh
+Demand Reduction: 15.2 kW
+Tariff Rate: $0.18/kWh
+kWh Saved: 48,000
+Annual Savings: $8,640
+CAPEX: $42,000
+OPEX: $500
+Payback: 4.9 years
+NPV: $6,200
+IRR: 13%
+Standards: ASHRAE 90.1, IPMVP Option B
+Prepared by: Green Engineering LLC, PE #AB1234

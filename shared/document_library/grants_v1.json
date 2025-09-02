@@ -111,6 +111,7 @@
         "Installer_Contract",
         "Equipment_Specs",
         "Invoices_or_Quotes",
+        "Energy_Savings_Report",
         "Grant_Use_Statement"
       ],
       "common_docs": [
@@ -127,6 +128,7 @@
         "Installer_Contract",
         "Equipment_Specs",
         "Invoices_or_Quotes",
+        "Energy_Savings_Report",
         "Grant_Use_Statement"
       ],
       "common_docs": [

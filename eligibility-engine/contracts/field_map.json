@@ -408,5 +408,25 @@
     "tax_amount":        { "aliases": ["tax_amount","tax"], "type": "number" },
     "total_amount":      { "aliases": ["total_amount","amount_due","grand_total"], "type": "number" },
     "currency":          { "aliases": ["currency"], "type": "string" }
+  },
+  "energy_savings_report": {
+    "report_date":            { "aliases": ["report_date","date"], "type": "date" },
+    "business_name":          { "aliases": ["business_name","customer_name"], "type": "string" },
+    "site_address":           { "aliases": ["site_address","facility_address"], "type": "string" },
+    "measure_type":           { "aliases": ["measure_type","project_type"], "type": "string" },
+    "baseline_kwh_annual":    { "aliases": ["baseline_kwh_annual","baseline_kwh"], "type": "number" },
+    "post_kwh_annual":        { "aliases": ["post_kwh_annual","post_kwh"], "type": "number" },
+    "kwh_saved_annual":       { "aliases": ["kwh_saved_annual","annual_kwh_saved","kwh_savings"], "type": "number" },
+    "demand_reduction_kw":    { "aliases": ["demand_reduction_kw","kw_reduction"], "type": "number" },
+    "tariff_rate_usd_per_kwh":{ "aliases": ["tariff_rate_usd_per_kwh","rate_usd_per_kwh"], "type": "number" },
+    "annual_savings_usd":     { "aliases": ["annual_savings_usd","annual_savings"], "type": "number" },
+    "capex_usd":              { "aliases": ["capex_usd","capex"], "type": "number" },
+    "opex_usd":               { "aliases": ["opex_usd","opex"], "type": "number" },
+    "payback_years":          { "aliases": ["payback_years","payback"], "type": "number" },
+    "npv_usd":                { "aliases": ["npv_usd","npv"], "type": "number" },
+    "irr_percent":            { "aliases": ["irr_percent","irr"], "type": "number" },
+    "standards_refs":         { "aliases": ["standards_refs","standards"], "type": "array" },
+    "prepared_by_name":       { "aliases": ["prepared_by_name","engineer_name"], "type": "string" },
+    "prepared_by_license":    { "aliases": ["prepared_by_license","engineer_license"], "type": "string" }
   }
 }

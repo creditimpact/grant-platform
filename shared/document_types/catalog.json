@@ -302,6 +302,47 @@
       },
       "description": "Vendor invoice or quote/estimate showing equipment/services, unit costs, totals, and dates. Used to substantiate project costs."
     },
+    "Energy_Savings_Report": {
+      "extractor": "energy_savings_report",
+      "detector": {
+        "keywords": [
+          "Energy Savings Report",
+          "Engineering Report",
+          "Measurement and Verification",
+          "M&V",
+          "Baseline",
+          "Post-Installation",
+          "kWh Saved",
+          "Payback",
+          "NPV",
+          "IRR",
+          "ASHRAE",
+          "IPMVP"
+        ],
+        "regex": ["(?i)energy savings report"]
+      },
+      "fields": {
+        "report_date": "date",
+        "business_name": "string",
+        "site_address": "string",
+        "measure_type": "string",
+        "baseline_kwh_annual": "number",
+        "post_kwh_annual": "number",
+        "kwh_saved_annual": "number",
+        "demand_reduction_kw": "number",
+        "tariff_rate_usd_per_kwh": "number",
+        "annual_savings_usd": "number",
+        "capex_usd": "number",
+        "opex_usd": "number",
+        "payback_years": "number",
+        "npv_usd": "number",
+        "irr_percent": "number",
+        "standards_refs": "array",
+        "prepared_by_name": "string",
+        "prepared_by_license": "string"
+      },
+      "description": "Engineering/M&V report documenting baseline vs. post energy use, kWh savings, demand reduction, financial metrics, and standards compliance."
+    },
     "Financial_Statements": {
       "composite": true,
       "expands_to": [
