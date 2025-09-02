@@ -6,6 +6,10 @@ from .installer_contract import (
 )
 from .equipment_specs import detect as detect_equipment_specs, extract as extract_equipment_specs
 from .invoices_or_quotes import detect as detect_invoices_or_quotes, extract as extract_invoices_or_quotes
+from .energy_savings_report import (
+    detect as detect_energy_savings_report,
+    extract as extract_energy_savings_report,
+)
 
 EXTRACTORS = {
     "business_plan": {
@@ -27,6 +31,10 @@ EXTRACTORS.update({
         "detect": detect_invoices_or_quotes,
         "extract": extract_invoices_or_quotes,
     },
+    "energy_savings_report": {
+        "detect": detect_energy_savings_report,
+        "extract": extract_energy_savings_report,
+    },
 })
 
 __all__ = [
@@ -41,4 +49,6 @@ __all__ = [
     "extract_equipment_specs",
     "detect_invoices_or_quotes",
     "extract_invoices_or_quotes",
+    "detect_energy_savings_report",
+    "extract_energy_savings_report",
 ]
