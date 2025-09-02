@@ -225,6 +225,31 @@
       },
       "description": "Monthly electricity/utility bill showing service address, billing period, kWh usage and amount due."
     },
+    "Installer_Contract": {
+      "extractor": "installer_contract",
+      "detector": {
+        "keywords": [
+          "Installation Contract",
+          "Installer Agreement",
+          "Supply, Delivery and Installation",
+          "Solar Installation",
+          "HVAC INSTALLATION CONTRACT",
+          "Installation Agreement"
+        ],
+        "regex": ["(?i)Contract Number"]
+      },
+      "fields": {
+        "provider_name": "string",
+        "client_name": "string",
+        "service_description": "string",
+        "contract_start_date": "date",
+        "contract_end_date": "date",
+        "total_amount": "number",
+        "contract_number": "string",
+        "signature_dates": "array"
+      },
+      "description": "Signed agreement with a certified installer describing scope of work, dates, and price for green-energy equipment installation."
+    },
     "Financial_Statements": {
       "composite": true,
       "expands_to": [

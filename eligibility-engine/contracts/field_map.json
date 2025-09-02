@@ -323,5 +323,41 @@
       "type": "string"
     },
     "statement_date": { "aliases": ["statement_date", "bill_date"], "type": "date" }
+  },
+  "installer_contract": {
+    "provider_name": {
+      "aliases": ["provider_name", "contractor_name", "installer_name"],
+      "type": "string"
+    },
+    "client_name": {
+      "aliases": ["client_name", "customer_name"],
+      "type": "string"
+    },
+    "service_description": {
+      "aliases": ["service_description", "scope_of_work"],
+      "type": "string"
+    },
+    "contract_start_date": {
+      "aliases": [
+        "contract_start_date",
+        "start_date",
+        "commence_date",
+        "effective_date"
+      ],
+      "type": "date"
+    },
+    "contract_end_date": {
+      "aliases": ["contract_end_date", "end_date", "terminate_date"],
+      "type": "date"
+    },
+    "total_amount": {
+      "aliases": ["total_amount", "contract_value", "payment_amount"],
+      "type": "number"
+    },
+    "contract_number": {
+      "aliases": ["contract_number", "agreement_number"],
+      "type": "string"
+    },
+    "signature_dates": { "aliases": ["signature_dates"], "type": "array" }
   }
 }
