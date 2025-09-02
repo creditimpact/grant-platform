@@ -359,5 +359,35 @@
       "type": "string"
     },
     "signature_dates": { "aliases": ["signature_dates"], "type": "array" }
+  },
+  "equipment_specs": {
+    "equipment_name": {
+      "aliases": ["equipment_name", "product_name"],
+      "type": "string"
+    },
+    "model_number": {
+      "aliases": ["model_number", "type"],
+      "type": "string"
+    },
+    "capacity_kw": {
+      "aliases": ["capacity_kw", "power_output_kw"],
+      "type": "number"
+    },
+    "efficiency_percent": {
+      "aliases": ["efficiency_percent", "efficiency"],
+      "type": "number"
+    },
+    "certifications": {
+      "aliases": ["certifications", "standards"],
+      "type": "array"
+    },
+    "manufacturer": {
+      "aliases": ["manufacturer", "vendor"],
+      "type": "string"
+    },
+    "issue_date": {
+      "aliases": ["issue_date", "date"],
+      "type": "date"
+    }
   }
 }

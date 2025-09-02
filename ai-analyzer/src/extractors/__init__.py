@@ -4,6 +4,7 @@ from .installer_contract import (
     detect as detect_installer_contract,
     extract as extract_installer_contract,
 )
+from .equipment_specs import detect as detect_equipment_specs, extract as extract_equipment_specs
 
 EXTRACTORS = {
     "business_plan": {
@@ -17,6 +18,10 @@ EXTRACTORS.update({
         "detect": detect_installer_contract,
         "extract": extract_installer_contract,
     },
+    "equipment_specs": {
+        "detect": detect_equipment_specs,
+        "extract": extract_equipment_specs,
+    },
 })
 
 __all__ = [
@@ -27,4 +32,6 @@ __all__ = [
     "extract_utility_bill",
     "detect_installer_contract",
     "extract_installer_contract",
+    "detect_equipment_specs",
+    "extract_equipment_specs",
 ]
