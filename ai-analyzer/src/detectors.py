@@ -42,6 +42,7 @@ EXTRACTORS = {
     "Balance_Sheet": ("balance_sheet", "extract"),
     "Business_Plan": ("business_plan", "extract"),
     "Grant_Use_Statement": ("grant_use_statement", "extract"),
+    "Utility_Bill": ("utility_bill", "extract"),
 }
 
 def identify(doc_text: str) -> dict:

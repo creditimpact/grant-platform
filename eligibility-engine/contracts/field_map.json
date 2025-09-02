@@ -307,5 +307,21 @@
     "aliases": ["date_signed"],
     "target": "date_signed",
     "type": "date"
+  },
+  "utility_bill": {
+    "utility_provider": { "aliases": ["utility_provider"], "type": "string" },
+    "service_address": { "aliases": ["service_address"], "type": "string" },
+    "billing_period_start": { "aliases": ["billing_period_start"], "type": "date" },
+    "billing_period_end": { "aliases": ["billing_period_end"], "type": "date" },
+    "total_kwh": { "aliases": ["total_kwh", "kwh_total"], "type": "number" },
+    "total_amount_due": {
+      "aliases": ["total_amount_due", "amount_due", "total_amount"],
+      "type": "number"
+    },
+    "account_number": {
+      "aliases": ["account_number", "customer_account"],
+      "type": "string"
+    },
+    "statement_date": { "aliases": ["statement_date", "bill_date"], "type": "date" }
   }
 }
