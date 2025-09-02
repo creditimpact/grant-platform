@@ -9,7 +9,11 @@ def test_required_fields_covered_by_field_map():
     with (base / 'contracts' / 'required_fields.json').open() as f:
         required = json.load(f)
 
-    targets = {info['target'] for info in fmap.values()}
+    targets = {
+        info['target']
+        for info in fmap.values()
+        if isinstance(info, dict) and 'target' in info
+    }
     focus = {"erc", "veteran_owned_business_grant", "rural_development_grant"}
     for program, info in required.items():
         if program not in focus:

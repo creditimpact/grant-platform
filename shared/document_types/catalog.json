@@ -250,6 +250,29 @@
       },
       "description": "Signed agreement with a certified installer describing scope of work, dates, and price for green-energy equipment installation."
     },
+    "Equipment_Specs": {
+      "extractor": "equipment_specs",
+      "detector": {
+        "keywords": [
+          "Equipment Specifications",
+          "Technical Datasheet",
+          "Equipment Specs",
+          "Manufacturer Datasheet",
+          "Model Specifications"
+        ],
+        "regex": ["(?i)Equipment\\s+Specifications"]
+      },
+      "fields": {
+        "equipment_name": "string",
+        "model_number": "string",
+        "capacity_kw": "number",
+        "efficiency_percent": "number",
+        "certifications": "array",
+        "manufacturer": "string",
+        "issue_date": "date"
+      },
+      "description": "Manufacturer’s technical datasheet for equipment, including power rating, efficiency, certifications, and model details."
+    },
     "Financial_Statements": {
       "composite": true,
       "expands_to": [

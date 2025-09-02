@@ -1,0 +1,8 @@
+Equipment Specifications
+Manufacturer: SolarTech
+Equipment: Solar PV Panel
+Model: SP-450W
+Capacity: 0.45 kW
+Efficiency: 21.6%
+Certifications: UL 1703, IEC 61215
+Date Issued: 2024-01-15
