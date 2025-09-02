@@ -389,5 +389,24 @@
       "aliases": ["issue_date", "date"],
       "type": "date"
     }
+    },
+    "invoices_or_quotes": {
+    "doc_variant":       { "aliases": ["doc_variant"], "type": "string" },
+    "vendor_name":       { "aliases": ["vendor_name","supplier_name"], "type": "string" },
+    "vendor_tax_id":     { "aliases": ["vendor_tax_id","supplier_tax_id","ein","tin","vat"], "type": "string" },
+    "customer_name":     { "aliases": ["customer_name","bill_to_name"], "type": "string" },
+    "customer_address":  { "aliases": ["customer_address","bill_to_address"], "type": "string" },
+    "invoice_number":    { "aliases": ["invoice_number"], "type": "string" },
+    "quote_number":      { "aliases": ["quote_number"], "type": "string" },
+    "issue_date":        { "aliases": ["issue_date","invoice_date","quote_date"], "type": "date" },
+    "due_date":          { "aliases": ["due_date"], "type": "date" },
+    "quote_valid_until": { "aliases": ["quote_valid_until","valid_until"], "type": "date" },
+    "item_description":  { "aliases": ["item_description","line_item_desc"], "type": "string" },
+    "quantity":          { "aliases": ["quantity","qty"], "type": "number" },
+    "unit_price":        { "aliases": ["unit_price","price_per_unit"], "type": "number" },
+    "subtotal_amount":   { "aliases": ["subtotal_amount","subtotal"], "type": "number" },
+    "tax_amount":        { "aliases": ["tax_amount","tax"], "type": "number" },
+    "total_amount":      { "aliases": ["total_amount","amount_due","grand_total"], "type": "number" },
+    "currency":          { "aliases": ["currency"], "type": "string" }
   }
 }

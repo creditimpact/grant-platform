@@ -163,6 +163,9 @@ router.post('/files/upload', (req, res) => {
       if (key && doc_type && key !== doc_type) {
         status = 'mismatch';
       }
+      const existing = documents.find((d) => d.doc_type === doc_type);
+      const history = existing ? [...(existing.history || []), existing] : undefined;
+      documents = documents.filter((d) => d.doc_type !== doc_type);
       documents.push({
         doc_type,
         status,
@@ -171,16 +174,22 @@ router.post('/files/upload', (req, res) => {
         file_name: req.file.originalname,
         uploadedAt: now,
         requestId: req.headers['x-request-id'],
+        ...(history ? { history } : {}),
       });
     } else {
+      const docType = evidence_key || key;
+      const existing = documents.find((d) => d.doc_type === docType);
+      const history = existing ? [...(existing.history || []), existing] : undefined;
+      documents = documents.filter((d) => d.doc_type !== docType);
       documents.push({
-        doc_type: evidence_key || key,
+        doc_type: docType,
         status: 'uploaded',
         evidence_key: evidence_key || key,
         file_name: req.file.originalname,
         size: req.file.size,
         contentType: req.file.mimetype,
         uploadedAt: now,
+        ...(history ? { history } : {}),
       });
     }
 

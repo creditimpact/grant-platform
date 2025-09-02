@@ -1,0 +1,16 @@
+Sunshine Installers
+
+QUOTE
+Quote # Q-2002
+Quote Date: March 1, 2025
+Valid Until: March 31, 2025
+
+Customer: Green Energy LLC
+123 Solar Way
+
+Item Description    Qty    Unit Price    Total
+Inverter upgrade    2      $800.00       $1600.00
+
+Subtotal: $1600.00
+Sales Tax: $128.00
+Grand Total: $1728.00
