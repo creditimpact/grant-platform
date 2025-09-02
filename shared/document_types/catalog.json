@@ -201,6 +201,30 @@
       },
       "description": "Declaration of how grant funds will be used, including categories, amounts, and justification."
     },
+    "Utility_Bill": {
+      "extractor": "utility_bill",
+      "detector": {
+        "keywords": [
+          "Electricity Bill",
+          "Utility Bill",
+          "kWh",
+          "Meter Read",
+          "Service Address",
+          "Billing Period"
+        ]
+      },
+      "fields": {
+        "utility_provider": "string",
+        "service_address": "string",
+        "billing_period_start": "date",
+        "billing_period_end": "date",
+        "total_kwh": "number",
+        "total_amount_due": "number",
+        "account_number": "string",
+        "statement_date": "date"
+      },
+      "description": "Monthly electricity/utility bill showing service address, billing period, kWh usage and amount due."
+    },
     "Financial_Statements": {
       "composite": true,
       "expands_to": [

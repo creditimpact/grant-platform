@@ -103,6 +103,38 @@
         "Grant_Use_Statement"
       ],
       "common_docs": ["Owner_ID", "Bank_Statements"]
+    },
+    "green_energy_state_incentive": {
+      "title": "Green Energy State Incentive",
+      "required_docs": [
+        "Utility_Bill",
+        "Installer_Contract",
+        "Equipment_Specs",
+        "Invoices_or_Quotes",
+        "Grant_Use_Statement"
+      ],
+      "common_docs": [
+        "W9_Form",
+        "EIN_Letter",
+        "Financial_Statements",
+        "Business_License"
+      ]
+    },
+    "energy_efficiency_upgrade": {
+      "title": "Energy Efficiency Upgrade Program",
+      "required_docs": [
+        "Utility_Bill",
+        "Installer_Contract",
+        "Equipment_Specs",
+        "Invoices_or_Quotes",
+        "Grant_Use_Statement"
+      ],
+      "common_docs": [
+        "W9_Form",
+        "EIN_Letter",
+        "Financial_Statements",
+        "Business_License"
+      ]
     }
   }
 }

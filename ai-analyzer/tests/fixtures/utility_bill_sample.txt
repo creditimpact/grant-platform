@@ -1,0 +1,9 @@
+Monthly Electricity Bill
+ACME Energy Services
+Account Number: 12345-6789
+Service Address: 123 Green St, Springfield, CA 98765
+Billing Period: Jan 1, 2024 - Jan 31, 2024
+Statement Date: Feb 2, 2024
+Meter Read: 000123 to 000357
+Total Usage (kWh): 234
+Total Amount Due: $56.78
