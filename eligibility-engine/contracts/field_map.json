@@ -1,6 +1,6 @@
 {
   "employer_identification_number": {
-    "aliases": ["ein"],
+    "aliases": ["ein", "tin"],
     "target": "employer_identification_number",
     "type": "ein",
     "normalize": {
@@ -269,7 +269,7 @@
     "type": "string"
   },
   "business_name": {
-    "aliases": ["business_name"],
+    "aliases": ["business_name", "legal_name"],
     "target": "business_name",
     "type": "string"
   },
