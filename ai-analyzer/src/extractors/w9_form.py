@@ -15,6 +15,8 @@ def detect(text: str) -> bool:
     needles = [
         "form w-9",
         "request for taxpayer identification number and certification",
+        "request for taxpayer identification number",
+        "rev. october",
         "taxpayer identification number",
         "tin",
     ]
@@ -54,18 +56,28 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
     tin = ein.group(0) if ein else (ssn.group(0) if ssn else None)
 
     legal_name = None
-    m_name = re.search(r"(?:Name|Legal Name)\s*[:\-]\s*(.+)", text, flags=re.IGNORECASE)
+    m_name = re.search(
+        r"Name\s*\(as shown on your income tax return\)\s*[:\-]?\s*(.+)",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not m_name:
+        m_name = re.search(r"(?:Name|Legal Name)\s*[:\-]\s*(.+)", text, flags=re.IGNORECASE)
     if m_name:
         legal_name = m_name.group(1).strip()
 
     business_name = None
-    m_biz = re.search(r"(?:Business\s+name|DBA)\s*[:\-]\s*(.+)", text, flags=re.IGNORECASE)
+    m_biz = re.search(
+        r"(?:Business\s+name.*?|DBA)\s*[:\-]?\s*(.+)",
+        text,
+        flags=re.IGNORECASE,
+    )
     if m_biz:
         business_name = m_biz.group(1).strip()
 
     entity_type = None
     et = re.search(
-        r"\b(LLC|Corporation|C[ -]?Corp|S[ -]?Corp|Sole Propriet(?:or|orship)|Partnership|Nonprofit)\b",
+        r"\b(LLC|Limited Liability Company|Corporation|C[ -]?Corp|S[ -]?Corp|Sole Propriet(?:or|orship)|Partnership|Nonprofit)\b",
         text,
         flags=re.IGNORECASE,
     )
@@ -73,10 +85,22 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
         entity_type = et.group(0)
 
     address = None
-    for line in text.splitlines():
-        if re.search(r"\b[A-Z]{2}\s+\d{5}(-\d{4})?\b", line):
-            address = line.strip()
-            break
+    lines = text.splitlines()
+    addr_lines = []
+    for i, line in enumerate(lines):
+        if re.search(r"Address\s*\(number,\s*street", line, flags=re.IGNORECASE):
+            if i + 1 < len(lines):
+                addr_lines.append(lines[i + 1].strip())
+        if re.search(r"City,\s*state,\s*and\s*ZIP", line, flags=re.IGNORECASE):
+            if i + 1 < len(lines):
+                addr_lines.append(lines[i + 1].strip())
+    if addr_lines:
+        address = " ".join(addr_lines)
+    if not address:
+        for line in lines:
+            if re.search(r"\b[A-Z]{2}\s+\d{5}(-\d{4})?\b", line):
+                address = line.strip()
+                break
 
     signature_date = _parse_date(text)
 

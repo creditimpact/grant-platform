@@ -102,6 +102,11 @@
           "TIN",
           "Employer Identification Number",
           "Social Security Number"
+        ],
+        "regex": [
+          "(?i)\\bForm\\s+W-9\\b",
+          "(?i)Request\\s+for\\s+Taxpayer\\s+Identification\\s+Number",
+          "(?i)Rev\\.\\s+October"
         ]
       },
       "fields": {
