@@ -19,6 +19,11 @@ NEGATIVE = "This is just a random letter with no tax info."
 SAMPLE_NO_HYPHEN = SAMPLE.replace("TIN: 12-3456789", "TIN: 123456789")
 SAMPLE_SPACED = SAMPLE.replace("TIN: 12-3456789", "TIN: 12 3456789")
 
+SAMPLE_DATE_NEXTLINE = SAMPLE.replace(
+    "Signature of U.S. person John Doe 01/15/2024",
+    "Signature of U.S. person John Doe\nDate: 01/15/2024",
+)
+
 SAMPLE_NEXTLINE = """Form W-9
 Request for Taxpayer Identification Number and Certification
 Name (as shown on your income tax return)
@@ -58,3 +63,8 @@ def test_tin_variants_normalize():
     assert out["fields"]["tin"] == "12-3456789"
     out = extract(SAMPLE_SPACED)
     assert out["fields"]["tin"] == "12-3456789"
+
+
+def test_signature_date_mapped_and_normalized():
+    out = extract(SAMPLE_DATE_NEXTLINE)
+    assert out["fields"]["date_signed"] == "2024-01-15"
