@@ -1,5 +1,9 @@
+import env_setup  # noqa: F401
+from fastapi.testclient import TestClient
+
+from ai_analyzer.main import app
 from src.detectors import identify
-from src.extractors.w9_form import detect, extract
+from src.extractors.w9_form import detect as detect_w9, extract
 
 SAMPLE = """Form W-9 (Rev. October 2018)
 Request for Taxpayer Identification Number and Certification
@@ -31,8 +35,11 @@ Jane Nextline
 """
 
 
+client = TestClient(app)
+
+
 def test_detect_and_extract():
-    assert detect(SAMPLE) is True
+    assert detect_w9(SAMPLE) is True
     det = identify(SAMPLE)
     assert det["type_key"] == "W9_Form"
     out = extract(SAMPLE, "uploads/w9.pdf")
@@ -48,7 +55,7 @@ def test_detect_and_extract():
 
 
 def test_negative_sample():
-    assert detect(NEGATIVE) is False
+    assert detect_w9(NEGATIVE) is False
     det = identify(NEGATIVE)
     assert det == {}
 
@@ -68,3 +75,14 @@ def test_tin_variants_normalize():
 def test_signature_date_mapped_and_normalized():
     out = extract(SAMPLE_DATE_NEXTLINE)
     assert out["fields"]["date_signed"] == "2024-01-15"
+
+
+def test_analyze_endpoint_returns_w9_fields():
+    resp = client.post("/analyze", json={"text": SAMPLE})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["doc_type"] == "W9_Form"
+    fields = data.get("fields", {})
+    for key in ["legal_name", "tin", "entity_type", "address", "date_signed"]:
+        assert key in fields
+    assert fields["tin"] == "12-3456789"

@@ -14,10 +14,7 @@ from ai_analyzer.ocr_utils import extract_text, OCRExtractionError
 from ai_analyzer.nlp_parser import extract_fields, normalize_text
 from ai_analyzer.config import settings  # type: ignore
 from ai_analyzer.upload_utils import validate_upload
-from src.detectors import identify
-from src.extractors.irs_1120x import extract as extract_1120x
-from src.extractors.tax_payment_receipt import extract as extract_tax_payment_receipt
-from src.extractors.irs_941x import extract as extract_941x
+from src.detectors import detect
 try:  # pragma: no cover - optional OpenAI dependency
     from openai import OpenAI  # type: ignore
     openai_client = (
@@ -368,15 +365,12 @@ async def analyze_text_flow(
         "raw_text_preview": normalized[:2000],
         "source": source,
     }
-    det = identify(text)
-    response["doc_type"] = det.get("type_key")
-    response["doc_confidence"] = det.get("confidence", 0)
-    if det.get("type_key") == "Form_1120X":
-        response["fields"] = extract_1120x(text)
-    elif det.get("type_key") == "Tax_Payment_Receipt":
-        response["fields"] = extract_tax_payment_receipt(text)
-    elif det.get("type_key") == "IRS_941X":
-        response["fields"] = extract_941x(text)
+    det = detect(text)
+    type_info = det.get("type", {})
+    response["doc_type"] = type_info.get("key")
+    response["doc_confidence"] = type_info.get("confidence", 0)
+    extracted = det.get("extracted") or {}
+    response["fields"] = extracted.get("fields", extracted)
     extra = {"source": source}
     if filename:
         extra["upload_filename"] = filename
