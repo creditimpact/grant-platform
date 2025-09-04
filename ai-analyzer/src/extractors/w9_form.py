@@ -61,10 +61,25 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
         text,
         flags=re.IGNORECASE,
     )
-    if not m_name:
-        m_name = re.search(r"(?:Name|Legal Name)\s*[:\-]\s*(.+)", text, flags=re.IGNORECASE)
     if m_name:
         legal_name = m_name.group(1).strip()
+    else:
+        lines = text.splitlines()
+        for i, line in enumerate(lines):
+            if re.search(r"Name\s*\(as shown on your income tax return\)", line, flags=re.IGNORECASE):
+                if i + 1 < len(lines):
+                    nxt = lines[i + 1].strip()
+                    if nxt:
+                        legal_name = nxt
+                break
+        if not legal_name:
+            m_name = re.search(
+                r"(?:Name|Legal Name)\s*[:\-]\s*(.+)",
+                text,
+                flags=re.IGNORECASE,
+            )
+            if m_name:
+                legal_name = m_name.group(1).strip()
 
     business_name = None
     m_biz = re.search(

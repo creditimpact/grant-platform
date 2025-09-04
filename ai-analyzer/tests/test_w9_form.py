@@ -16,6 +16,12 @@ Signature of U.S. person John Doe 01/15/2024
 
 NEGATIVE = "This is just a random letter with no tax info."
 
+SAMPLE_NEXTLINE = """Form W-9
+Request for Taxpayer Identification Number and Certification
+Name (as shown on your income tax return)
+Jane Nextline
+"""
+
 
 def test_detect_and_extract():
     assert detect(SAMPLE) is True
@@ -37,3 +43,8 @@ def test_negative_sample():
     assert detect(NEGATIVE) is False
     det = identify(NEGATIVE)
     assert det == {}
+
+
+def test_name_on_next_line():
+    out = extract(SAMPLE_NEXTLINE)
+    assert out["fields"]["legal_name"] == "Jane Nextline"
