@@ -115,7 +115,7 @@
         "entity_type": "string",
         "tin": "string",
         "address": "string",
-        "signature_date": "date"
+        "date_signed": "date"
       },
       "examples": ["IRS Form W-9"]
     },
