@@ -1,23 +1,15 @@
 import env_setup  # noqa: F401
+from pathlib import Path
 from fastapi.testclient import TestClient
 
 from ai_analyzer.main import app
 from src.detectors import identify
 from src.extractors.w9_form import detect as detect_w9, extract
 
-SAMPLE = """Form W-9 (Rev. October 2018)
-Request for Taxpayer Identification Number and Certification
-Name (as shown on your income tax return) John Doe
-Business name JD Widgets LLC
-Limited Liability Company (LLC)
-5 Address (number, street, and apt. or suite no.)
-123 Main St
-6 City, state, and ZIP code
-Anytown CA 90210
-TIN: 12-3456789
-Signature of U.S. person John Doe 01/15/2024
-"""
-
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+SAMPLE = (FIXTURES / "w9_form_sample.txt").read_text()
+NOISY = (FIXTURES / "w9_form_noisy.txt").read_text()
+MULTILINE = (FIXTURES / "w9_form_multiline.txt").read_text()
 NEGATIVE = "This is just a random letter with no tax info."
 
 SAMPLE_NO_HYPHEN = SAMPLE.replace("TIN: 12-3456789", "TIN: 123456789")
@@ -27,13 +19,8 @@ SAMPLE_DATE_NEXTLINE = SAMPLE.replace(
     "Signature of U.S. person John Doe 01/15/2024",
     "Signature of U.S. person John Doe\nDate: 01/15/2024",
 )
-
-SAMPLE_NEXTLINE = """Form W-9
-Request for Taxpayer Identification Number and Certification
-Name (as shown on your income tax return)
-Jane Nextline
-"""
-
+SAMPLE_DATE_TEXT = SAMPLE.replace("01/15/2024", "January 15, 2024")
+SAMPLE_DATE_DASH = SAMPLE.replace("01/15/2024", "01-15-24")
 
 client = TestClient(app)
 
@@ -45,11 +32,19 @@ def test_detect_and_extract():
     out = extract(SAMPLE, "uploads/w9.pdf")
     assert out["doc_type"] == "W9_Form"
     fields = out["fields"]
-    for key in ["legal_name", "tin", "entity_type", "address", "date_signed"]:
+    for key in [
+        "legal_name",
+        "business_name",
+        "tin",
+        "entity_type",
+        "address",
+        "date_signed",
+    ]:
         assert key in fields
     assert fields["tin"] == "12-3456789"
-    assert fields["legal_name"].startswith("John Doe")
-    assert "LLC" in fields["entity_type"].upper()
+    assert fields["legal_name"] == "John Doe"
+    assert fields["business_name"] == "JD Widgets LLC"
+    assert "llc" in fields["entity_type"].lower()
     assert "Anytown" in fields["address"]
     assert fields["date_signed"] == "2024-01-15"
 
@@ -60,9 +55,19 @@ def test_negative_sample():
     assert det == {}
 
 
-def test_name_on_next_line():
-    out = extract(SAMPLE_NEXTLINE)
-    assert out["fields"]["legal_name"] == "Jane Nextline"
+def test_multiline_names():
+    out = extract(MULTILINE)
+    fields = out["fields"]
+    assert fields["legal_name"] == "Mega Corp Inc"
+    assert fields["business_name"] == "Mega Holdings LLC"
+
+
+def test_noisy_instructions_trimmed():
+    out = extract(NOISY)
+    fields = out["fields"]
+    assert fields["legal_name"] == "John Q Public"
+    assert fields["business_name"] == "Public Ventures LLC"
+    assert fields["date_signed"] == "2024-02-02"
 
 
 def test_tin_variants_normalize():
@@ -72,8 +77,12 @@ def test_tin_variants_normalize():
     assert out["fields"]["tin"] == "12-3456789"
 
 
-def test_signature_date_mapped_and_normalized():
+def test_alternate_date_formats():
     out = extract(SAMPLE_DATE_NEXTLINE)
+    assert out["fields"]["date_signed"] == "2024-01-15"
+    out = extract(SAMPLE_DATE_TEXT)
+    assert out["fields"]["date_signed"] == "2024-01-15"
+    out = extract(SAMPLE_DATE_DASH)
     assert out["fields"]["date_signed"] == "2024-01-15"
 
 
@@ -83,6 +92,14 @@ def test_analyze_endpoint_returns_w9_fields():
     data = resp.json()
     assert data["doc_type"] == "W9_Form"
     fields = data.get("fields", {})
-    for key in ["legal_name", "tin", "entity_type", "address", "date_signed"]:
+    for key in [
+        "legal_name",
+        "business_name",
+        "tin",
+        "entity_type",
+        "address",
+        "date_signed",
+    ]:
         assert key in fields
     assert fields["tin"] == "12-3456789"
+    assert fields["business_name"] == "JD Widgets LLC"
