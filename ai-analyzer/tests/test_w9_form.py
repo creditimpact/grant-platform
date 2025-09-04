@@ -103,3 +103,14 @@ def test_analyze_endpoint_returns_w9_fields():
         assert key in fields
     assert fields["tin"] == "12-3456789"
     assert fields["business_name"] == "JD Widgets LLC"
+
+
+def test_analyze_endpoint_trims_instructions():
+    resp = client.post("/analyze", json={"text": NOISY})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["doc_type"] == "W9_Form"
+    fields = data.get("fields", {})
+    assert fields["legal_name"] == "John Q Public"
+    assert fields["business_name"] == "Public Ventures LLC"
+    assert fields["date_signed"] == "2024-02-02"

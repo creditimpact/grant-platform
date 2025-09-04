@@ -93,7 +93,7 @@ def _extract_signature_date(text: str) -> Optional[str]:
             snippet = "\n".join(lines[i : i + 3])
             dt = _parse_date(snippet)
             if dt:
-                return dt
+                return _clean(dt)
     return None
 
 
@@ -156,17 +156,17 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
 
     fields: Dict[str, Any] = {}
     if legal_name:
-        fields["legal_name"] = legal_name
+        fields["legal_name"] = _clean(legal_name)
     if business_name:
-        fields["business_name"] = business_name
+        fields["business_name"] = _clean(business_name)
     if entity_type:
-        fields["entity_type"] = entity_type
+        fields["entity_type"] = _clean(entity_type)
     if tin:
         fields["tin"] = _clean(tin)
     if address:
-        fields["address"] = address
+        fields["address"] = _clean(address)
     if date_signed:
-        fields["date_signed"] = date_signed
+        fields["date_signed"] = _clean(date_signed)
 
     conf = 0.6 + (0.1 if tin else 0) + (0.1 if legal_name else 0)
 
