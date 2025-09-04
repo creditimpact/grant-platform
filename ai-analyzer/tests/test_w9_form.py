@@ -114,3 +114,19 @@ def test_analyze_endpoint_trims_instructions():
     assert fields["legal_name"] == "John Q Public"
     assert fields["business_name"] == "Public Ventures LLC"
     assert fields["date_signed"] == "2024-02-02"
+
+
+def test_analyze_prefers_clean_fields(monkeypatch):
+    def fake_extract(text, evidence_key=None):
+        return {
+            "doc_type": "W9_Form",
+            "confidence": 0.9,
+            "fields": {"legal_name": "1 Name (as shown on your income tax return) John Doe"},
+            "fields_clean": {"legal_name": "John Doe"},
+        }
+
+    monkeypatch.setattr("src.extractors.w9_form.extract", fake_extract)
+    resp = client.post("/analyze", json={"text": SAMPLE})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["fields"]["legal_name"] == "John Doe"
