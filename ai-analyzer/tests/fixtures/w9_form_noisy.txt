@@ -1,0 +1,14 @@
+Form W-9 (Rev. October 2018)
+Request for Taxpayer Identification Number and Certification
+1 Name (as shown on your income tax return) Do not leave blank
+John Q Public
+2 Business name/disregarded entity name, if different from above Enter if applicable
+Public Ventures LLC
+Partnership
+5 Address (number, street, and apt. or suite no.)
+456 Side St
+6 City, state, and ZIP code
+Othertown NY 10001
+TIN: 98-7654321
+Signature of U.S. person
+John Q Public 02/02/2024

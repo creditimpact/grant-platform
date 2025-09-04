@@ -1,0 +1,11 @@
+Form W-9 (Rev. October 2018)
+Request for Taxpayer Identification Number and Certification
+1 Name (as shown on your income tax return) John Doe
+2 Business name/disregarded entity name, if different from above JD Widgets LLC
+Limited Liability Company (LLC)
+5 Address (number, street, and apt. or suite no.)
+123 Main St
+6 City, state, and ZIP code
+Anytown CA 90210
+TIN: 12-3456789
+Signature of U.S. person John Doe 01/15/2024
