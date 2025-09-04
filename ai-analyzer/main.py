@@ -370,8 +370,13 @@ async def analyze_text_flow(
     response["doc_type"] = type_info.get("key")
     response["doc_confidence"] = type_info.get("confidence", 0)
     extracted = det.get("extracted") or {}
-    if isinstance(extracted, dict) and "fields" in extracted:
-        response["fields"] = extracted["fields"]
+    if isinstance(extracted, dict):
+        if "fields_clean" in extracted:
+            response["fields"] = extracted["fields_clean"]
+        elif "fields" in extracted:
+            response["fields"] = extracted["fields"]
+        else:
+            response["fields"] = extracted
     else:
         response["fields"] = extracted
     extra = {"source": source}
