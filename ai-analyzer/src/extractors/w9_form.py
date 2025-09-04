@@ -123,7 +123,7 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
                 address = line.strip()
                 break
 
-    signature_date = _parse_date(text)
+    date_signed = _parse_date(text)
 
     fields: Dict[str, Any] = {}
     if legal_name:
@@ -136,8 +136,8 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
         fields["tin"] = tin
     if address:
         fields["address"] = address
-    if signature_date:
-        fields["signature_date"] = signature_date
+    if date_signed:
+        fields["date_signed"] = date_signed
 
     conf = 0.6 + (0.1 if tin else 0) + (0.1 if legal_name else 0)
 

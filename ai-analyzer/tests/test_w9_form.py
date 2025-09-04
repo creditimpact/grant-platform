@@ -33,13 +33,13 @@ def test_detect_and_extract():
     out = extract(SAMPLE, "uploads/w9.pdf")
     assert out["doc_type"] == "W9_Form"
     fields = out["fields"]
-    for key in ["legal_name", "tin", "entity_type", "address", "signature_date"]:
+    for key in ["legal_name", "tin", "entity_type", "address", "date_signed"]:
         assert key in fields
     assert fields["tin"] == "12-3456789"
     assert fields["legal_name"].startswith("John Doe")
     assert "LLC" in fields["entity_type"].upper()
     assert "Anytown" in fields["address"]
-    assert fields["signature_date"] == "2024-01-15"
+    assert fields["date_signed"] == "2024-01-15"
 
 
 def test_negative_sample():
