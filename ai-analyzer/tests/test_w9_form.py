@@ -16,6 +16,9 @@ Signature of U.S. person John Doe 01/15/2024
 
 NEGATIVE = "This is just a random letter with no tax info."
 
+SAMPLE_NO_HYPHEN = SAMPLE.replace("TIN: 12-3456789", "TIN: 123456789")
+SAMPLE_SPACED = SAMPLE.replace("TIN: 12-3456789", "TIN: 12 3456789")
+
 SAMPLE_NEXTLINE = """Form W-9
 Request for Taxpayer Identification Number and Certification
 Name (as shown on your income tax return)
@@ -48,3 +51,10 @@ def test_negative_sample():
 def test_name_on_next_line():
     out = extract(SAMPLE_NEXTLINE)
     assert out["fields"]["legal_name"] == "Jane Nextline"
+
+
+def test_tin_variants_normalize():
+    out = extract(SAMPLE_NO_HYPHEN)
+    assert out["fields"]["tin"] == "12-3456789"
+    out = extract(SAMPLE_SPACED)
+    assert out["fields"]["tin"] == "12-3456789"
