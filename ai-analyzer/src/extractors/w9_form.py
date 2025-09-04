@@ -2,8 +2,8 @@ import re
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-EIN_RE = re.compile(r"\b\d{2}-\d{7}\b")
-SSN_RE = re.compile(r"\b\d{3}-\d{2}-\d{4}\b")
+EIN_RE = re.compile(r"\b\d{2}[-\s]?\d{7}\b")
+SSN_RE = re.compile(r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b")
 DATE_PATS = [
     r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b",
     r"\b[A-Za-z]{3,9}\s+\d{1,2},\s+\d{4}\b",
@@ -53,7 +53,13 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
 
     ein = EIN_RE.search(text)
     ssn = SSN_RE.search(text)
-    tin = ein.group(0) if ein else (ssn.group(0) if ssn else None)
+    tin = None
+    if ein:
+        digits = re.sub(r"\D", "", ein.group(0)).strip()
+        tin = f"{digits[:2]}-{digits[2:]}"
+    elif ssn:
+        digits = re.sub(r"\D", "", ssn.group(0)).strip()
+        tin = f"{digits[:3]}-{digits[3:5]}-{digits[5:]}"
 
     legal_name = None
     m_name = re.search(
