@@ -2,7 +2,12 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-EIN_RE = re.compile(r"\b\d{2}[-\s]?\d{7}\b")
+# Match EIN even when digits are separated by spaces or rendered in
+# individual OCR tokens (e.g. "3 3 - 1 3 4 0 4 8 2"). Allow optional
+# whitespace between all digits and an optional hyphen after the first two
+# digits. Canonical format is still two digits, optional hyphen, then seven
+# digits.
+EIN_RE = re.compile(r"\b(?:\d[\s]*){2}(?:-\s*)?(?:\d[\s]*){7}\b")
 SSN_RE = re.compile(r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b")
 DATE_PATS = [
     r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b",
