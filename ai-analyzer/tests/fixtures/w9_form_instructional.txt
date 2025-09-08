@@ -1,0 +1,14 @@
+Form W-9 (Rev. October 2018)
+Request for Taxpayer Identification Number and Certification
+1 Name (as shown on your income tax return) Name is required on this line
+DAM CAPITAL GROUP CORP
+2 Business name/disregarded entity name, if different from above Broker transactions or barter exchanges
+Lenderfy capital
+LLC - Limited Liability Company
+5 Address (number, street, and apt. or suite no.) This is where you should enter your address
+101 Diplomat Pkwy Unit 2301
+6 City, state, and ZIP code
+Hallandale Beach, FL 33009
+TIN: 12-3456789
+Signature of U.S. person Do not write here
+John Q Public 10/05/2023

@@ -64,11 +64,17 @@ def _extract_labeled_field(
     """Extract text following a label until a stop pattern is reached."""
     collected: List[str] = []
     start: Optional[int] = None
+
+    skip_re = re.compile(
+        r"^(?:see|if|do not|enter|please|name is required|broker|this is where|do not write here)\b",
+        flags=re.IGNORECASE,
+    )
+
     for idx, line in enumerate(lines):
         if start is None and re.search(label_re, line, flags=re.IGNORECASE):
             after = re.sub(label_re, "", line, flags=re.IGNORECASE).strip(" :-/\t")
             after = re.sub(r"/.*", "", after).strip()
-            if after and not re.match(r"^(?:see|if|do not|enter|please)\b", after, re.I):
+            if after and not skip_re.match(after):
                 collected.append(after)
             start = idx + 1
             continue
@@ -78,7 +84,7 @@ def _extract_labeled_field(
                 continue
             if any(re.search(pat, nxt, flags=re.IGNORECASE) for pat in stop_res):
                 break
-            if re.match(r"^(?:see|if|do not|enter|please)\b", nxt, re.I):
+            if skip_re.match(nxt):
                 continue
             collected.append(nxt)
     if collected:
@@ -145,7 +151,7 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
             if i + 1 < len(lines):
                 addr_lines.append(lines[i + 1].strip())
     if addr_lines:
-        address = _clean(" ".join(addr_lines))
+        address = _clean(", ".join(addr_lines))
     if not address:
         for line in lines:
             if re.search(r"\b[A-Z]{2}\s+\d{5}(-\d{4})?\b", line):
@@ -168,12 +174,15 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
     if date_signed:
         fields["date_signed"] = _clean(date_signed)
 
+    fields_clean = dict(fields)
+
     conf = 0.6 + (0.1 if tin else 0) + (0.1 if legal_name else 0)
 
     return {
         "doc_type": "W9_Form",
         "confidence": min(conf, 0.95),
         "fields": fields,
+        "fields_clean": fields_clean,
         "evidence_key": evidence_key,
     }
 

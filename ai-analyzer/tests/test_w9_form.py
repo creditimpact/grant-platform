@@ -10,6 +10,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 SAMPLE = (FIXTURES / "w9_form_sample.txt").read_text()
 NOISY = (FIXTURES / "w9_form_noisy.txt").read_text()
 MULTILINE = (FIXTURES / "w9_form_multiline.txt").read_text()
+INSTRUCTIONAL = (FIXTURES / "w9_form_instructional.txt").read_text()
 NEGATIVE = "This is just a random letter with no tax info."
 
 SAMPLE_NO_HYPHEN = SAMPLE.replace("TIN: 12-3456789", "TIN: 123456789")
@@ -114,6 +115,27 @@ def test_analyze_endpoint_trims_instructions():
     assert fields["legal_name"] == "John Q Public"
     assert fields["business_name"] == "Public Ventures LLC"
     assert fields["date_signed"] == "2024-02-02"
+
+
+def test_extract_provides_fields_clean():
+    out = extract(SAMPLE)
+    assert "fields_clean" in out
+    assert out["fields_clean"]["legal_name"] == "John Doe"
+
+
+def test_analyze_handles_instructional_noise():
+    resp = client.post("/analyze", json={"text": INSTRUCTIONAL})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["doc_type"] == "W9_Form"
+    assert data["fields"] == {
+        "legal_name": "DAM CAPITAL GROUP CORP",
+        "business_name": "Lenderfy capital",
+        "tin": "12-3456789",
+        "entity_type": "LLC",
+        "address": "101 Diplomat Pkwy Unit 2301, Hallandale Beach, FL 33009",
+        "date_signed": "2023-10-05",
+    }
 
 
 def test_analyze_prefers_clean_fields(monkeypatch):
