@@ -12,6 +12,9 @@ NOISY = (FIXTURES / "w9_form_noisy.txt").read_text()
 MULTILINE = (FIXTURES / "w9_form_multiline.txt").read_text()
 INSTRUCTIONAL = (FIXTURES / "w9_form_instructional.txt").read_text()
 NEGATIVE = "This is just a random letter with no tax info."
+BOXED = (FIXTURES / "w9_form_boxed.txt").read_text()
+BOXED_NO_HYPHEN = BOXED.replace("TIN: 1 2 - 3 4 5 6 7 8 9", "TIN: 1 2 3 4 5 6 7 8 9")
+BOXED_EXTRA_WS = BOXED.replace("TIN: 1 2 - 3 4 5 6 7 8 9", "TIN:   1  2-   3 4 5 6 7 8 9  ")
 
 MISSING_NAME = "\n".join(
     [
@@ -93,6 +96,18 @@ def test_tin_variants_normalize():
     out = extract(SAMPLE_NO_HYPHEN)
     assert out["fields_clean"]["tin"] == "12-3456789"
     out = extract(SAMPLE_SPACED)
+    assert out["fields_clean"]["tin"] == "12-3456789"
+
+
+def test_box_separated_ein_variants():
+    out = extract(BOXED)
+    assert out["fields"]["tin"] == "1 2 - 3 4 5 6 7 8 9"
+    assert out["fields_clean"]["tin"] == "12-3456789"
+    out = extract(BOXED_NO_HYPHEN)
+    assert out["fields"]["tin"]
+    assert out["fields_clean"]["tin"] == "12-3456789"
+    out = extract(BOXED_EXTRA_WS)
+    assert out["fields"]["tin"]
     assert out["fields_clean"]["tin"] == "12-3456789"
 
 
