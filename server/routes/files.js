@@ -20,6 +20,7 @@ const {
 } = require('../utils/documentLibrary');
 const { normalizeFields } = require('../utils/fieldNormalizer');
 const { buildChecklist } = require('../utils/checklistBuilder');
+const { preferCleanFields } = require('../utils/preferCleanFields');
 
 const router = express.Router();
 
@@ -100,7 +101,8 @@ router.post('/files/upload', (req, res) => {
     }
 
     const analysis = await resp.json();
-    const { doc_type, fields: docFields, doc_confidence, ...businessFields } = analysis;
+    const { doc_type, doc_confidence, fields, fields_clean, ...businessFields } = analysis;
+    const docFields = preferCleanFields({ fields, fields_clean });
     const normalizedDocFields = normalizeFields(docFields || {});
     const c = await getCase(userId, caseId);
     const currentGrantKey = grant_key || grantKey || c?.grantKey;
@@ -113,7 +115,7 @@ router.post('/files/upload', (req, res) => {
           .json({ error: 'evidence_key not expected for this grant' });
       }
     }
-    const existingFields = (c.analyzer && c.analyzer.fields) || {};
+    const existingFields = preferCleanFields(c.analyzer || {});
     const mergedInput = { ...businessFields, ...normalizedDocFields };
     const { merged: mergedFields, updatedKeys } = safeMerge(
       existingFields,

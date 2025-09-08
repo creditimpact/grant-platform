@@ -8,6 +8,8 @@ const ALWAYS_REQUIRED = [
   "Financial Statements (P&L + Balance Sheet)",
 ];
 
+const { preferCleanFields } = require('./preferCleanFields');
+
 function hasEligibility(caseObj, name) {
   const list = caseObj?.eligibility?.results || caseObj?.eligibility || [];
   return Array.isArray(list) && list.some((r) => r.name === name);
@@ -16,7 +18,10 @@ function hasEligibility(caseObj, name) {
 function getRequiredDocuments(caseObj = {}) {
   const req = new Set(ALWAYS_REQUIRED);
   const q = caseObj.questionnaire?.data || {};
-  const fields = caseObj.analyzer?.fields || caseObj.analyzerFields || {};
+  const analyzerFields = preferCleanFields(caseObj.analyzer || {});
+  const fields = Object.keys(analyzerFields).length
+    ? analyzerFields
+    : caseObj.analyzerFields || {};
 
   const employees = Number(q.employees || q.numberOfEmployees || fields.employees || 0);
   if (employees > 0 || hasEligibility(caseObj, "ERC")) {

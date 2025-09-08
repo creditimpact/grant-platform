@@ -3,6 +3,7 @@ const { createCase, getCase } = require('../utils/pipelineStore');
 const { buildChecklist } = require('../utils/checklistBuilder');
 const Case = require('../models/Case');
 const { loadGrantsLibrary } = require('../utils/documentLibrary');
+const { preferCleanFields } = require('../utils/preferCleanFields');
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ async function caseStatusHandler(req, res) {
     createdAt: c.createdAt,
     status: c.status,
     analyzer: c.analyzer,
-    analyzerFields: c.analyzer?.fields,
+    analyzerFields: preferCleanFields(c.analyzer || {}),
     questionnaire: {
       data: c.questionnaire?.data || {},
       missingFieldsHint: missing,
@@ -55,7 +56,7 @@ router.post('/case/init', async (req, res) => {
     createdAt: c.createdAt,
     status: c.status,
     analyzer: c.analyzer,
-    analyzerFields: c.analyzer?.fields,
+    analyzerFields: preferCleanFields(c.analyzer || {}),
     questionnaire: {
       data: c.questionnaire?.data || {},
       missingFieldsHint: missing,

@@ -4,6 +4,7 @@ const logger = require('../utils/logger');
 const { getRequiredDocuments } = require('../utils/requiredDocuments');
 const { safeMerge } = require('../utils/safeMerge');
 const { normalizeAnswers } = require('../utils/normalizeAnswers');
+const { preferCleanFields } = require('../utils/preferCleanFields');
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router.get(['/questionnaire', '/case/questionnaire'], async (req, res) => {
       missingFieldsHint: missing,
       lastUpdated: c.questionnaire?.lastUpdated,
     },
-    analyzerFields: c.analyzer?.fields,
+    analyzerFields: preferCleanFields(c.analyzer || {}),
     eligibility: c.eligibility?.results,
     documents: c.documents,
     status: c.status,
@@ -50,7 +51,7 @@ router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
     caseId = await createCase(userId);
     c = await getCase(userId, caseId);
   }
-  const existingFields = (c.analyzer && c.analyzer.fields) || {};
+  const existingFields = preferCleanFields(c.analyzer || {});
   const keyMap = {
     entityType: 'entity_type',
     employees: 'w2_employee_count',
@@ -103,7 +104,7 @@ router.post(['/questionnaire', '/case/questionnaire'], async (req, res) => {
     caseId,
     status: updated.status,
     analyzer: updated.analyzer,
-    analyzerFields: updated.analyzer?.fields,
+    analyzerFields: preferCleanFields(updated.analyzer || {}),
     eligibility: updated.eligibility,
     documents: updated.documents,
     requiredDocuments: updated.requiredDocuments,
