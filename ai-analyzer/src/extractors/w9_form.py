@@ -2,12 +2,12 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-# Match EIN even when digits are separated by spaces or rendered in
-# individual OCR tokens (e.g. "3 3 - 1 3 4 0 4 8 2"). Allow optional
-# whitespace between all digits and an optional hyphen after the first two
-# digits. Canonical format is still two digits, optional hyphen, then seven
-# digits.
-EIN_RE = re.compile(r"\b(?:\d[\s]*){2}(?:-\s*)?(?:\d[\s]*){7}\b")
+# Match EIN even when digits are separated by arbitrary non-digit
+# characters (spaces, boxes, stray dashes, underscores, etc.). Between
+# digits we allow any number of characters that are **not** letters or
+# digits so we don't accidentally span large chunks of text. We then
+# normalize the matched value into canonical "NN-NNNNNNN" format.
+EIN_RE = re.compile(r"\b(?:\d[^\dA-Za-z]*){8}\d\b")
 SSN_RE = re.compile(r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b")
 DATE_PATS = [
     r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b",
@@ -134,16 +134,15 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
 
     ein = EIN_RE.search(text)
     ssn = SSN_RE.search(text)
-    tin_raw = None
-    tin_clean = None
+    tin: Optional[str] = None
     if ein:
-        tin_raw = ein.group(0)
-        digits = re.sub(r"\D", "", tin_raw).strip()
-        tin_clean = f"{digits[:2]}-{digits[2:]}"
+        digits = re.sub(r"\D", "", ein.group(0)).strip()
+        if len(digits) == 9:
+            tin = f"{digits[:2]}-{digits[2:]}"
     elif ssn:
-        tin_raw = ssn.group(0)
-        digits = re.sub(r"\D", "", tin_raw).strip()
-        tin_clean = f"{digits[:3]}-{digits[3:5]}-{digits[5:]}"
+        digits = re.sub(r"\D", "", ssn.group(0)).strip()
+        if len(digits) == 9:
+            tin = f"{digits[:3]}-{digits[3:5]}-{digits[5:]}"
 
     lines = text.splitlines()
 
@@ -202,10 +201,9 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
         fields["entity_type"] = entity_raw
     if entity_clean:
         fields_clean["entity_type"] = entity_clean
-    if tin_raw:
-        fields["tin"] = _clean(tin_raw)
-    if tin_clean:
-        fields_clean["tin"] = tin_clean
+    if tin:
+        fields["tin"] = tin
+        fields_clean["tin"] = tin
     if address_raw:
         fields["address"] = address_raw
     if address_clean:
@@ -215,7 +213,7 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
     if date_signed_clean:
         fields_clean["date_signed"] = date_signed_clean
 
-    conf = 0.6 + (0.1 if tin_clean else 0) + (0.1 if legal_name_clean else 0)
+    conf = 0.6 + (0.1 if tin else 0) + (0.1 if legal_name_clean else 0)
 
     return {
         "doc_type": "W9_Form",
