@@ -38,7 +38,8 @@ def detect(text: str) -> bool:
     return any(n in tl for n in needles)
 
 
-def _parse_date(text: str) -> Optional[str]:
+def _parse_date(text: str) -> Optional[tuple[str, str]]:
+    """Return (raw, iso) date strings if a date is found."""
     for pat in DATE_PATS:
         m = re.search(pat, text)
         if m:
@@ -52,30 +53,40 @@ def _parse_date(text: str) -> Optional[str]:
                 "%b %d, %Y",
             ):
                 try:
-                    return datetime.strptime(raw, fmt).date().isoformat()
+                    iso = datetime.strptime(raw, fmt).date().isoformat()
+                    return raw, iso
                 except Exception:
                     pass
     return None
 
 
+INSTRUCTION_RE = re.compile(
+    r"(name is required.*|do not leave blank|enter if applicable|broker transactions.*|this is where you should enter your address.*|do not write here.*)",
+    flags=re.IGNORECASE,
+)
+
+
+def _strip_instructions(value: str) -> str:
+    return INSTRUCTION_RE.sub("", value)
+
+
 def _extract_labeled_field(
     lines: List[str], label_re: str, stop_res: List[str]
-) -> Optional[str]:
-    """Extract text following a label until a stop pattern is reached."""
-    collected: List[str] = []
+) -> tuple[Optional[str], Optional[str]]:
+    """Return raw and cleaned text for a labeled field."""
+    raw_collected: List[str] = []
+    clean_collected: List[str] = []
     start: Optional[int] = None
-
-    skip_re = re.compile(
-        r"^(?:see|if|do not|enter|please|name is required|broker|this is where|do not write here)\b",
-        flags=re.IGNORECASE,
-    )
 
     for idx, line in enumerate(lines):
         if start is None and re.search(label_re, line, flags=re.IGNORECASE):
             after = re.sub(label_re, "", line, flags=re.IGNORECASE).strip(" :-/\t")
             after = re.sub(r"/.*", "", after).strip()
-            if after and not skip_re.match(after):
-                collected.append(after)
+            if after:
+                raw_collected.append(after)
+                clean_after = _strip_instructions(after)
+                if clean_after:
+                    clean_collected.append(clean_after)
             start = idx + 1
             continue
         if start is not None:
@@ -84,23 +95,27 @@ def _extract_labeled_field(
                 continue
             if any(re.search(pat, nxt, flags=re.IGNORECASE) for pat in stop_res):
                 break
-            if skip_re.match(nxt):
-                continue
-            collected.append(nxt)
-    if collected:
-        return _clean(" ".join(collected))
-    return None
+            raw_collected.append(nxt)
+            clean_nxt = _strip_instructions(nxt)
+            if clean_nxt:
+                clean_collected.append(clean_nxt)
+    if raw_collected:
+        raw = _clean(" ".join(raw_collected))
+        clean = _clean(" ".join(clean_collected)) if clean_collected else None
+        return raw, clean
+    return None, None
 
 
-def _extract_signature_date(text: str) -> Optional[str]:
+def _extract_signature_date(text: str) -> tuple[Optional[str], Optional[str]]:
     lines = text.splitlines()
     for i, line in enumerate(lines):
         if re.search(r"signature", line, flags=re.IGNORECASE):
             snippet = "\n".join(lines[i : i + 3])
             dt = _parse_date(snippet)
             if dt:
-                return _clean(dt)
-    return None
+                raw, iso = dt
+                return _clean(raw), _clean(iso)
+    return None, None
 
 
 def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
@@ -114,34 +129,40 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
 
     ein = EIN_RE.search(text)
     ssn = SSN_RE.search(text)
-    tin = None
+    tin_raw = None
+    tin_clean = None
     if ein:
-        digits = re.sub(r"\D", "", ein.group(0)).strip()
-        tin = f"{digits[:2]}-{digits[2:]}"
+        tin_raw = ein.group(0)
+        digits = re.sub(r"\D", "", tin_raw).strip()
+        tin_clean = f"{digits[:2]}-{digits[2:]}"
     elif ssn:
-        digits = re.sub(r"\D", "", ssn.group(0)).strip()
-        tin = f"{digits[:3]}-{digits[3:5]}-{digits[5:]}"
+        tin_raw = ssn.group(0)
+        digits = re.sub(r"\D", "", tin_raw).strip()
+        tin_clean = f"{digits[:3]}-{digits[3:5]}-{digits[5:]}"
 
     lines = text.splitlines()
 
-    legal_name = _extract_labeled_field(
+    legal_name_raw, legal_name_clean = _extract_labeled_field(
         lines,
         r"^\s*1\s*Name\s*(?:\(as shown on your income tax return\))?\s*[:\-]?",
         [r"^\s*2\b", r"^\s*Business name", r"^\s*\d+\b", ENTITY_TYPE_STOP_RE.pattern],
     )
 
-    business_name = _extract_labeled_field(
+    business_name_raw, business_name_clean = _extract_labeled_field(
         lines,
         r"^\s*2\s*Business name(?:/disregarded entity name, if different from above)?\s*[:\-]?",
         [r"^\s*3\b", r"^\s*Check", r"^\s*\d+\b", ENTITY_TYPE_STOP_RE.pattern],
     )
 
-    entity_type = None
+    entity_raw = None
+    entity_clean = None
     et = ENTITY_TYPE_RE.search(text)
     if et:
-        entity_type = _clean(et.group(0))
+        entity_raw = _clean(et.group(0))
+        entity_clean = entity_raw
 
-    address = None
+    address_raw = None
+    address_clean = None
     addr_lines: List[str] = []
     for i, line in enumerate(lines):
         if re.search(r"Address\s*\(number,\s*street", line, flags=re.IGNORECASE):
@@ -151,32 +172,45 @@ def extract(text: str, evidence_key: Optional[str] = None) -> Dict[str, Any]:
             if i + 1 < len(lines):
                 addr_lines.append(lines[i + 1].strip())
     if addr_lines:
-        address = _clean(", ".join(addr_lines))
-    if not address:
+        address_raw = _clean(", ".join(addr_lines))
+        address_clean = _clean(_strip_instructions(address_raw))
+    if not address_raw:
         for line in lines:
             if re.search(r"\b[A-Z]{2}\s+\d{5}(-\d{4})?\b", line):
-                address = _clean(line)
+                address_raw = _clean(line)
+                address_clean = _clean(_strip_instructions(address_raw))
                 break
 
-    date_signed = _extract_signature_date(text)
+    date_signed_raw, date_signed_clean = _extract_signature_date(text)
 
     fields: Dict[str, Any] = {}
-    if legal_name:
-        fields["legal_name"] = _clean(legal_name)
-    if business_name:
-        fields["business_name"] = _clean(business_name)
-    if entity_type:
-        fields["entity_type"] = _clean(entity_type)
-    if tin:
-        fields["tin"] = _clean(tin)
-    if address:
-        fields["address"] = _clean(address)
-    if date_signed:
-        fields["date_signed"] = _clean(date_signed)
+    fields_clean: Dict[str, Any] = {}
+    if legal_name_raw:
+        fields["legal_name"] = legal_name_raw
+    if legal_name_clean:
+        fields_clean["legal_name"] = legal_name_clean
+    if business_name_raw:
+        fields["business_name"] = business_name_raw
+    if business_name_clean:
+        fields_clean["business_name"] = business_name_clean
+    if entity_raw:
+        fields["entity_type"] = entity_raw
+    if entity_clean:
+        fields_clean["entity_type"] = entity_clean
+    if tin_raw:
+        fields["tin"] = _clean(tin_raw)
+    if tin_clean:
+        fields_clean["tin"] = tin_clean
+    if address_raw:
+        fields["address"] = address_raw
+    if address_clean:
+        fields_clean["address"] = address_clean
+    if date_signed_raw:
+        fields["date_signed"] = date_signed_raw
+    if date_signed_clean:
+        fields_clean["date_signed"] = date_signed_clean
 
-    fields_clean = dict(fields)
-
-    conf = 0.6 + (0.1 if tin else 0) + (0.1 if legal_name else 0)
+    conf = 0.6 + (0.1 if tin_clean else 0) + (0.1 if legal_name_clean else 0)
 
     return {
         "doc_type": "W9_Form",
