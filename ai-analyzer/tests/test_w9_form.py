@@ -152,3 +152,18 @@ def test_analyze_prefers_clean_fields(monkeypatch):
     assert resp.status_code == 200
     data = resp.json()
     assert data["fields"]["legal_name"] == "John Doe"
+
+
+def test_analyze_falls_back_to_raw_fields(monkeypatch):
+    def fake_extract(text, evidence_key=None):
+        return {
+            "doc_type": "W9_Form",
+            "confidence": 0.9,
+            "fields": {"legal_name": "Raw Name"},
+        }
+
+    monkeypatch.setattr("src.extractors.w9_form.extract", fake_extract)
+    resp = client.post("/analyze", json={"text": SAMPLE})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["fields"]["legal_name"] == "Raw Name"
