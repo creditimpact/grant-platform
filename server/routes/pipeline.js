@@ -29,6 +29,7 @@ const {
   map8974,
   map6765,
 } = require('../utils/formMappers');
+const { preferCleanFields } = require('../utils/preferCleanFields');
 
 function mapForForm(formId, answers, { testMode = false } = {}) {
   switch (formId) {
@@ -110,7 +111,8 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
         await updateCase(caseId, { status: 'error', error: text });
         return res.status(502).json({ message: `AI analyzer error ${resp.status}`, details: text });
       }
-      const fields = await resp.json();
+      const analysis = await resp.json();
+      const fields = preferCleanFields(analysis);
       extracted = { ...extracted, ...fields };
     }
     const overrideKeys = Object.keys(basePayload).filter((key) =>
@@ -362,7 +364,7 @@ router.get('/status/:caseId', async (req, res) => {
     createdAt: c.createdAt,
     status: c.status,
     analyzer: c.analyzer,
-    analyzerFields: c.analyzer?.fields,
+    analyzerFields: preferCleanFields(c.analyzer || {}),
     questionnaire: {
       data: c.questionnaire?.data || {},
       missingFieldsHint: missing,

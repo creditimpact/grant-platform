@@ -21,6 +21,7 @@ const {
   toNumber,
   currency,
 } = require('../utils/normalizeAnswers');
+const { preferCleanFields } = require('../utils/preferCleanFields');
 const {
   mapSF424,
   mapSF424A,
@@ -104,7 +105,7 @@ router.get('/eligibility-report', async (req, res) => {
     caseId,
     eligibility: c.eligibility,
     missingFieldsSummary: missing,
-    analyzerFields: c.analyzer?.fields,
+    analyzerFields: preferCleanFields(c.analyzer || {}),
     documents: c.documents,
     status: c.status,
     generatedForms: c.generatedForms,
@@ -124,7 +125,7 @@ router.post('/eligibility-report', async (req, res) => {
     existingCase = await getCase(userId, caseId);
     if (!existingCase)
       return res.status(404).json({ message: 'Case not found' });
-    analyzerFields = existingCase.analyzer?.fields || {};
+    analyzerFields = preferCleanFields(existingCase.analyzer || {});
     base = { ...analyzerFields, ...payload };
   } else {
     caseId = await createCase(userId);
@@ -427,7 +428,7 @@ router.post('/eligibility-report', async (req, res) => {
     caseId,
     eligibility,
     missingFieldsSummary: missing,
-    analyzerFields: c.analyzer?.fields,
+    analyzerFields: preferCleanFields(c.analyzer || {}),
     documents: c.documents,
     status: c.status,
     generatedForms: c.generatedForms,
