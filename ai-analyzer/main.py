@@ -371,10 +371,11 @@ async def analyze_text_flow(
     response["doc_confidence"] = type_info.get("confidence", 0)
     extracted = det.get("extracted") or {}
     if isinstance(extracted, dict):
-        doc_fields = extracted.get("fields_clean", extracted.get("fields", extracted))
+        response["fields"] = extracted.get("fields", {})
+        if "fields_clean" in extracted:
+            response["fields_clean"] = extracted.get("fields_clean", {})
     else:
-        doc_fields = extracted
-    response["fields"] = doc_fields
+        response["fields"] = extracted
     extra = {"source": source}
     if filename:
         extra["upload_filename"] = filename

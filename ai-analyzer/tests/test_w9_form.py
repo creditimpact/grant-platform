@@ -13,6 +13,19 @@ MULTILINE = (FIXTURES / "w9_form_multiline.txt").read_text()
 INSTRUCTIONAL = (FIXTURES / "w9_form_instructional.txt").read_text()
 NEGATIVE = "This is just a random letter with no tax info."
 
+MISSING_NAME = "\n".join(
+    [
+        "Form W-9 (Rev. October 2018)",
+        "Request for Taxpayer Identification Number and Certification",
+        "1 Name (as shown on your income tax return) Name is required on this line",
+        "2 Business name/disregarded entity name, if different from above",
+        "Acme LLC",
+        "TIN: 12-3456789",
+        "Signature of U.S. person",
+        "John Smith 01/01/2024",
+    ]
+)
+
 SAMPLE_NO_HYPHEN = SAMPLE.replace("TIN: 12-3456789", "TIN: 123456789")
 SAMPLE_SPACED = SAMPLE.replace("TIN: 12-3456789", "TIN: 12 3456789")
 
@@ -33,6 +46,7 @@ def test_detect_and_extract():
     out = extract(SAMPLE, "uploads/w9.pdf")
     assert out["doc_type"] == "W9_Form"
     fields = out["fields"]
+    clean = out["fields_clean"]
     for key in [
         "legal_name",
         "business_name",
@@ -42,12 +56,13 @@ def test_detect_and_extract():
         "date_signed",
     ]:
         assert key in fields
-    assert fields["tin"] == "12-3456789"
-    assert fields["legal_name"] == "John Doe"
-    assert fields["business_name"] == "JD Widgets LLC"
-    assert "llc" in fields["entity_type"].lower()
-    assert "Anytown" in fields["address"]
-    assert fields["date_signed"] == "2024-01-15"
+        assert key in clean
+    assert clean["tin"] == "12-3456789"
+    assert clean["legal_name"] == "John Doe"
+    assert clean["business_name"] == "JD Widgets LLC"
+    assert "llc" in clean["entity_type"].lower()
+    assert "Anytown" in clean["address"]
+    assert clean["date_signed"] == "2024-01-15"
 
 
 def test_negative_sample():
@@ -58,7 +73,7 @@ def test_negative_sample():
 
 def test_multiline_names():
     out = extract(MULTILINE)
-    fields = out["fields"]
+    fields = out["fields_clean"]
     assert fields["legal_name"] == "Mega Corp Inc"
     assert fields["business_name"] == "Mega Holdings LLC"
 
@@ -66,25 +81,28 @@ def test_multiline_names():
 def test_noisy_instructions_trimmed():
     out = extract(NOISY)
     fields = out["fields"]
-    assert fields["legal_name"] == "John Q Public"
-    assert fields["business_name"] == "Public Ventures LLC"
-    assert fields["date_signed"] == "2024-02-02"
+    clean = out["fields_clean"]
+    assert "Do not leave blank" in fields["legal_name"]
+    assert clean["legal_name"] == "John Q Public"
+    assert "Enter if applicable" in fields["business_name"]
+    assert clean["business_name"] == "Public Ventures LLC"
+    assert clean["date_signed"] == "2024-02-02"
 
 
 def test_tin_variants_normalize():
     out = extract(SAMPLE_NO_HYPHEN)
-    assert out["fields"]["tin"] == "12-3456789"
+    assert out["fields_clean"]["tin"] == "12-3456789"
     out = extract(SAMPLE_SPACED)
-    assert out["fields"]["tin"] == "12-3456789"
+    assert out["fields_clean"]["tin"] == "12-3456789"
 
 
 def test_alternate_date_formats():
     out = extract(SAMPLE_DATE_NEXTLINE)
-    assert out["fields"]["date_signed"] == "2024-01-15"
+    assert out["fields_clean"]["date_signed"] == "2024-01-15"
     out = extract(SAMPLE_DATE_TEXT)
-    assert out["fields"]["date_signed"] == "2024-01-15"
+    assert out["fields_clean"]["date_signed"] == "2024-01-15"
     out = extract(SAMPLE_DATE_DASH)
-    assert out["fields"]["date_signed"] == "2024-01-15"
+    assert out["fields_clean"]["date_signed"] == "2024-01-15"
 
 
 def test_analyze_endpoint_returns_w9_fields():
@@ -93,6 +111,7 @@ def test_analyze_endpoint_returns_w9_fields():
     data = resp.json()
     assert data["doc_type"] == "W9_Form"
     fields = data.get("fields", {})
+    clean = data.get("fields_clean", {})
     for key in [
         "legal_name",
         "business_name",
@@ -102,8 +121,9 @@ def test_analyze_endpoint_returns_w9_fields():
         "date_signed",
     ]:
         assert key in fields
-    assert fields["tin"] == "12-3456789"
-    assert fields["business_name"] == "JD Widgets LLC"
+        assert key in clean
+    assert clean["tin"] == "12-3456789"
+    assert clean["business_name"] == "JD Widgets LLC"
 
 
 def test_analyze_endpoint_trims_instructions():
@@ -112,15 +132,19 @@ def test_analyze_endpoint_trims_instructions():
     data = resp.json()
     assert data["doc_type"] == "W9_Form"
     fields = data.get("fields", {})
-    assert fields["legal_name"] == "John Q Public"
-    assert fields["business_name"] == "Public Ventures LLC"
-    assert fields["date_signed"] == "2024-02-02"
+    clean = data.get("fields_clean", {})
+    assert "Do not leave blank" in fields["legal_name"]
+    assert clean["legal_name"] == "John Q Public"
+    assert "Enter if applicable" in fields["business_name"]
+    assert clean["business_name"] == "Public Ventures LLC"
+    assert clean["date_signed"] == "2024-02-02"
 
 
 def test_extract_provides_fields_clean():
     out = extract(SAMPLE)
     assert "fields_clean" in out
     assert out["fields_clean"]["legal_name"] == "John Doe"
+    assert out["fields"]["legal_name"] == "John Doe"
 
 
 def test_analyze_handles_instructional_noise():
@@ -128,7 +152,8 @@ def test_analyze_handles_instructional_noise():
     assert resp.status_code == 200
     data = resp.json()
     assert data["doc_type"] == "W9_Form"
-    assert data["fields"] == {
+    clean = data["fields_clean"]
+    assert clean == {
         "legal_name": "DAM CAPITAL GROUP CORP",
         "business_name": "Lenderfy capital",
         "tin": "12-3456789",
@@ -136,34 +161,23 @@ def test_analyze_handles_instructional_noise():
         "address": "101 Diplomat Pkwy Unit 2301, Hallandale Beach, FL 33009",
         "date_signed": "2023-10-05",
     }
+    # ensure instructions removed
+    for val in clean.values():
+        assert "Name is required" not in val
+        assert "Broker transactions" not in val
 
 
-def test_analyze_prefers_clean_fields(monkeypatch):
-    def fake_extract(text, evidence_key=None):
-        return {
-            "doc_type": "W9_Form",
-            "confidence": 0.9,
-            "fields": {"legal_name": "1 Name (as shown on your income tax return) John Doe"},
-            "fields_clean": {"legal_name": "John Doe"},
-        }
-
-    monkeypatch.setattr("src.extractors.w9_form.extract", fake_extract)
-    resp = client.post("/analyze", json={"text": SAMPLE})
+def test_analyze_prefers_clean_fields():
+    resp = client.post("/analyze", json={"text": NOISY})
     assert resp.status_code == 200
     data = resp.json()
-    assert data["fields"]["legal_name"] == "John Doe"
+    assert data["fields_clean"]["legal_name"] == "John Q Public"
+    assert "Do not leave blank" in data["fields"]["legal_name"]
 
 
-def test_analyze_falls_back_to_raw_fields(monkeypatch):
-    def fake_extract(text, evidence_key=None):
-        return {
-            "doc_type": "W9_Form",
-            "confidence": 0.9,
-            "fields": {"legal_name": "Raw Name"},
-        }
-
-    monkeypatch.setattr("src.extractors.w9_form.extract", fake_extract)
-    resp = client.post("/analyze", json={"text": SAMPLE})
+def test_analyze_falls_back_to_raw_fields():
+    resp = client.post("/analyze", json={"text": MISSING_NAME})
     assert resp.status_code == 200
     data = resp.json()
-    assert data["fields"]["legal_name"] == "Raw Name"
+    assert data["fields"]["legal_name"] == "Name is required on this line"
+    assert "legal_name" not in data.get("fields_clean", {})
