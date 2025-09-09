@@ -1,0 +1,14 @@
+US Bank:
+  headings:
+    deposits: ["Other Deposits", "Deposits"]
+    withdrawals: ["Other Withdrawals", "Withdrawals"]
+    checks: ["Checks Presented Conventionally", "Checks Paid"]
+  synonyms:
+    ending_balance: ["Ending Balance", "Closing Balance"]
+    beginning_balance: ["Beginning Balance", "Starting Balance"]
+    deposits_total: ["Total Other Deposits", "Total Deposits"]
+    withdrawals_total: ["Total Other Withdrawals", "Total Withdrawals"]
+Chase:
+  synonyms: {}
+Bank of America:
+  synonyms: {}
