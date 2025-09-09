@@ -23,6 +23,7 @@ const { buildChecklist } = require('../utils/checklistBuilder');
 const { preferCleanFields } = require('../utils/preferCleanFields');
 const { detectDocType } = require('../services/docType');
 const { extractBankStatement } = require('../services/extractors/bankStatement');
+const { extractPOA } = require('../services/extractors/poa');
 
 const router = express.Router();
 
@@ -109,6 +110,18 @@ router.post('/files/upload', (req, res) => {
     if (detected.type === 'bank_statement' && detected.confidence >= 0.8) {
       const parsed = extractBankStatement({ text: ocrText, vendor: detected.vendor, confidence: detected.confidence });
       fields_clean = preferCleanFields(fields_clean || {}, { bank_statements: [parsed] });
+    }
+    if (detected.type === 'power_of_attorney' && detected.confidence >= 0.8) {
+      const poa = extractPOA({ text: ocrText, confidence: detected.confidence });
+      const existingAuth =
+        (fields_clean && fields_clean.legal && fields_clean.legal.authorizations) || [];
+      fields_clean = {
+        ...(fields_clean || {}),
+        legal: {
+          ...(fields_clean?.legal || {}),
+          authorizations: [...existingAuth, poa],
+        },
+      };
     }
     const docFields = preferCleanFields({ fields, fields_clean });
     const normalizedDocFields = normalizeFields(docFields || {});

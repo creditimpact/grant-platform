@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "test": "node --test server/services/docType.poa.test.js server/services/extractors/poa.test.js server/routes/upload.poa.int.test.js",
     "k6:smoke": "k6 run load/k6/smoke.js",
     "k6:baseline": "k6 run load/k6/baseline.js",
     "k6:stress": "k6 run load/k6/stress.js",
