@@ -25,6 +25,7 @@ const { detectDocType } = require('../services/docType');
 const { extractBankStatement } = require('../services/extractors/bankStatement');
 const { extractPOA } = require('../services/extractors/poa');
 const { extractProofOfAddress } = require('../services/extractors/proofOfAddress');
+const { extractResume } = require('../services/extractors/resume');
 
 const router = express.Router();
 
@@ -133,6 +134,18 @@ router.post('/files/upload', (req, res) => {
         identity: {
           ...(fields_clean?.identity || {}),
           address_proofs: [...existingAddr, poaRes],
+        },
+      };
+    }
+    if (detected.type === 'resume' && detected.confidence >= 0.8) {
+      const resume = extractResume({ text: ocrText, confidence: detected.confidence });
+      const existingResumes =
+        (fields_clean && fields_clean.team_documents && fields_clean.team_documents.resumes) || [];
+      fields_clean = {
+        ...(fields_clean || {}),
+        team_documents: {
+          ...(fields_clean?.team_documents || {}),
+          resumes: [...existingResumes, resume],
         },
       };
     }
