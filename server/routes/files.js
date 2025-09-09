@@ -21,6 +21,8 @@ const {
 const { normalizeFields } = require('../utils/fieldNormalizer');
 const { buildChecklist } = require('../utils/checklistBuilder');
 const { preferCleanFields } = require('../utils/preferCleanFields');
+const { detectDocType } = require('../services/docType');
+const { extractBankStatement } = require('../services/extractors/bankStatement');
 
 const router = express.Router();
 
@@ -101,7 +103,13 @@ router.post('/files/upload', (req, res) => {
     }
 
     const analysis = await resp.json();
-    const { doc_type, doc_confidence, fields, fields_clean, ...businessFields } = analysis;
+    let { doc_type, doc_confidence, fields, fields_clean, ...businessFields } = analysis;
+    const ocrText = analysis.ocrText || analysis.text || '';
+    const detected = detectDocType(ocrText);
+    if (detected.type === 'bank_statement' && detected.confidence >= 0.8) {
+      const parsed = extractBankStatement({ text: ocrText, vendor: detected.vendor, confidence: detected.confidence });
+      fields_clean = preferCleanFields(fields_clean || {}, { bank_statements: [parsed] });
+    }
     const docFields = preferCleanFields({ fields, fields_clean });
     const normalizedDocFields = normalizeFields(docFields || {});
     const c = await getCase(userId, caseId);
