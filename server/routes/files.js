@@ -24,6 +24,7 @@ const { preferCleanFields } = require('../utils/preferCleanFields');
 const { detectDocType } = require('../services/docType');
 const { extractBankStatement } = require('../services/extractors/bankStatement');
 const { extractPOA } = require('../services/extractors/poa');
+const { extractProofOfAddress } = require('../services/extractors/proofOfAddress');
 
 const router = express.Router();
 
@@ -120,6 +121,18 @@ router.post('/files/upload', (req, res) => {
         legal: {
           ...(fields_clean?.legal || {}),
           authorizations: [...existingAuth, poa],
+        },
+      };
+    }
+    if (detected.type === 'proof_of_address' && detected.confidence >= 0.8) {
+      const poaRes = extractProofOfAddress({ text: ocrText, hints: detected.hints || {}, confidence: detected.confidence });
+      const existingAddr =
+        (fields_clean && fields_clean.identity && fields_clean.identity.address_proofs) || [];
+      fields_clean = {
+        ...(fields_clean || {}),
+        identity: {
+          ...(fields_clean?.identity || {}),
+          address_proofs: [...existingAddr, poaRes],
         },
       };
     }

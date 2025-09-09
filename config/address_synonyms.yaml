@@ -1,0 +1,26 @@
+subject_person:
+  - Customer
+  - Account Holder
+  - Resident
+  - Tenant
+  - Insured
+subject_business:
+  - Business Name
+  - Company
+  - Registered Entity
+  - Licensee
+address:
+  - Service Address
+  - Service Location
+  - Billing Address
+  - Mailing Address
+  - Premises
+  - Physical Address
+providers:
+  - Comcast
+  - Xfinity
+  - AT&T
+  - Verizon
+  - City of
+  - County of
+  - State of
