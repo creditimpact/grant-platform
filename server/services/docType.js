@@ -129,6 +129,33 @@ function detectDocType(text = '') {
     addrHints.evidence_type = top.type;
   }
 
+  // Resume signals
+  const RESUME_HEADERS = [
+    'SUMMARY OF QUALIFICATIONS',
+    'OBJECTIVE',
+    'PROFESSIONAL EXPERIENCE',
+    'WORK HISTORY',
+    'EXPERIENCE',
+    'EDUCATION',
+    'TECHNICAL SKILLS',
+    'COMPUTER SKILLS',
+    'SKILLS',
+    'CERTIFICATIONS',
+  ];
+  const resumeSignals = RESUME_HEADERS.filter((h) => new RegExp(h, 'i').test(text));
+  const hasEmail = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(text);
+  const hasPhone = /\+?\d[\d\s().-]{7,}/.test(text);
+  let resumeType = 'unknown';
+  let resumeConfidence = 0.4;
+  if (resumeSignals.length >= 2 && (hasEmail || hasPhone)) {
+    resumeType = 'resume';
+    resumeConfidence = 0.6 + Math.min(resumeSignals.length, 3) * 0.1;
+    if (hasEmail && hasPhone) resumeConfidence += 0.05;
+    resumeConfidence = Math.min(resumeConfidence, 0.95);
+  } else if (resumeSignals.length > 0 && (hasEmail || hasPhone)) {
+    resumeConfidence = 0.5;
+  }
+
   // Choose the classification with higher confidence
   let type = 'unknown';
   let confidence = 0.4;
@@ -143,6 +170,9 @@ function detectDocType(text = '') {
   }
   if (addrType === 'proof_of_address') {
     candidates.push({ type: addrType, confidence: addrConfidence, extra: { hints: addrHints } });
+  }
+  if (resumeType === 'resume') {
+    candidates.push({ type: resumeType, confidence: resumeConfidence, extra: {} });
   }
   if (candidates.length) {
     candidates.sort((a, b) => b.confidence - a.confidence);
