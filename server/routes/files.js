@@ -27,6 +27,7 @@ const { extractPOA } = require('../services/extractors/poa');
 const { extractProofOfAddress } = require('../services/extractors/proofOfAddress');
 const { extractResume } = require('../services/extractors/resume');
 const { extractInsuranceCertificate } = require('../services/extractors/insuranceCertificate');
+const { extractLetterOfSupport } = require('../services/extractors/letterOfSupport');
 
 const router = express.Router();
 
@@ -147,6 +148,22 @@ router.post('/files/upload', (req, res) => {
         team_documents: {
           ...(fields_clean?.team_documents || {}),
           resumes: [...existingResumes, resume],
+        },
+      };
+    }
+    if (
+      process.env.enableLettersOfSupportParsing === 'true' &&
+      detected.type === 'letter_of_support' &&
+      detected.confidence >= 0.8
+    ) {
+      const letter = extractLetterOfSupport({ text: ocrText, confidence: detected.confidence });
+      const existingLetters =
+        (fields_clean && fields_clean.team_documents && fields_clean.team_documents.letters) || [];
+      fields_clean = {
+        ...(fields_clean || {}),
+        team_documents: {
+          ...(fields_clean?.team_documents || {}),
+          letters: [...existingLetters, letter],
         },
       };
     }

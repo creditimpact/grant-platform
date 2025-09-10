@@ -32,6 +32,17 @@ const DMV_TOKENS = [
   /certification\s+of\s+address/i,
 ];
 
+// Letter of support / recommendation signals
+const LETTER_PHRASES = [
+  /letter of support/i,
+  /letter of recommendation/i,
+  /to whom it may concern/i,
+  /dear grant committee/i,
+  /i am pleased to recommend/i,
+  /i write in support of/i,
+];
+const LETTER_SIGNATURES = /(sincerely|respectfully|best regards)/i;
+
 const RE_LINE1 = /\b\d{1,6}\s+[A-Za-z0-9.#\- ]{4,}/;
 const RE_US_POSTAL = /\b\d{5}(?:-\d{4})?\b/;
 const RE_CA_POSTAL = /\b[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ -]?\d[ABCEGHJ-NPRSTV-Z]\d\b/i;
@@ -156,6 +167,25 @@ function detectDocType(text = '') {
     resumeConfidence = 0.5;
   }
 
+  // Letter of support / recommendation signals
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  let letterSignalCount = 0;
+  letterSignalCount += LETTER_PHRASES.filter((r) => r.test(text)).length;
+  if (LETTER_SIGNATURES.test(text)) letterSignalCount += 1;
+  const hasContact = hasEmail || hasPhone;
+  if (hasContact) letterSignalCount += 1;
+  const hasHeading = /letter\s+of\s+(support|recommendation)/i.test(text);
+  let letterType = 'unknown';
+  let letterConfidence = 0.4;
+  if (wordCount > 150 && letterSignalCount >= 2) {
+    letterType = 'letter_of_support';
+    letterConfidence = 0.6 + letterSignalCount * 0.1;
+    if (hasHeading) letterConfidence += 0.05;
+    letterConfidence = Math.min(letterConfidence, 0.95);
+  } else if (letterSignalCount > 0) {
+    letterConfidence = 0.5;
+  }
+
   // Insurance certificate signals
   const INS_TITLES = [
     /CERTIFICATE OF LIABILITY INSURANCE/i,
@@ -213,6 +243,9 @@ function detectDocType(text = '') {
   }
   if (resumeType === 'resume') {
     candidates.push({ type: resumeType, confidence: resumeConfidence, extra: {} });
+  }
+  if (letterType === 'letter_of_support') {
+    candidates.push({ type: letterType, confidence: letterConfidence, extra: { hints: {} } });
   }
   if (insType === 'insurance_certificate') {
     candidates.push({ type: insType, confidence: insConfidence, extra: { hints: insHints } });
