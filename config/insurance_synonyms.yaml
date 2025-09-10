@@ -1,0 +1,15 @@
+general_liability:
+  - General Liability
+  - Commercial General Liability
+auto:
+  - Automobile Liability
+  - Auto
+umbrella:
+  - Umbrella
+  - Excess Liability
+workers_comp:
+  - Workers Compensation
+  - Workers Comp
+property:
+  - Property
+  - Property Insurance
