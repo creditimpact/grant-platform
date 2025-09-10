@@ -26,6 +26,7 @@ const { extractBankStatement } = require('../services/extractors/bankStatement')
 const { extractPOA } = require('../services/extractors/poa');
 const { extractProofOfAddress } = require('../services/extractors/proofOfAddress');
 const { extractResume } = require('../services/extractors/resume');
+const { extractInsuranceCertificate } = require('../services/extractors/insuranceCertificate');
 
 const router = express.Router();
 
@@ -146,6 +147,18 @@ router.post('/files/upload', (req, res) => {
         team_documents: {
           ...(fields_clean?.team_documents || {}),
           resumes: [...existingResumes, resume],
+        },
+      };
+    }
+    if (detected.type === 'insurance_certificate' && detected.confidence >= 0.8) {
+      const cert = extractInsuranceCertificate({ text: ocrText, hints: detected.hints || {}, confidence: detected.confidence });
+      const existingCerts =
+        (fields_clean && fields_clean.compliance && fields_clean.compliance.insurance) || [];
+      fields_clean = {
+        ...(fields_clean || {}),
+        compliance: {
+          ...(fields_clean?.compliance || {}),
+          insurance: [...existingCerts, cert],
         },
       };
     }

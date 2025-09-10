@@ -156,6 +156,46 @@ function detectDocType(text = '') {
     resumeConfidence = 0.5;
   }
 
+  // Insurance certificate signals
+  const INS_TITLES = [
+    /CERTIFICATE OF LIABILITY INSURANCE/i,
+    /EVIDENCE OF PROPERTY INSURANCE/i,
+    /ACORD\s*25/i,
+    /ACORD\s*23/i,
+    /ACORD\s*27/i,
+    /ACORD\s*28/i,
+  ];
+  const INS_HEADERS = [
+    'Producer',
+    'Insured',
+    'Insurers Affording Coverage',
+    'Coverages',
+    'Certificate Holder',
+  ];
+  const INS_TABLE = ['Policy Number', 'Eff Date', 'Exp Date', 'Limits'];
+  const hasTitle = INS_TITLES.some((r) => r.test(text));
+  const headerCount = INS_HEADERS.filter((h) => new RegExp(h, 'i').test(text)).length;
+  const tableCount = INS_TABLE.filter((h) => new RegExp(h, 'i').test(text)).length;
+  const totalInsSignals = (hasTitle ? 1 : 0) + headerCount + tableCount;
+  const hasAcord = /ACORD/i.test(text);
+  let insType = 'unknown';
+  let insConfidence = 0.4;
+  let insHints = {};
+  if (totalInsSignals >= 2) {
+    insType = 'insurance_certificate';
+    insConfidence = 0.6 + Math.min(totalInsSignals, 3) * 0.1;
+    insConfidence = Math.min(insConfidence, 0.95);
+    if (hasAcord) insConfidence += 0.05;
+    let form = 'other';
+    if (/ACORD\s*25/i.test(text)) form = 'ACORD25';
+    else if (/ACORD\s*23/i.test(text)) form = 'ACORD23';
+    else if (/ACORD\s*27/i.test(text)) form = 'ACORD27';
+    else if (/ACORD\s*28/i.test(text)) form = 'ACORD28';
+    insHints.form = form;
+  } else if (hasTitle || headerCount || tableCount) {
+    insConfidence = 0.5;
+  }
+
   // Choose the classification with higher confidence
   let type = 'unknown';
   let confidence = 0.4;
@@ -173,6 +213,9 @@ function detectDocType(text = '') {
   }
   if (resumeType === 'resume') {
     candidates.push({ type: resumeType, confidence: resumeConfidence, extra: {} });
+  }
+  if (insType === 'insurance_certificate') {
+    candidates.push({ type: insType, confidence: insConfidence, extra: { hints: insHints } });
   }
   if (candidates.length) {
     candidates.sort((a, b) => b.confidence - a.confidence);
