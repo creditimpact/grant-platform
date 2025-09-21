@@ -26,6 +26,7 @@ The analyzer performs document-type detection and structured extraction for:
 - Tax payment receipts
 - Business licenses, articles of incorporation, and EIN assignment letters
 - Financial statements (profit & loss statements and balance sheets)
+- Payroll registers and provider payroll reports (ADP, Gusto, QuickBooks Payroll, Paychex, Zenefits)
 - Project documents such as business plans, grant use statements, energy savings reports, utility bills, installer contracts, equipment specs, and invoices/quotes
 
 ```bash
@@ -59,6 +60,64 @@ eligibility engine after normalization. Common field names include:
 | `revenue_drop_2020_pct` | `55%` |
 | `annual_revenue` | `$1,200,000` |
 | `payroll_total` | `$950k` |
+
+### Payroll Register Output
+
+Payroll uploads yield per-employee detail, period metadata, and document-level totals. A truncated example:
+
+```json
+{
+  "doc_type": "Payroll_Register",
+  "fields_clean": {
+    "pay_period": {
+      "start_date": "2023-01-01",
+      "end_date": "2023-01-07",
+      "check_date": "2023-01-10",
+      "frequency": "weekly"
+    },
+    "employee_count": 12,
+    "employees": [
+      {
+        "employee": {"id": "1001", "name": "Jane Smith", "ssn_last4": "4321"},
+        "pay_components": {
+          "regular_hours": 40.0,
+          "regular_pay": 1200.0,
+          "overtime_pay": 150.0,
+          "gross_pay": 1500.0
+        },
+        "withholding": {
+          "federal_wh": 200.0,
+          "social_security": 93.0,
+          "medicare": 21.75,
+          "state_wh": 60.0
+        },
+        "net_pay": 1125.25,
+        "ytd": {"total_pay": 3000.0, "federal_wh": 400.0, "net_pay": 2200.0}
+      }
+    ],
+    "document_totals": {
+      "gross": 18540.25,
+      "withholding": 4820.13,
+      "employer_taxes": 1890.42,
+      "deductions_employee": 640.00,
+      "net": 12089.70
+    }
+  },
+  "parse_summary": {
+    "rows_parsed": 12,
+    "columns_mapped": 18,
+    "columns_missing": []
+  }
+}
+```
+
+### Payroll Export Tips
+
+- **ADP** – Reports ➜ Payroll ➜ Payroll Register ➜ export as PDF/CSV.
+- **Gusto** – Reports ➜ Payroll ➜ Payroll Journal ➜ download the pay period register.
+- **QuickBooks Payroll** – Reports ➜ Employees & Payroll ➜ Payroll Detail Review (export to CSV/XLSX).
+- **Paychex** – Reports ➜ Payroll ➜ Payroll Summary; export via Flex as XLSX.
+- **Zenefits** – Reports ➜ Payroll ➜ Payroll Register; choose CSV for structured tables.
 
 Additional aliases are documented in
 `eligibility-engine/contracts/field_map.json`.

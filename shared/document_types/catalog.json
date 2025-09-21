@@ -169,6 +169,54 @@
         "P&L statement showing revenues, expenses and net income"
       ]
     },
+    "Payroll_Register": {
+      "display_name": "Payroll Register",
+      "identify": {
+        "keywords_any": [
+          "Payroll Register",
+          "Payroll Journal",
+          "Payroll Summary",
+          "Payroll Detail",
+          "Pay Period",
+          "Check Date"
+        ],
+        "regex_any": [
+          "(?i)\\bEmp\\.?\\s*(?:No|ID)\\b",
+          "(?i)\\bGross\\s+Pay\\b",
+          "(?i)\\bNet\\s+Pay\\b"
+        ],
+        "score_bonus": 0.2
+      },
+      "fields": {
+        "pay_period": "object",
+        "employees": "array",
+        "document_totals": "object"
+      }
+    },
+    "Payroll_Provider_Report": {
+      "display_name": "Payroll Provider Report",
+      "identify": {
+        "keywords_any": [
+          "ADP",
+          "Gusto",
+          "QuickBooks Payroll",
+          "Intuit Payroll",
+          "Paychex",
+          "Zenefits"
+        ],
+        "regex_any": [
+          "(?i)Payroll\\s+(?:Register|Detail|Summary)",
+          "(?i)Check\\s+Date",
+          "(?i)Employee\\s+Name"
+        ],
+        "score_bonus": 0.1
+      },
+      "fields": {
+        "pay_period": "object",
+        "employees": "array",
+        "document_totals": "object"
+      }
+    },
     "Balance_Sheet": {
       "extractor": "balance_sheet",
       "detector": {

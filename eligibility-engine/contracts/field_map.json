@@ -470,5 +470,30 @@
     "box18_local_wages": { "aliases": ["box18", "local_wages"], "type": "currency" },
     "box19_local_income_tax": { "aliases": ["box19", "local_income_tax"], "type": "currency" },
     "box20_locality_name": { "aliases": ["box20", "locality_name"], "type": "string" }
+  },
+  "payroll_period_total_gross": {
+    "aliases": ["payroll.period.total_gross", "payroll_total_gross"],
+    "target": "payroll_period_total_gross",
+    "type": "currency"
+  },
+  "payroll_period_total_withholding": {
+    "aliases": ["payroll.period.total_withholding"],
+    "target": "payroll_period_total_withholding",
+    "type": "currency"
+  },
+  "payroll_period_total_employer_taxes": {
+    "aliases": ["payroll.period.total_employer_taxes"],
+    "target": "payroll_period_total_employer_taxes",
+    "type": "currency"
+  },
+  "payroll_period_total_net": {
+    "aliases": ["payroll.period.total_net"],
+    "target": "payroll_period_total_net",
+    "type": "currency"
+  },
+  "payroll_period_employee_count": {
+    "aliases": ["payroll.period.employee_count"],
+    "target": "payroll_period_employee_count",
+    "type": "int"
   }
 }

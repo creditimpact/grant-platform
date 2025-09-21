@@ -1,0 +1,6 @@
+"QuickBooks Payroll Register"
+"Pay Period","03/01/2023","-","03/07/2023"
+"Check Date","03/09/2023"
+"Employee Name","Employee ID","SSN","Gross Pay","Regular Pay","Federal WH","Medicare","Social Security","State WH","Net Pay","YTD Gross","YTD Federal"
+"Alex Parker","QB-100","***-**-3030","2100.00","1800.00","320.00","30.45","130.20","80.00","1539.35","6000.00","750.00"
+"Jamie Wong","QB-200","***-**-4040","1950.00","1700.00","300.00","28.28","121.14","70.00","1430.58","5800.00","690.00"

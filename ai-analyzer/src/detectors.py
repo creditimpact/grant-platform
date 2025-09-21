@@ -48,6 +48,8 @@ EXTRACTORS = {
     "Equipment_Specs": ("equipment_specs", "extract"),
     "Invoices_or_Quotes": ("invoices_or_quotes", "extract"),
     "Energy_Savings_Report": ("energy_savings_report", "extract"),
+    "Payroll_Register": ("payroll_register", "extract"),
+    "Payroll_Provider_Report": ("payroll_register", "extract"),
 }
 
 def identify(doc_text: str) -> dict:
