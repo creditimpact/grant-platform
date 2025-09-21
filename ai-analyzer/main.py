@@ -374,6 +374,9 @@ async def analyze_text_flow(
         response["fields"] = extracted.get("fields", {})
         if "fields_clean" in extracted:
             response["fields_clean"] = extracted.get("fields_clean", {})
+        for meta_key in ("field_sources", "field_confidence", "warnings"):
+            if meta_key in extracted:
+                response[meta_key] = extracted.get(meta_key)
     else:
         response["fields"] = extracted
     extra = {"source": source}
