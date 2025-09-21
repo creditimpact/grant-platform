@@ -28,6 +28,7 @@ const { extractProofOfAddress } = require('../services/extractors/proofOfAddress
 const { extractResume } = require('../services/extractors/resume');
 const { extractInsuranceCertificate } = require('../services/extractors/insuranceCertificate');
 const { extractLetterOfSupport } = require('../services/extractors/letterOfSupport');
+const { extractVeteranStatus } = require('../services/extractors/veteranStatus');
 
 const router = express.Router();
 
@@ -164,6 +165,22 @@ router.post('/files/upload', (req, res) => {
         team_documents: {
           ...(fields_clean?.team_documents || {}),
           letters: [...existingLetters, letter],
+        },
+      };
+    }
+    if (
+      process.env.enableVeteranStatusParsing === 'true' &&
+      detected.type === 'veteran_status_form' &&
+      detected.confidence >= 0.8
+    ) {
+      const vetDoc = extractVeteranStatus({ text: ocrText, hints: detected.hints || {}, confidence: detected.confidence });
+      const existingVet =
+        (fields_clean && fields_clean.identity && fields_clean.identity.veteran_status) || [];
+      fields_clean = {
+        ...(fields_clean || {}),
+        identity: {
+          ...(fields_clean?.identity || {}),
+          veteran_status: [...existingVet, vetDoc],
         },
       };
     }

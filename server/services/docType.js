@@ -186,6 +186,55 @@ function detectDocType(text = '') {
     letterConfidence = 0.5;
   }
 
+  // Veteran status form signals
+  const VET_TITLES_CERT = [
+    /DD\s*Form\s*214/i,
+    /Certificate of Release or Discharge from Active Duty/i,
+  ];
+  const VET_TITLES_APP = [
+    /Application for Certified Copy of Military Discharge/i,
+    /DD-214\s+Application/i,
+  ];
+  const VET_PHRASES = [
+    /Department of Defense/i,
+    /Armed Forces/i,
+    /Service Branch/i,
+    /Discharge/i,
+  ];
+  const APP_EXTRA_PHRASES = [
+    /Eligibility/i,
+    /Applicant Information/i,
+    /Notary/i,
+    /Declaration/i,
+    /Government Code/i,
+  ];
+  let vetSignals = 0;
+  let vetForm = 'other';
+  if (VET_TITLES_CERT.some((r) => r.test(text))) {
+    vetSignals += 1;
+    vetForm = 'dd214_certificate';
+  }
+  if (VET_TITLES_APP.some((r) => r.test(text))) {
+    vetSignals += 1;
+    vetForm = 'dd214_application';
+  }
+  vetSignals += VET_PHRASES.filter((r) => r.test(text)).length;
+  if (vetForm === 'dd214_application') {
+    vetSignals += APP_EXTRA_PHRASES.filter((r) => r.test(text)).length;
+  }
+  let vetType = 'unknown';
+  let vetConfidence = 0.4;
+  let vetHints = {};
+  if (vetSignals >= 2) {
+    vetType = 'veteran_status_form';
+    vetConfidence = 0.6 + vetSignals * 0.1;
+    if (/DD[-\s]?214/i.test(text)) vetConfidence += 0.05;
+    vetConfidence = Math.min(vetConfidence, 0.95);
+    vetHints.form = vetForm;
+  } else if (vetSignals > 0) {
+    vetConfidence = 0.5;
+  }
+
   // Insurance certificate signals
   const INS_TITLES = [
     /CERTIFICATE OF LIABILITY INSURANCE/i,
@@ -235,9 +284,6 @@ function detectDocType(text = '') {
   if (bankType === 'bank_statement') {
     candidates.push({ type: bankType, confidence: bankConfidence, extra: vendorMatch ? { vendor: vendorMatch[0] } : {} });
   }
-  if (poaType === 'power_of_attorney') {
-    candidates.push({ type: poaType, confidence: poaConfidence, extra: {} });
-  }
   if (addrType === 'proof_of_address') {
     candidates.push({ type: addrType, confidence: addrConfidence, extra: { hints: addrHints } });
   }
@@ -246,6 +292,12 @@ function detectDocType(text = '') {
   }
   if (letterType === 'letter_of_support') {
     candidates.push({ type: letterType, confidence: letterConfidence, extra: { hints: {} } });
+  }
+  if (vetType === 'veteran_status_form') {
+    candidates.push({ type: vetType, confidence: vetConfidence, extra: { hints: vetHints } });
+  }
+  if (poaType === 'power_of_attorney') {
+    candidates.push({ type: poaType, confidence: poaConfidence, extra: {} });
   }
   if (insType === 'insurance_certificate') {
     candidates.push({ type: insType, confidence: insConfidence, extra: { hints: insHints } });
