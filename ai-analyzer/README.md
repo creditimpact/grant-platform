@@ -15,6 +15,19 @@ already available on your `PATH`.
 The `/analyze` endpoint also accepts raw text via JSON or `text/plain` payloads.
 The maximum text size is **100KB** and the response shape matches file uploads.
 
+## Supported Documents
+
+The analyzer performs document-type detection and structured extraction for:
+
+- IRS Form W-2 (Wage and Tax Statement)
+- IRS Form W-9 (Request for Taxpayer Identification Number and Certification)
+- IRS Form 1120X (Amended U.S. Corporation Income Tax Return)
+- IRS Form 941-X
+- Tax payment receipts
+- Business licenses, articles of incorporation, and EIN assignment letters
+- Financial statements (profit & loss statements and balance sheets)
+- Project documents such as business plans, grant use statements, energy savings reports, utility bills, installer contracts, equipment specs, and invoices/quotes
+
 ```bash
 # JSON body
 curl -X POST http://localhost:8000/analyze \

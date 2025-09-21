@@ -38,6 +38,7 @@ EXTRACTORS = {
     "Articles_Of_Incorporation": ("articles_of_incorporation", "extract"),
     "EIN_Letter": ("ein_letter", "extract"),
     "W9_Form": ("w9_form", "extract"),
+    "W2_Form": ("w2_form", "extract"),
     "Profit_And_Loss_Statement": ("p_and_l_statement", "extract"),
     "Balance_Sheet": ("balance_sheet", "extract"),
     "Business_Plan": ("business_plan", "extract"),
@@ -61,6 +62,8 @@ def identify(doc_text: str) -> dict:
             score += 0.5
         if any(re.search(r, text) for r in rx):
             score += 0.5
+        if score > 0:
+            score += spec["identify"].get("score_bonus", 0)
         if score > 0 and (not best or score > best["confidence"]):
             best = {"type_key": key, "confidence": score}
     return best or {}

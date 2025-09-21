@@ -119,6 +119,32 @@
       },
       "examples": ["IRS Form W-9"]
     },
+    "W2_Form": {
+      "display_name": "IRS Form W-2 (Wage and Tax Statement)",
+      "identify": {
+        "keywords_any": [
+          "Form W-2 Wage and Tax Statement",
+          "Wage and Tax Statement",
+          "OMB No. 1545-0029"
+        ],
+        "regex_any": [
+          "(?i)Form\\s+W-2\\s+Wage\\s+and\\s+Tax\\s+Statement",
+          "(?i)OMB\\s+No\\.\\s*1545-0029",
+          "(?i)Copy\\s+(?:A|B|C|D|1|2)"
+        ],
+        "score_bonus": 0.2,
+        "check_pages": [1]
+      },
+      "extract_fields": [
+        "ein",
+        "employee_ssn",
+        "box1_wages",
+        "box2_federal_income_tax_withheld"
+      ],
+      "normalize": {
+        "ein": "ein"
+      }
+    },
     "Profit_And_Loss_Statement": {
       "extractor": "p_and_l_statement",
       "detector": {
