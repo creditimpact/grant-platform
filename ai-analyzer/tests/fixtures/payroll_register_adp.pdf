@@ -1,0 +1,9 @@
+ADP Payroll Register
+Company: Demo Manufacturing LLC
+Pay Period: 01/01/2023 - 01/07/2023
+Check Date: 01/10/2023
+
+Emp. No.,Employee Name,SSN,Gross Pay,Regular Pay,Regular Hours,Overtime Pay,Overtime Hours,Federal WH,OASDI,Medicare,State WH,Net Pay,YTD Gross,YTD Federal
+1001,Jane Smith,***-**-4321,1500.00,1200.00,40,150.00,5,200.00,93.00,21.75,60.00,1125.25,3000.00,400.00
+1002,John Doe,***-**-6789,1800.00,1400.00,40,200.00,10,250.00,111.60,26.10,75.00,1337.30,3600.00,500.00
+Totals,,,,,,,,450.00,204.60,47.85,135.00,2462.55,,

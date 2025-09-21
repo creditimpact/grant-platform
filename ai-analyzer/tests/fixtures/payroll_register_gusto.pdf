@@ -1,0 +1,8 @@
+Gusto Payroll Detail Report
+Pay Period 02/01/2023 through 02/15/2023
+Check Date 02/17/2023
+Department: Operations
+
+Employee ID,Employee Name,SSN,Regular Hours,Regular Pay,Overtime Hours,Overtime Pay,Bonus,Federal WH,State WH,Local WH,Social Security,Medicare,Net Pay,YTD Gross,YTD Net
+A-01,Chris Lee,xxx-xx-1010,80,2800.00,4,180.00,200.00,420.00,135.00,25.00,183.60,42.94,2378.46,5200.00,4200.00
+A-02,Maria Gomez,xxx-xx-2020,80,2950.00,0,0.00,0.00,450.00,140.00,30.00,182.90,42.76,2104.34,5100.00,3900.00
