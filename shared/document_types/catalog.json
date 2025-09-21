@@ -5,16 +5,30 @@
     "Form_1120X": {
       "display_name": "IRS Form 1120X (Amended U.S. Corporation Income Tax Return)",
       "identify": {
-        "keywords_any": ["Form 1120X", "Amended U.S. Corporation Income Tax Return"],
-        "regex_any": ["(?i)\\bForm\\s+1120X\\b"],
-        "check_pages": [1, 2]
+        "keywords_any": [
+          "Form 1120X",
+          "Amended U.S. Corporation Income Tax Return"
+        ],
+        "regex_any": [
+          "(?i)\\bForm\\s+1120X\\b"
+        ],
+        "check_pages": [
+          1,
+          2
+        ]
       },
       "extract_fields": [
-        "ein", "company_name", "tax_year_ending",
-        "address_line", "city_state_zip",
-        "total_income_c", "total_deductions_c",
-        "taxable_income_c", "total_tax_c",
-        "overpayment", "tax_due"
+        "ein",
+        "company_name",
+        "tax_year_ending",
+        "address_line",
+        "city_state_zip",
+        "total_income_c",
+        "total_deductions_c",
+        "taxable_income_c",
+        "total_tax_c",
+        "overpayment",
+        "tax_due"
       ],
       "normalize": {
         "tax_year_ending": "date",
@@ -117,7 +131,9 @@
         "address": "string",
         "date_signed": "date"
       },
-      "examples": ["IRS Form W-9"]
+      "examples": [
+        "IRS Form W-9"
+      ]
     },
     "W2_Form": {
       "display_name": "IRS Form W-2 (Wage and Tax Statement)",
@@ -133,7 +149,9 @@
           "(?i)Copy\\s+(?:A|B|C|D|1|2)"
         ],
         "score_bonus": 0.2,
-        "check_pages": [1]
+        "check_pages": [
+          1
+        ]
       },
       "extract_fields": [
         "ein",
@@ -269,7 +287,9 @@
           "Statement of Intended Use",
           "Funding Request"
         ],
-        "regex": ["(?i)use of funds"]
+        "regex": [
+          "(?i)use of funds"
+        ]
       },
       "fields": {
         "business_name": "string",
@@ -315,7 +335,9 @@
           "HVAC INSTALLATION CONTRACT",
           "Installation Agreement"
         ],
-        "regex": ["(?i)Contract Number"]
+        "regex": [
+          "(?i)Contract Number"
+        ]
       },
       "fields": {
         "provider_name": "string",
@@ -339,7 +361,9 @@
           "Manufacturer Datasheet",
           "Model Specifications"
         ],
-        "regex": ["(?i)Equipment\\s+Specifications"]
+        "regex": [
+          "(?i)Equipment\\s+Specifications"
+        ]
       },
       "fields": {
         "equipment_name": "string",
@@ -350,14 +374,19 @@
         "manufacturer": "string",
         "issue_date": "date"
       },
-      "description": "Manufacturer’s technical datasheet for equipment, including power rating, efficiency, certifications, and model details."
+      "description": "Manufacturer\u2019s technical datasheet for equipment, including power rating, efficiency, certifications, and model details."
     },
     "Invoices_or_Quotes": {
       "extractor": "invoices_or_quotes",
       "detector": {
         "keywords": [
-          "Invoice", "Tax Invoice", "Commercial Invoice",
-          "Quote", "Quotation", "Estimate", "Proposal"
+          "Invoice",
+          "Tax Invoice",
+          "Commercial Invoice",
+          "Quote",
+          "Quotation",
+          "Estimate",
+          "Proposal"
         ]
       },
       "fields": {
@@ -398,7 +427,9 @@
           "ASHRAE",
           "IPMVP"
         ],
-        "regex": ["(?i)energy savings report"]
+        "regex": [
+          "(?i)energy savings report"
+        ]
       },
       "fields": {
         "report_date": "date",
@@ -429,6 +460,86 @@
         "Balance_Sheet"
       ],
       "description": "Complete financial statements (P&L and Balance Sheet)"
+    },
+    "1099_NEC": {
+      "display_name": "IRS Form 1099-NEC (Nonemployee Compensation)",
+      "identify": {
+        "keywords_any": [
+          "Form 1099-NEC",
+          "Nonemployee Compensation",
+          "OMB No. 1545-0116",
+          "Copy A",
+          "Copy B",
+          "Copy 1",
+          "Copy 2",
+          "For calendar year",
+          "irs.gov/Form1099NEC"
+        ],
+        "regex_any": [
+          "(?i)Form\\s+1099[-\\u2011]?NEC",
+          "(?i)Nonemployee\\s+Comp(?:ensation)?",
+          "(?i)irs\\.gov/Form1099NEC"
+        ],
+        "score_bonus": 0.2,
+        "check_pages": [
+          1
+        ]
+      },
+      "extract_fields": [
+        "payer_name",
+        "payer_tin",
+        "recipient_name",
+        "recipient_tin",
+        "box1_nonemployee_comp"
+      ]
+    },
+    "Form1099_Summary": {
+      "display_name": "1099 Summary Report",
+      "identify": {
+        "keywords_any": [
+          "1099 Summary",
+          "Vendor 1099 Summary",
+          "1099 NEC Summary",
+          "1099 Report",
+          "Total 1099 Amount",
+          "Nonemployee compensation"
+        ],
+        "regex_any": [
+          "(?i)1099\\s+(?:NEC\\s+)?Summary",
+          "(?i)1099\\s+Report",
+          "(?i)Vendor\\s+1099"
+        ],
+        "score_bonus": 0.1
+      },
+      "extract_fields": [
+        "tax_year",
+        "contractors",
+        "totals"
+      ]
+    },
+    "Vendor_1099_Report": {
+      "display_name": "Vendor 1099 Report",
+      "identify": {
+        "keywords_any": [
+          "1099 Summary",
+          "Vendor 1099 Summary",
+          "1099 NEC Summary",
+          "1099 Report",
+          "Total 1099 Amount",
+          "Nonemployee compensation"
+        ],
+        "regex_any": [
+          "(?i)1099\\s+(?:NEC\\s+)?Summary",
+          "(?i)1099\\s+Report",
+          "(?i)Vendor\\s+1099"
+        ],
+        "score_bonus": 0.1
+      },
+      "extract_fields": [
+        "tax_year",
+        "contractors",
+        "totals"
+      ]
     }
   }
 }

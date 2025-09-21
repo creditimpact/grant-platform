@@ -1,0 +1,6 @@
+"QuickBooks 1099 Summary Report"
+"Tax Year",2023
+Vendor/Payee,TIN,Nonemployee Compensation,Federal WH,State Tax Withheld,State Income,Account #
+Jamie Contractor,12-3456789,"$5,500.00","$500.00","$150.00","$5,500.00",AC123
+Alex Builder,98-7654321,"$4,200.50","$0.00","$0.00","$4,200.50",AC987
+Totals,,9700.50,500.00,150.00,9700.50,
