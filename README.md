@@ -42,6 +42,62 @@ To extend the library:
    `shared/document_library/` (e.g. `grants_v2.json`).
 3. Update services to reference the new version if needed.
 
+### Supported Documents
+
+- IRS Form 1099-NEC (Nonemployee Compensation)
+- 1099 Summary / Vendor 1099 Reports (QuickBooks, Gusto, ADP, Paychex)
+
+Example 1099-NEC extraction:
+
+```json
+{
+  "doc_type": "1099_NEC",
+  "fields_clean": {
+    "payer_name": "Acme Services LLC",
+    "payer_tin": "123456789",
+    "payer_tin_masked": "***-**-6789",
+    "recipient_name": "Jamie Contractor",
+    "recipient_tin_masked": "***-**-4321",
+    "box1_nonemployee_comp": 5500.0,
+    "box4_federal_income_tax_wh": 500.0,
+    "tax_year": "2023"
+  },
+  "warnings": []
+}
+```
+
+### 1099 Summaries
+
+The analyzer now parses 1099 rollup reports exported from accounting platforms. Supported exports include QuickBooks CSV downloads, Gusto PDFs, ADP text and Paychex spreadsheets. Ensure the header row contains contractor names, TIN/EIN columns and Box 1 totals.
+
+```json
+{
+  "doc_type": "Form1099_Summary",
+  "fields_clean": {
+    "tax_year": "2023",
+    "vendor_guess": {"name": "QuickBooks", "confidence": 0.8},
+    "contractors": [
+      {
+        "contractor": {"name": "Jamie Contractor", "tin_last4": "6789"},
+        "amounts": {"box1_nonemployee_comp": 5500.0, "federal_wh": 500.0},
+        "metadata": {"account_number": "AC123"}
+      }
+    ],
+    "totals": {
+      "contractors_count": 2,
+      "sum_box1": 9700.5,
+      "sum_state_wh": 150.0
+    }
+  }
+}
+```
+
+Export tips:
+
+- **QuickBooks Online** – use the 1099 detail CSV export.
+- **Gusto** – download the 1099 contractor PDF summary.
+- **ADP / Paychex** – export the vendor 1099 worksheet (CSV/XLSX).
+
 Example: to support IRS Form 941-X uploads, add a `shared/document_types/IRS_941X.json`
 with detector keywords and required fields (`employer_identification_number`,
 `quarter`, `calendar_year`), register it in `catalog.json`, and list the

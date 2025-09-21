@@ -1,6 +1,9 @@
 {
   "employer_identification_number": {
-    "aliases": ["ein", "tin"],
+    "aliases": [
+      "ein",
+      "tin"
+    ],
     "target": "employer_identification_number",
     "type": "ein",
     "normalize": {
@@ -8,7 +11,11 @@
     }
   },
   "w2_employee_count": {
-    "aliases": ["employees", "w-2 employees", "w2 employees"],
+    "aliases": [
+      "employees",
+      "w-2 employees",
+      "w2 employees"
+    ],
     "target": "w2_employee_count",
     "type": "int",
     "normalize": {
@@ -16,32 +23,46 @@
     }
   },
   "business_location_country": {
-    "aliases": ["country", "location_country"],
+    "aliases": [
+      "country",
+      "location_country"
+    ],
     "target": "business_location_country",
     "type": "string"
   },
   "business_location_state": {
-    "aliases": ["state", "location_state"],
+    "aliases": [
+      "state",
+      "location_state"
+    ],
     "target": "business_location_state",
     "type": "string"
   },
   "revenue_drop_2020_percent": {
-    "aliases": ["revenue_drop_2020_pct"],
+    "aliases": [
+      "revenue_drop_2020_pct"
+    ],
     "target": "revenue_drop_2020_percent",
     "type": "percent"
   },
   "revenue_drop_2021_percent": {
-    "aliases": ["revenue_drop_2021_pct"],
+    "aliases": [
+      "revenue_drop_2021_pct"
+    ],
     "target": "revenue_drop_2021_percent",
     "type": "percent"
   },
   "government_shutdown_2020": {
-    "aliases": ["shutdown_2020"],
+    "aliases": [
+      "shutdown_2020"
+    ],
     "target": "government_shutdown_2020",
     "type": "bool"
   },
   "government_shutdown_2021": {
-    "aliases": ["shutdown_2021"],
+    "aliases": [
+      "shutdown_2021"
+    ],
     "target": "government_shutdown_2021",
     "type": "bool"
   },
@@ -56,17 +77,24 @@
     "type": "currency"
   },
   "ppp_wages_double_dip": {
-    "aliases": ["ppp_double_dip"],
+    "aliases": [
+      "ppp_double_dip"
+    ],
     "target": "ppp_wages_double_dip",
     "type": "bool"
   },
   "owner_veteran": {
-    "aliases": ["owner_is_veteran", "veteran_owned"],
+    "aliases": [
+      "owner_is_veteran",
+      "veteran_owned"
+    ],
     "target": "owner_veteran",
     "type": "bool"
   },
   "owner_spouse": {
-    "aliases": ["owner_is_spouse"],
+    "aliases": [
+      "owner_is_spouse"
+    ],
     "target": "owner_spouse",
     "type": "bool"
   },
@@ -76,12 +104,16 @@
     "type": "bool"
   },
   "ownership_percentage": {
-    "aliases": ["ownership_pct"],
+    "aliases": [
+      "ownership_pct"
+    ],
     "target": "ownership_percentage",
     "type": "percent"
   },
   "number_of_employees": {
-    "aliases": ["employee_count"],
+    "aliases": [
+      "employee_count"
+    ],
     "target": "number_of_employees",
     "type": "int"
   },
@@ -91,12 +123,16 @@
     "type": "currency"
   },
   "economically_vulnerable_area": {
-    "aliases": ["economically_vulnerable"],
+    "aliases": [
+      "economically_vulnerable"
+    ],
     "target": "economically_vulnerable_area",
     "type": "bool"
   },
   "business_type": {
-    "aliases": ["biz_type"],
+    "aliases": [
+      "biz_type"
+    ],
     "target": "business_type",
     "type": "string"
   },
@@ -209,57 +245,92 @@
     "type": "bool"
   },
   "period_start": {
-    "aliases": ["periodStart"],
+    "aliases": [
+      "periodStart"
+    ],
     "target": "period_start",
     "type": "date"
   },
   "period_end": {
-    "aliases": ["periodEnd"],
+    "aliases": [
+      "periodEnd"
+    ],
     "target": "period_end",
     "type": "date"
   },
   "total_revenue": {
-    "aliases": ["revenue", "totalRevenue"],
+    "aliases": [
+      "revenue",
+      "totalRevenue"
+    ],
     "target": "total_revenue",
     "type": "currency"
   },
   "cogs": {
-    "aliases": ["cost_of_goods_sold", "costOfGoodsSold"],
+    "aliases": [
+      "cost_of_goods_sold",
+      "costOfGoodsSold"
+    ],
     "target": "cogs",
     "type": "currency"
   },
   "gross_profit": {
-    "aliases": ["grossProfit"],
+    "aliases": [
+      "grossProfit"
+    ],
     "target": "gross_profit",
     "type": "currency"
   },
   "total_expenses": {
-    "aliases": ["expensesTotal", "totalExpenses"],
+    "aliases": [
+      "expensesTotal",
+      "totalExpenses"
+    ],
     "target": "total_expenses",
     "type": "currency"
   },
   "net_income": {
-    "aliases": ["netIncome", "net_profit", "netProfit", "loss"],
+    "aliases": [
+      "netIncome",
+      "net_profit",
+      "netProfit",
+      "loss"
+    ],
     "target": "net_income",
     "type": "currency"
   },
   "as_of_date": {
-    "aliases": ["asOf", "as_of", "asOfDate"],
+    "aliases": [
+      "asOf",
+      "as_of",
+      "asOfDate"
+    ],
     "target": "as_of_date",
     "type": "date"
   },
   "total_assets": {
-    "aliases": ["assetsTotal", "totalAssets"],
+    "aliases": [
+      "assetsTotal",
+      "totalAssets"
+    ],
     "target": "total_assets",
     "type": "currency"
   },
   "total_liabilities": {
-    "aliases": ["liabilitiesTotal", "totalLiabilities"],
+    "aliases": [
+      "liabilitiesTotal",
+      "totalLiabilities"
+    ],
     "target": "total_liabilities",
     "type": "currency"
   },
   "total_equity": {
-    "aliases": ["equityTotal", "totalEquity", "shareholders_equity", "shareholdersEquity"],
+    "aliases": [
+      "equityTotal",
+      "totalEquity",
+      "shareholders_equity",
+      "shareholdersEquity"
+    ],
     "target": "total_equity",
     "type": "currency"
   },
@@ -269,72 +340,141 @@
     "type": "string"
   },
   "business_name": {
-    "aliases": ["business_name", "legal_name"],
+    "aliases": [
+      "business_name",
+      "legal_name"
+    ],
     "target": "business_name",
     "type": "string"
   },
   "executive_summary": {
-    "aliases": ["executive_summary"],
+    "aliases": [
+      "executive_summary"
+    ],
     "target": "executive_summary",
     "type": "string"
   },
   "funding_request_amount": {
-    "aliases": ["funding_request_amount", "grant_amount"],
+    "aliases": [
+      "funding_request_amount",
+      "grant_amount"
+    ],
     "target": "funding_request_amount",
     "type": "currency"
   },
   "period_years": {
-    "aliases": ["period_years", "projection_years"],
+    "aliases": [
+      "period_years",
+      "projection_years"
+    ],
     "target": "period_years",
     "type": "int"
   },
   "last_updated": {
-    "aliases": ["last_updated"],
+    "aliases": [
+      "last_updated"
+    ],
     "target": "last_updated",
     "type": "date"
   },
   "intended_categories": {
-    "aliases": ["intended_categories"],
+    "aliases": [
+      "intended_categories"
+    ],
     "target": "intended_categories",
     "type": "array"
   },
   "justification": {
-    "aliases": ["justification"],
+    "aliases": [
+      "justification"
+    ],
     "target": "justification",
     "type": "string"
   },
   "date_signed": {
-    "aliases": ["date_signed", "signature_date"],
+    "aliases": [
+      "date_signed",
+      "signature_date"
+    ],
     "target": "date_signed",
     "type": "date"
   },
   "utility_bill": {
-    "utility_provider": { "aliases": ["utility_provider"], "type": "string" },
-    "service_address": { "aliases": ["service_address"], "type": "string" },
-    "billing_period_start": { "aliases": ["billing_period_start"], "type": "date" },
-    "billing_period_end": { "aliases": ["billing_period_end"], "type": "date" },
-    "total_kwh": { "aliases": ["total_kwh", "kwh_total"], "type": "number" },
+    "utility_provider": {
+      "aliases": [
+        "utility_provider"
+      ],
+      "type": "string"
+    },
+    "service_address": {
+      "aliases": [
+        "service_address"
+      ],
+      "type": "string"
+    },
+    "billing_period_start": {
+      "aliases": [
+        "billing_period_start"
+      ],
+      "type": "date"
+    },
+    "billing_period_end": {
+      "aliases": [
+        "billing_period_end"
+      ],
+      "type": "date"
+    },
+    "total_kwh": {
+      "aliases": [
+        "total_kwh",
+        "kwh_total"
+      ],
+      "type": "number"
+    },
     "total_amount_due": {
-      "aliases": ["total_amount_due", "amount_due", "total_amount"],
+      "aliases": [
+        "total_amount_due",
+        "amount_due",
+        "total_amount"
+      ],
       "type": "number"
     },
     "account_number": {
-      "aliases": ["account_number", "customer_account"],
+      "aliases": [
+        "account_number",
+        "customer_account"
+      ],
       "type": "string"
     },
-    "statement_date": { "aliases": ["statement_date", "bill_date"], "type": "date" }
+    "statement_date": {
+      "aliases": [
+        "statement_date",
+        "bill_date"
+      ],
+      "type": "date"
+    }
   },
   "installer_contract": {
     "provider_name": {
-      "aliases": ["provider_name", "contractor_name", "installer_name"],
+      "aliases": [
+        "provider_name",
+        "contractor_name",
+        "installer_name"
+      ],
       "type": "string"
     },
     "client_name": {
-      "aliases": ["client_name", "customer_name"],
+      "aliases": [
+        "client_name",
+        "customer_name"
+      ],
       "type": "string"
     },
     "service_description": {
-      "aliases": ["service_description", "scope_of_work"],
+      "aliases": [
+        "service_description",
+        "scope_of_work"
+      ],
       "type": "string"
     },
     "contract_start_date": {
@@ -347,153 +487,675 @@
       "type": "date"
     },
     "contract_end_date": {
-      "aliases": ["contract_end_date", "end_date", "terminate_date"],
+      "aliases": [
+        "contract_end_date",
+        "end_date",
+        "terminate_date"
+      ],
       "type": "date"
     },
     "total_amount": {
-      "aliases": ["total_amount", "contract_value", "payment_amount"],
+      "aliases": [
+        "total_amount",
+        "contract_value",
+        "payment_amount"
+      ],
       "type": "number"
     },
     "contract_number": {
-      "aliases": ["contract_number", "agreement_number"],
+      "aliases": [
+        "contract_number",
+        "agreement_number"
+      ],
       "type": "string"
     },
-    "signature_dates": { "aliases": ["signature_dates"], "type": "array" }
+    "signature_dates": {
+      "aliases": [
+        "signature_dates"
+      ],
+      "type": "array"
+    }
   },
   "equipment_specs": {
     "equipment_name": {
-      "aliases": ["equipment_name", "product_name"],
+      "aliases": [
+        "equipment_name",
+        "product_name"
+      ],
       "type": "string"
     },
     "model_number": {
-      "aliases": ["model_number", "type"],
+      "aliases": [
+        "model_number",
+        "type"
+      ],
       "type": "string"
     },
     "capacity_kw": {
-      "aliases": ["capacity_kw", "power_output_kw"],
+      "aliases": [
+        "capacity_kw",
+        "power_output_kw"
+      ],
       "type": "number"
     },
     "efficiency_percent": {
-      "aliases": ["efficiency_percent", "efficiency"],
+      "aliases": [
+        "efficiency_percent",
+        "efficiency"
+      ],
       "type": "number"
     },
     "certifications": {
-      "aliases": ["certifications", "standards"],
+      "aliases": [
+        "certifications",
+        "standards"
+      ],
       "type": "array"
     },
     "manufacturer": {
-      "aliases": ["manufacturer", "vendor"],
+      "aliases": [
+        "manufacturer",
+        "vendor"
+      ],
       "type": "string"
     },
     "issue_date": {
-      "aliases": ["issue_date", "date"],
+      "aliases": [
+        "issue_date",
+        "date"
+      ],
       "type": "date"
     }
-    },
-    "invoices_or_quotes": {
-    "doc_variant":       { "aliases": ["doc_variant"], "type": "string" },
-    "vendor_name":       { "aliases": ["vendor_name","supplier_name"], "type": "string" },
-    "vendor_tax_id":     { "aliases": ["vendor_tax_id","supplier_tax_id","ein","tin","vat"], "type": "string" },
-    "customer_name":     { "aliases": ["customer_name","bill_to_name"], "type": "string" },
-    "customer_address":  { "aliases": ["customer_address","bill_to_address"], "type": "string" },
-    "invoice_number":    { "aliases": ["invoice_number"], "type": "string" },
-    "quote_number":      { "aliases": ["quote_number"], "type": "string" },
-    "issue_date":        { "aliases": ["issue_date","invoice_date","quote_date"], "type": "date" },
-    "due_date":          { "aliases": ["due_date"], "type": "date" },
-    "quote_valid_until": { "aliases": ["quote_valid_until","valid_until"], "type": "date" },
-    "item_description":  { "aliases": ["item_description","line_item_desc"], "type": "string" },
-    "quantity":          { "aliases": ["quantity","qty"], "type": "number" },
-    "unit_price":        { "aliases": ["unit_price","price_per_unit"], "type": "number" },
-    "subtotal_amount":   { "aliases": ["subtotal_amount","subtotal"], "type": "number" },
-    "tax_amount":        { "aliases": ["tax_amount","tax"], "type": "number" },
-    "total_amount":      { "aliases": ["total_amount","amount_due","grand_total"], "type": "number" },
-    "currency":          { "aliases": ["currency"], "type": "string" }
   },
-  "energy_savings_report": {
-    "report_date":            { "aliases": ["report_date","date"], "type": "date" },
-    "business_name":          { "aliases": ["business_name","customer_name"], "type": "string" },
-    "site_address":           { "aliases": ["site_address","facility_address"], "type": "string" },
-    "measure_type":           { "aliases": ["measure_type","project_type"], "type": "string" },
-    "baseline_kwh_annual":    { "aliases": ["baseline_kwh_annual","baseline_kwh"], "type": "number" },
-    "post_kwh_annual":        { "aliases": ["post_kwh_annual","post_kwh"], "type": "number" },
-    "kwh_saved_annual":       { "aliases": ["kwh_saved_annual","annual_kwh_saved","kwh_savings"], "type": "number" },
-    "demand_reduction_kw":    { "aliases": ["demand_reduction_kw","kw_reduction"], "type": "number" },
-    "tariff_rate_usd_per_kwh":{ "aliases": ["tariff_rate_usd_per_kwh","rate_usd_per_kwh"], "type": "number" },
-    "annual_savings_usd":     { "aliases": ["annual_savings_usd","annual_savings"], "type": "number" },
-    "capex_usd":              { "aliases": ["capex_usd","capex"], "type": "number" },
-    "opex_usd":               { "aliases": ["opex_usd","opex"], "type": "number" },
-    "payback_years":          { "aliases": ["payback_years","payback"], "type": "number" },
-    "npv_usd":                { "aliases": ["npv_usd","npv"], "type": "number" },
-    "irr_percent":            { "aliases": ["irr_percent","irr"], "type": "number" },
-    "standards_refs":         { "aliases": ["standards_refs","standards"], "type": "array" },
-    "prepared_by_name":       { "aliases": ["prepared_by_name","engineer_name"], "type": "string" },
-    "prepared_by_license":    { "aliases": ["prepared_by_license","engineer_license"], "type": "string" }
-  },
-  "w2_form": {
-    "ein": { "aliases": ["ein", "employer_ein"], "type": "ein" },
-    "employer_name": { "aliases": ["employer_name"], "type": "string" },
-    "employer_address": { "aliases": ["employer_address"], "type": "string" },
-    "employer_zip": { "aliases": ["employer_zip", "employer_postal_code"], "type": "string" },
-    "employee_ssn": { "aliases": ["employee_ssn", "ssn"], "type": "string" },
-    "employee_ssn_masked": { "aliases": ["employee_ssn_masked"], "type": "string" },
-    "employee_name": { "aliases": ["employee_name"], "type": "string" },
-    "employee_address": { "aliases": ["employee_address"], "type": "string" },
-    "employee_zip": { "aliases": ["employee_zip", "employee_postal_code"], "type": "string" },
-    "box1_wages": { "aliases": ["box1", "wages", "wages_box1"], "type": "currency" },
-    "box2_federal_income_tax_withheld": {
-      "aliases": ["box2", "federal_withholding", "federal_income_tax_withheld"],
-      "type": "currency"
-    },
-    "box3_social_security_wages": { "aliases": ["box3", "social_security_wages"], "type": "currency" },
-    "box4_social_security_tax_withheld": {
-      "aliases": ["box4", "social_security_tax", "social_security_tax_withheld"],
-      "type": "currency"
-    },
-    "box5_medicare_wages_and_tips": { "aliases": ["box5", "medicare_wages"], "type": "currency" },
-    "box6_medicare_tax_withheld": { "aliases": ["box6", "medicare_tax"], "type": "currency" },
-    "box7_social_security_tips": { "aliases": ["box7", "social_security_tips"], "type": "currency" },
-    "box8_allocated_tips": { "aliases": ["box8", "allocated_tips"], "type": "currency" },
-    "box10_dependent_care_benefits": { "aliases": ["box10", "dependent_care_benefits"], "type": "currency" },
-    "box11_nonqualified_plans": { "aliases": ["box11", "nonqualified_plans"], "type": "currency" },
-    "box12": { "aliases": ["box12", "box12_entries"], "type": "array" },
-    "box13_statutory_employee": { "aliases": ["statutory_employee"], "type": "bool" },
-    "box13_retirement_plan": { "aliases": ["retirement_plan"], "type": "bool" },
-    "box13_third_party_sick_pay": { "aliases": ["third_party_sick_pay"], "type": "bool" },
-    "box14_other": { "aliases": ["box14", "box14_other"], "type": "array" },
-    "box15_state": { "aliases": ["box15_state", "state"], "type": "string" },
-    "box15_employer_state_id": {
-      "aliases": ["box15_employer_state_id", "employer_state_id"],
+  "invoices_or_quotes": {
+    "doc_variant": {
+      "aliases": [
+        "doc_variant"
+      ],
       "type": "string"
     },
-    "box16_state_wages": { "aliases": ["box16", "state_wages"], "type": "currency" },
-    "box17_state_income_tax": { "aliases": ["box17", "state_income_tax"], "type": "currency" },
-    "box18_local_wages": { "aliases": ["box18", "local_wages"], "type": "currency" },
-    "box19_local_income_tax": { "aliases": ["box19", "local_income_tax"], "type": "currency" },
-    "box20_locality_name": { "aliases": ["box20", "locality_name"], "type": "string" }
+    "vendor_name": {
+      "aliases": [
+        "vendor_name",
+        "supplier_name"
+      ],
+      "type": "string"
+    },
+    "vendor_tax_id": {
+      "aliases": [
+        "vendor_tax_id",
+        "supplier_tax_id",
+        "ein",
+        "tin",
+        "vat"
+      ],
+      "type": "string"
+    },
+    "customer_name": {
+      "aliases": [
+        "customer_name",
+        "bill_to_name"
+      ],
+      "type": "string"
+    },
+    "customer_address": {
+      "aliases": [
+        "customer_address",
+        "bill_to_address"
+      ],
+      "type": "string"
+    },
+    "invoice_number": {
+      "aliases": [
+        "invoice_number"
+      ],
+      "type": "string"
+    },
+    "quote_number": {
+      "aliases": [
+        "quote_number"
+      ],
+      "type": "string"
+    },
+    "issue_date": {
+      "aliases": [
+        "issue_date",
+        "invoice_date",
+        "quote_date"
+      ],
+      "type": "date"
+    },
+    "due_date": {
+      "aliases": [
+        "due_date"
+      ],
+      "type": "date"
+    },
+    "quote_valid_until": {
+      "aliases": [
+        "quote_valid_until",
+        "valid_until"
+      ],
+      "type": "date"
+    },
+    "item_description": {
+      "aliases": [
+        "item_description",
+        "line_item_desc"
+      ],
+      "type": "string"
+    },
+    "quantity": {
+      "aliases": [
+        "quantity",
+        "qty"
+      ],
+      "type": "number"
+    },
+    "unit_price": {
+      "aliases": [
+        "unit_price",
+        "price_per_unit"
+      ],
+      "type": "number"
+    },
+    "subtotal_amount": {
+      "aliases": [
+        "subtotal_amount",
+        "subtotal"
+      ],
+      "type": "number"
+    },
+    "tax_amount": {
+      "aliases": [
+        "tax_amount",
+        "tax"
+      ],
+      "type": "number"
+    },
+    "total_amount": {
+      "aliases": [
+        "total_amount",
+        "amount_due",
+        "grand_total"
+      ],
+      "type": "number"
+    },
+    "currency": {
+      "aliases": [
+        "currency"
+      ],
+      "type": "string"
+    }
+  },
+  "energy_savings_report": {
+    "report_date": {
+      "aliases": [
+        "report_date",
+        "date"
+      ],
+      "type": "date"
+    },
+    "business_name": {
+      "aliases": [
+        "business_name",
+        "customer_name"
+      ],
+      "type": "string"
+    },
+    "site_address": {
+      "aliases": [
+        "site_address",
+        "facility_address"
+      ],
+      "type": "string"
+    },
+    "measure_type": {
+      "aliases": [
+        "measure_type",
+        "project_type"
+      ],
+      "type": "string"
+    },
+    "baseline_kwh_annual": {
+      "aliases": [
+        "baseline_kwh_annual",
+        "baseline_kwh"
+      ],
+      "type": "number"
+    },
+    "post_kwh_annual": {
+      "aliases": [
+        "post_kwh_annual",
+        "post_kwh"
+      ],
+      "type": "number"
+    },
+    "kwh_saved_annual": {
+      "aliases": [
+        "kwh_saved_annual",
+        "annual_kwh_saved",
+        "kwh_savings"
+      ],
+      "type": "number"
+    },
+    "demand_reduction_kw": {
+      "aliases": [
+        "demand_reduction_kw",
+        "kw_reduction"
+      ],
+      "type": "number"
+    },
+    "tariff_rate_usd_per_kwh": {
+      "aliases": [
+        "tariff_rate_usd_per_kwh",
+        "rate_usd_per_kwh"
+      ],
+      "type": "number"
+    },
+    "annual_savings_usd": {
+      "aliases": [
+        "annual_savings_usd",
+        "annual_savings"
+      ],
+      "type": "number"
+    },
+    "capex_usd": {
+      "aliases": [
+        "capex_usd",
+        "capex"
+      ],
+      "type": "number"
+    },
+    "opex_usd": {
+      "aliases": [
+        "opex_usd",
+        "opex"
+      ],
+      "type": "number"
+    },
+    "payback_years": {
+      "aliases": [
+        "payback_years",
+        "payback"
+      ],
+      "type": "number"
+    },
+    "npv_usd": {
+      "aliases": [
+        "npv_usd",
+        "npv"
+      ],
+      "type": "number"
+    },
+    "irr_percent": {
+      "aliases": [
+        "irr_percent",
+        "irr"
+      ],
+      "type": "number"
+    },
+    "standards_refs": {
+      "aliases": [
+        "standards_refs",
+        "standards"
+      ],
+      "type": "array"
+    },
+    "prepared_by_name": {
+      "aliases": [
+        "prepared_by_name",
+        "engineer_name"
+      ],
+      "type": "string"
+    },
+    "prepared_by_license": {
+      "aliases": [
+        "prepared_by_license",
+        "engineer_license"
+      ],
+      "type": "string"
+    }
+  },
+  "w2_form": {
+    "ein": {
+      "aliases": [
+        "ein",
+        "employer_ein"
+      ],
+      "type": "ein"
+    },
+    "employer_name": {
+      "aliases": [
+        "employer_name"
+      ],
+      "type": "string"
+    },
+    "employer_address": {
+      "aliases": [
+        "employer_address"
+      ],
+      "type": "string"
+    },
+    "employer_zip": {
+      "aliases": [
+        "employer_zip",
+        "employer_postal_code"
+      ],
+      "type": "string"
+    },
+    "employee_ssn": {
+      "aliases": [
+        "employee_ssn",
+        "ssn"
+      ],
+      "type": "string"
+    },
+    "employee_ssn_masked": {
+      "aliases": [
+        "employee_ssn_masked"
+      ],
+      "type": "string"
+    },
+    "employee_name": {
+      "aliases": [
+        "employee_name"
+      ],
+      "type": "string"
+    },
+    "employee_address": {
+      "aliases": [
+        "employee_address"
+      ],
+      "type": "string"
+    },
+    "employee_zip": {
+      "aliases": [
+        "employee_zip",
+        "employee_postal_code"
+      ],
+      "type": "string"
+    },
+    "box1_wages": {
+      "aliases": [
+        "box1",
+        "wages",
+        "wages_box1"
+      ],
+      "type": "currency"
+    },
+    "box2_federal_income_tax_withheld": {
+      "aliases": [
+        "box2",
+        "federal_withholding",
+        "federal_income_tax_withheld"
+      ],
+      "type": "currency"
+    },
+    "box3_social_security_wages": {
+      "aliases": [
+        "box3",
+        "social_security_wages"
+      ],
+      "type": "currency"
+    },
+    "box4_social_security_tax_withheld": {
+      "aliases": [
+        "box4",
+        "social_security_tax",
+        "social_security_tax_withheld"
+      ],
+      "type": "currency"
+    },
+    "box5_medicare_wages_and_tips": {
+      "aliases": [
+        "box5",
+        "medicare_wages"
+      ],
+      "type": "currency"
+    },
+    "box6_medicare_tax_withheld": {
+      "aliases": [
+        "box6",
+        "medicare_tax"
+      ],
+      "type": "currency"
+    },
+    "box7_social_security_tips": {
+      "aliases": [
+        "box7",
+        "social_security_tips"
+      ],
+      "type": "currency"
+    },
+    "box8_allocated_tips": {
+      "aliases": [
+        "box8",
+        "allocated_tips"
+      ],
+      "type": "currency"
+    },
+    "box10_dependent_care_benefits": {
+      "aliases": [
+        "box10",
+        "dependent_care_benefits"
+      ],
+      "type": "currency"
+    },
+    "box11_nonqualified_plans": {
+      "aliases": [
+        "box11",
+        "nonqualified_plans"
+      ],
+      "type": "currency"
+    },
+    "box12": {
+      "aliases": [
+        "box12",
+        "box12_entries"
+      ],
+      "type": "array"
+    },
+    "box13_statutory_employee": {
+      "aliases": [
+        "statutory_employee"
+      ],
+      "type": "bool"
+    },
+    "box13_retirement_plan": {
+      "aliases": [
+        "retirement_plan"
+      ],
+      "type": "bool"
+    },
+    "box13_third_party_sick_pay": {
+      "aliases": [
+        "third_party_sick_pay"
+      ],
+      "type": "bool"
+    },
+    "box14_other": {
+      "aliases": [
+        "box14",
+        "box14_other"
+      ],
+      "type": "array"
+    },
+    "box15_state": {
+      "aliases": [
+        "box15_state",
+        "state"
+      ],
+      "type": "string"
+    },
+    "box15_employer_state_id": {
+      "aliases": [
+        "box15_employer_state_id",
+        "employer_state_id"
+      ],
+      "type": "string"
+    },
+    "box16_state_wages": {
+      "aliases": [
+        "box16",
+        "state_wages"
+      ],
+      "type": "currency"
+    },
+    "box17_state_income_tax": {
+      "aliases": [
+        "box17",
+        "state_income_tax"
+      ],
+      "type": "currency"
+    },
+    "box18_local_wages": {
+      "aliases": [
+        "box18",
+        "local_wages"
+      ],
+      "type": "currency"
+    },
+    "box19_local_income_tax": {
+      "aliases": [
+        "box19",
+        "local_income_tax"
+      ],
+      "type": "currency"
+    },
+    "box20_locality_name": {
+      "aliases": [
+        "box20",
+        "locality_name"
+      ],
+      "type": "string"
+    }
   },
   "payroll_period_total_gross": {
-    "aliases": ["payroll.period.total_gross", "payroll_total_gross"],
+    "aliases": [
+      "payroll.period.total_gross",
+      "payroll_total_gross"
+    ],
     "target": "payroll_period_total_gross",
     "type": "currency"
   },
   "payroll_period_total_withholding": {
-    "aliases": ["payroll.period.total_withholding"],
+    "aliases": [
+      "payroll.period.total_withholding"
+    ],
     "target": "payroll_period_total_withholding",
     "type": "currency"
   },
   "payroll_period_total_employer_taxes": {
-    "aliases": ["payroll.period.total_employer_taxes"],
+    "aliases": [
+      "payroll.period.total_employer_taxes"
+    ],
     "target": "payroll_period_total_employer_taxes",
     "type": "currency"
   },
   "payroll_period_total_net": {
-    "aliases": ["payroll.period.total_net"],
+    "aliases": [
+      "payroll.period.total_net"
+    ],
     "target": "payroll_period_total_net",
     "type": "currency"
   },
   "payroll_period_employee_count": {
-    "aliases": ["payroll.period.employee_count"],
+    "aliases": [
+      "payroll.period.employee_count"
+    ],
     "target": "payroll_period_employee_count",
     "type": "int"
+  },
+  "nonemployee_compensation.amount": {
+    "aliases": [
+      "box1_nonemployee_comp"
+    ],
+    "target": "nonemployee_compensation.amount",
+    "type": "currency"
+  },
+  "withholding.federal.backup": {
+    "aliases": [
+      "box4_federal_income_tax_wh"
+    ],
+    "target": "withholding.federal.backup",
+    "type": "currency"
+  },
+  "state.withholding": {
+    "aliases": [
+      "box5_state_tax_wh"
+    ],
+    "target": "state.withholding",
+    "type": "currency"
+  },
+  "state.payer_state_no": {
+    "aliases": [
+      "box6_state_payer_state_no"
+    ],
+    "target": "state.payer_state_no",
+    "type": "string"
+  },
+  "state.income": {
+    "aliases": [
+      "box7_state_income"
+    ],
+    "target": "state.income",
+    "type": "currency"
+  },
+  "tax_year": {
+    "aliases": [
+      "tax_year"
+    ],
+    "target": "tax_year",
+    "type": "int"
+  },
+  "recipient.tin_last4": {
+    "aliases": [
+      "recipient_tin_last4"
+    ],
+    "target": "recipient.tin_last4",
+    "type": "string"
+  },
+  "payer.tin_last4": {
+    "aliases": [
+      "payer_tin_last4"
+    ],
+    "target": "payer.tin_last4",
+    "type": "string"
+  },
+  "nonemployee_compensation.total_1099_box1": {
+    "aliases": [
+      "totals.sum_box1"
+    ],
+    "target": "nonemployee_compensation.total_1099_box1",
+    "type": "currency"
+  },
+  "nonemployee_compensation.contractors_count": {
+    "aliases": [
+      "totals.contractors_count"
+    ],
+    "target": "nonemployee_compensation.contractors_count",
+    "type": "int"
+  },
+  "nonemployee_compensation.contractors": {
+    "aliases": [
+      "contractors"
+    ],
+    "target": "nonemployee_compensation.contractors",
+    "type": "array"
+  },
+  "state.withholding_total": {
+    "aliases": [
+      "totals.sum_state_wh"
+    ],
+    "target": "state.withholding_total",
+    "type": "currency"
+  },
+  "withholding.federal.total": {
+    "aliases": [
+      "totals.sum_federal_wh"
+    ],
+    "target": "withholding.federal.total",
+    "type": "currency"
   }
 }
