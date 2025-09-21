@@ -23,6 +23,8 @@ def _load_doc_types() -> dict:
                 "keywords_any": det.get("keywords", []),
                 "regex_any": det.get("regex", []),
             }
+            if "score_bonus" in det:
+                out[key]["identify"]["score_bonus"] = det["score_bonus"]
         if "identify" not in out[key]:
             out[key]["identify"] = {"keywords_any": [], "regex_any": []}
     return out
@@ -54,6 +56,7 @@ EXTRACTORS = {
     "Energy_Savings_Report": ("energy_savings_report", "extract"),
     "Payroll_Register": ("payroll_register", "extract"),
     "Payroll_Provider_Report": ("payroll_register", "extract"),
+    "DBE_ACDBE_Uniform_Application": ("dbe_acdbe_uniform_application", "extract"),
 }
 
 

@@ -1,7 +1,8 @@
 {
   "detector": {
-    "keywords": ["Form 941-X", "Adjusted Employer's QUARTERLY Federal Tax Return", "OMB No. 1545-0029"],
-    "regex": ["Form\\s*941[- ]X", "Adjusted Employer.?s\\s+QUARTERLY\\s+Federal\\s+Tax\\s+Return", "OMB\\s*No\\.\\s*1545-0029"]
+    "keywords": ["Form 941-X", "Adjusted Employer's QUARTERLY Federal Tax Return"],
+    "regex": ["Form\\s*941[- ]X", "Adjusted Employer.?s\\s+QUARTERLY\\s+Federal\\s+Tax\\s+Return"],
+    "score_bonus": 0.35
   },
   "required_fields": ["header_information.employer_identification_number", "return_correction_info.quarter", "return_correction_info.calendar_year"],
   "version": 1,

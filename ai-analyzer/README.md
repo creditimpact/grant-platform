@@ -28,6 +28,7 @@ The analyzer performs document-type detection and structured extraction for:
 - Financial statements (profit & loss statements and balance sheets)
 - Payroll registers and provider payroll reports (ADP, Gusto, QuickBooks Payroll, Paychex, Zenefits)
 - Project documents such as business plans, grant use statements, energy savings reports, utility bills, installer contracts, equipment specs, and invoices/quotes
+- U.S. DOT DBE/ACDBE Uniform Certification Application (all states)
 
 ```bash
 # JSON body
@@ -121,6 +122,64 @@ Payroll uploads yield per-employee detail, period metadata, and document-level t
 
 Additional aliases are documented in
 `eligibility-engine/contracts/field_map.json`.
+
+### DBE/ACDBE Uniform Certification Application
+
+The analyzer detects the U.S. DOT Disadvantaged Business Enterprise / Airport
+Concession DBE Uniform Certification Application by looking for repeated title
+phrases (for example “UNIFORM CERTIFICATION APPLICATION”, “49 C.F.R. Parts 23 &
+26”, “Roadmap for Applicants”, “Section 1: CERTIFICATION INFORMATION”) and
+common section headers used across state UCPs. Once detected the dedicated
+extractor parses the certification basics, firm profile, ownership & control
+sections, ACDBE-specific pages, and the affidavit signature block.
+
+The extractor emits nested JSON under `fields_clean` capturing the DBE/ACDBE
+application plus eligibility aliases (`company.*`, `owners`, `officers`,
+`licenses`, `revenue.history`, `employees.counts`, `bank.bonding`,
+`contracts.history`, `concessions`). A truncated example:
+
+```json
+{
+  "doc_type": "DBE_ACDBE_Uniform_Application",
+  "fields_clean": {
+    "dbe": {
+      "application": {
+        "programsSelected": ["DBE", "ACDBE"],
+        "homeStateUCP": "Western States Unified Certification Program",
+        "siteVisitDates": [{"state": "CA", "date": "2023-04-01"}]
+      }
+    },
+    "biz": {
+      "legalName": "Horizon Equity Builders LLC",
+      "streetAddressParsed": {"street": "482 Market Street, Suite 600", "city": "Denver", "state": "CO", "postal_code": "80202"},
+      "employeeCounts": {"fullTime": 12, "partTime": 4, "seasonal": 3, "total": 19}
+    },
+    "owners": [
+      {"fullName": "Maria Gomez", "ownershipPct": 60.0, "citizenship": "citizen", "personalNetWorth": {"present": true}}
+    ],
+    "control": {
+      "officers": [{"name": "Maria Gomez", "title": "CEO", "dateAppointed": "2016-02-01"}],
+      "duties": {"policy_decisions": {"frequency": "always", "active": true}},
+      "bonding": {"aggregateLimit": 1500000.0, "projectLimit": 500000.0}
+    },
+    "acdbe": {
+      "concessionSpaces": ["Denver International Airport, Concourse B Marketplace"]
+    },
+    "affidavit": {"present": true, "signer": "Maria Gomez", "date": "2024-04-04"},
+    "eligibility": {
+      "company.name": "Horizon Equity Builders LLC",
+      "company.address": {"street": "482 Market Street, Suite 600", "city": "Denver", "state": "CO", "postal_code": "80202"},
+      "owners": [{"name": "Maria Gomez", "percent": 60.0, "citizenship": "citizen", "ethnicity": ["Hispanic", "Native American"]}]
+    }
+  }
+}
+```
+
+Sensitive identifiers are masked (`123-45-6789` → `###-##-6789`) and personal
+net worth worksheets are recorded as presence booleans only. The extractor tags
+every payload with `doc.pii=true` to flag regulated data. **Uploader tip:** if
+the application is split across multiple scans, upload every page—the analyzer
+merges the sections into a single normalized payload for the case file.
 
 ### Payroll Total Extraction
 

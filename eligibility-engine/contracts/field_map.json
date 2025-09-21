@@ -1157,5 +1157,65 @@
     ],
     "target": "withholding.federal.total",
     "type": "currency"
+  },
+  "company_name": {
+    "aliases": ["company.name"],
+    "target": "company_name",
+    "type": "string"
+  },
+  "company_address": {
+    "aliases": ["company.address"],
+    "target": "company_address",
+    "type": "object"
+  },
+  "company_mailing_address": {
+    "aliases": ["company.mailing_address"],
+    "target": "company_mailing_address",
+    "type": "object"
+  },
+  "company_naics": {
+    "aliases": ["company.naics"],
+    "target": "company_naics",
+    "type": "array"
+  },
+  "owners_list": {
+    "aliases": ["owners"],
+    "target": "owners_list",
+    "type": "array"
+  },
+  "officers_list": {
+    "aliases": ["officers"],
+    "target": "officers_list",
+    "type": "array"
+  },
+  "licenses_list": {
+    "aliases": ["licenses"],
+    "target": "licenses_list",
+    "type": "array"
+  },
+  "revenue_history": {
+    "aliases": ["revenue.history"],
+    "target": "revenue_history",
+    "type": "array"
+  },
+  "employee_counts": {
+    "aliases": ["employees.counts"],
+    "target": "employee_counts",
+    "type": "object"
+  },
+  "bank_bonding": {
+    "aliases": ["bank.bonding"],
+    "target": "bank_bonding",
+    "type": "object"
+  },
+  "contract_history": {
+    "aliases": ["contracts.history"],
+    "target": "contract_history",
+    "type": "array"
+  },
+  "concessions_list": {
+    "aliases": ["concessions"],
+    "target": "concessions_list",
+    "type": "array"
   }
 }

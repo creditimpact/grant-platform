@@ -540,6 +540,38 @@
         "contractors",
         "totals"
       ]
+    },
+    "DBE_ACDBE_Uniform_Application": {
+      "display_name": "U.S. DOT DBE/ACDBE Uniform Certification Application",
+      "identify": {
+        "keywords_any": [
+          "UNIFORM CERTIFICATION APPLICATION",
+          "DISADVANTAGED BUSINESS ENTERPRISE",
+          "AIRPORT CONCESSION DISADVANTAGED BUSINESS ENTERPRISE",
+          "U.S. DOT Uniform DBE/ACDBE Certification Application",
+          "Section 1: CERTIFICATION INFORMATION",
+          "Affidavit of Certification"
+        ],
+        "regex_any": [
+          "(?i)49\\s*C\\.F\\.R\\.\\s*Parts\\s*(23|26)",
+          "(?i)Roadmap for Applicants"
+        ],
+        "score_bonus": 0.4,
+        "check_pages": [
+          1,
+          2
+        ]
+      },
+      "extractor": "dbe_acdbe_uniform_application",
+      "fields": {
+        "dbe.application.programsSelected": "array",
+        "biz.legalName": "string",
+        "biz.streetAddress": "string",
+        "owners": "array",
+        "control.officers": "array",
+        "acdbe.concessionSpaces": "array",
+        "affidavit": "object"
+      }
     }
   }
 }
