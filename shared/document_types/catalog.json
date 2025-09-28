@@ -572,6 +572,136 @@
         "acdbe.concessionSpaces": "array",
         "affidavit": "object"
       }
+    },
+    "VOSB_SDVOSB_Application": {
+      "display_name": "Veteran-Owned Small Business Certification Application",
+      "identify": {
+        "keywords_any": [
+          "Veteran Small Business Certification",
+          "SDVOSB Certification Application",
+          "VOSB Certification Application",
+          "VetCert Application",
+          "Ownership and Control",
+          "Service-connected disability",
+          "DD-214"
+        ],
+        "regex_any": [
+          "(?i)Veteran\\s+Small\\s+Business\\s+Certification",
+          "(?i)SDVOSB\\s+Certification\\s+Application",
+          "(?i)VOSB\\s+Certification\\s+Application"
+        ],
+        "score_bonus": 0.35,
+        "check_pages": [
+          1,
+          2
+        ]
+      },
+      "extractor": "veteran_cert_application",
+      "fields": {
+        "veteranCert": "object",
+        "business.legalName": "string",
+        "business.ein": "string",
+        "business.naics": "array",
+        "owners": "array",
+        "veteran.dd214Present": "bool",
+        "veteran.vaDisabilityLetterPresent": "bool",
+        "veteran.disabilityRatingPercent": "number",
+        "control.signsChecks": "bool",
+        "control.executesContracts": "bool",
+        "control.hiresFires": "bool",
+        "control.majorPurchases": "bool",
+        "affidavit.present": "bool",
+        "requestedType": "string"
+      }
+    },
+    "VOSB_Certificate": {
+      "display_name": "Veteran-Owned Small Business Certificate",
+      "identify": {
+        "keywords_any": [
+          "Veteran Small Business Certification",
+          "VOSB Certificate",
+          "This certifies that",
+          "Certification valid through",
+          "Certificate ID",
+          "Verified"
+        ],
+        "regex_any": [
+          "(?i)Veteran[-\\s]+Owned",
+          "(?i)has\\s+been\\s+verified",
+          "(?i)Certification\\s+valid\\s+through"
+        ],
+        "score_bonus": 0.3,
+        "check_pages": [
+          1
+        ]
+      },
+      "extractor": "veteran_cert_proof",
+      "fields": {
+        "veteranCert": "object",
+        "proof.certifiedAs": "string",
+        "proof.status": "string",
+        "proof.validThrough": "date",
+        "proof.issueDate": "date"
+      }
+    },
+    "SDVOSB_Certificate": {
+      "display_name": "Service-Disabled Veteran-Owned Small Business Certificate",
+      "identify": {
+        "keywords_any": [
+          "Service-Disabled Veteran-Owned Small Business",
+          "SDVOSB Certificate",
+          "This certifies that",
+          "Certification valid through",
+          "Certificate ID",
+          "Service-disabled"
+        ],
+        "regex_any": [
+          "(?i)Service[-\\s]+Disabled",
+          "(?i)has\\s+been\\s+verified",
+          "(?i)Certification\\s+valid\\s+through"
+        ],
+        "score_bonus": 0.35,
+        "check_pages": [
+          1
+        ]
+      },
+      "extractor": "veteran_cert_proof",
+      "fields": {
+        "veteranCert": "object",
+        "proof.certifiedAs": "string",
+        "proof.status": "string",
+        "proof.validThrough": "date",
+        "proof.issueDate": "date"
+      }
+    },
+    "VOSB_SDVOSB_Approval_Letter": {
+      "display_name": "Veteran Certification Approval Letter",
+      "identify": {
+        "keywords_any": [
+          "Veteran Small Business Certification",
+          "Approval Letter",
+          "Verification Letter",
+          "VetCert",
+          "has been approved"
+        ],
+        "regex_any": [
+          "(?i)approval\\s+letter",
+          "(?i)verification\\s+letter",
+          "(?i)under\\s+review",
+          "(?i)pending"
+        ],
+        "score_bonus": 0.25,
+        "check_pages": [
+          1
+        ]
+      },
+      "extractor": "veteran_cert_proof",
+      "fields": {
+        "veteranCert": "object",
+        "proof.status": "string",
+        "proof.certifiedAs": "string",
+        "proof.validThrough": "date"
+      }
     }
   }
 }

@@ -111,6 +111,29 @@ See `test_payload.json` for a sample business profile. Running the engine with t
 
 Each grant is assigned a percentage score based on how many rules passed. Missing data results in `eligible: null` and a score of 0. The `reasoning` and `debug` fields explain exactly why a grant did or did not qualify.
 
+## Veteran Certification Eligibility Checks
+
+The engine ships lightweight helpers for Veteran-owned programs. Analyzer
+payloads normalize veteran certification documents under `veteranCert` and the
+field map aliases them to simple keys such as `owners_list`,
+`control.signsChecks`, `veteran.proofs.dd214Present`, `veteran.proofs.vaLetterPresent`,
+and `veteran.cert.status`.
+
+- **`evaluate_vosb(payload)`** – deems a business eligible when a veteran owner
+  controls ≥51% equity, control indicators show the veteran signs checks and
+  executes contracts, and either an active certificate exists or a DD-214 proof
+  is on file. Missing certificates degrade to `conditional` with a
+  `submit_active_certificate` next step; expired/revoked certificates lead to
+  `ineligible`.
+- **`evaluate_sdv(payload)`** – extends the above with a ≥51% service-disabled
+  owner requirement plus VA disability proof (letter or rating > 0). Active
+  certificates return `eligible`; otherwise complete applications with DD-214
+  and VA disability evidence return `conditional`, while expired or revoked
+  proofs yield `ineligible`.
+
+Both functions return `{"decision": "eligible|conditional|ineligible", "reasons": [...], "missing": [...]}` to feed downstream
+workflows or UI messaging. See `tests/test_veteran_rules.py` for usage examples.
+
 ## Testing
 
 ```bash
