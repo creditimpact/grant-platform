@@ -2,6 +2,7 @@
   "name": "California Small Business Grant (2025)",
   "year": 2025,
   "description": "Collection of California state and regional programs supporting small businesses.",
+  "eligible_industries": [],
   "general_eligibility": "Applicants must be California-based small businesses meeting program-specific size, revenue and training requirements and submit W-9, business license, proof of income and an action plan where applicable.",
   "required_fields": [
     "business_location_state",

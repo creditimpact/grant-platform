@@ -1,0 +1,182 @@
+[
+  {
+    "naics_code": "111",
+    "name": "Crop Production",
+    "description": "Fruits, vegetables, grains, plants",
+    "aliases": ["farming", "crops", "agriculture", "horticulture"]
+  },
+  {
+    "naics_code": "112",
+    "name": "Animal Production",
+    "description": "Livestock, poultry, aquaculture",
+    "aliases": ["farm animals", "cattle", "chickens", "fish farming"]
+  },
+  {
+    "naics_code": "236",
+    "name": "Construction of Buildings",
+    "description": "Building contractors, real estate development",
+    "aliases": ["construction", "building", "real estate development"]
+  },
+  {
+    "naics_code": "237",
+    "name": "Heavy and Civil Engineering Construction",
+    "description": "Roads, bridges, infrastructure",
+    "aliases": ["infrastructure", "civil works", "bridge", "highway"]
+  },
+  {
+    "naics_code": "238",
+    "name": "Specialty Trade Contractors",
+    "description": "Electrical, plumbing, renovation",
+    "aliases": ["electrician", "plumber", "remodeling", "renovation"]
+  },
+  {
+    "naics_code": "311",
+    "name": "Food Manufacturing",
+    "description": "Food factories, bakeries",
+    "aliases": ["food factory", "bakery", "snack production"]
+  },
+  {
+    "naics_code": "312",
+    "name": "Beverage & Tobacco",
+    "description": "Wine, beer, soft drinks, tobacco",
+    "aliases": ["brewery", "winery", "tobacco", "beverages"]
+  },
+  {
+    "naics_code": "323",
+    "name": "Printing & Related",
+    "description": "Printing houses, graphic print services",
+    "aliases": ["printing", "press", "publishing services"]
+  },
+  {
+    "naics_code": "325",
+    "name": "Chemical Manufacturing",
+    "description": "Industrial chemicals, plastics",
+    "aliases": ["chemicals", "plastics", "industrial production"]
+  },
+  {
+    "naics_code": "334",
+    "name": "Computer & Electronic Product Manufacturing",
+    "description": "Computers, components, chips",
+    "aliases": ["electronics", "semiconductors", "computers", "hardware"]
+  },
+  {
+    "naics_code": "336",
+    "name": "Transportation Equipment Manufacturing",
+    "description": "Cars, planes, trains",
+    "aliases": ["automobiles", "aircraft", "rail"]
+  },
+  {
+    "naics_code": "423",
+    "name": "Wholesale Trade, Durable Goods",
+    "description": "Wholesale industrial equipment",
+    "aliases": ["wholesale durable", "industrial wholesale"]
+  },
+  {
+    "naics_code": "424",
+    "name": "Wholesale Trade, Nondurable Goods",
+    "description": "Food, clothing, consumer goods",
+    "aliases": ["wholesale nondurable", "food wholesale", "clothing wholesale"]
+  },
+  {
+    "naics_code": "441",
+    "name": "Motor Vehicle Dealers",
+    "description": "Car sales, auto parts",
+    "aliases": ["car dealer", "auto sales", "motor vehicles"]
+  },
+  {
+    "naics_code": "445",
+    "name": "Food & Beverage Stores",
+    "description": "Grocery, supermarkets",
+    "aliases": ["grocery store", "supermarket", "food store"]
+  },
+  {
+    "naics_code": "448",
+    "name": "Clothing & Accessories Stores",
+    "description": "Clothing, shoes",
+    "aliases": ["clothing store", "apparel", "fashion"]
+  },
+  {
+    "naics_code": "452",
+    "name": "General Merchandise Stores",
+    "description": "Walmart, Target, general retail",
+    "aliases": ["retail chain", "general store", "merchandise"]
+  },
+  {
+    "naics_code": "453",
+    "name": "Miscellaneous Store Retailers",
+    "description": "Specialty shops (toys, art)",
+    "aliases": ["toy store", "gift shop", "art store"]
+  },
+  {
+    "naics_code": "454",
+    "name": "Nonstore Retail (E-commerce)",
+    "description": "Online shops, delivery",
+    "aliases": ["ecommerce", "online shop", "marketplace"]
+  },
+  {
+    "naics_code": "481",
+    "name": "Air Transportation",
+    "description": "Airlines, cargo",
+    "aliases": ["airline", "cargo airline", "aviation"]
+  },
+  {
+    "naics_code": "484",
+    "name": "Truck Transportation",
+    "description": "Trucking, logistics",
+    "aliases": ["trucking", "freight", "logistics"]
+  },
+  {
+    "naics_code": "492",
+    "name": "Couriers & Messengers",
+    "description": "FedEx, UPS, deliveries",
+    "aliases": ["delivery", "courier", "parcel service"]
+  },
+  {
+    "naics_code": "511",
+    "name": "Publishing Industries",
+    "description": "Books, newspapers, digital media",
+    "aliases": ["publisher", "media publishing", "newspapers"]
+  },
+  {
+    "naics_code": "517",
+    "name": "Telecommunications",
+    "description": "Internet, phone, cellular",
+    "aliases": ["telecom", "ISP", "cellular provider"]
+  },
+  {
+    "naics_code": "518",
+    "name": "Data Processing & Hosting",
+    "description": "Data centers, SaaS",
+    "aliases": ["data hosting", "SaaS", "cloud services"]
+  },
+  {
+    "naics_code": "522",
+    "name": "Credit Intermediation",
+    "description": "Banks, credit, mortgages",
+    "aliases": ["bank", "credit union", "lending"]
+  },
+  {
+    "naics_code": "523",
+    "name": "Securities & Investments",
+    "description": "Brokers, investments",
+    "aliases": ["investment", "brokerage", "stock market"]
+  },
+  {
+    "naics_code": "541",
+    "name": "Professional, Scientific & Technical Services",
+    "description": "Lawyers, accountants, consultants",
+    "aliases": ["professional services", "law firm", "accounting"]
+  },
+  {
+    "naics_code": "621",
+    "name": "Ambulatory Health Care",
+    "description": "Doctors, clinics, dentists",
+    "aliases": ["clinic", "doctor office", "dental"]
+  },
+  {
+    "naics_code": "722",
+    "name": "Food Services & Drinking Places",
+    "description": "Restaurants, cafes, bars",
+    "aliases": ["restaurant", "cafe", "bar", "food service"]
+  }
+]

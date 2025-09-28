@@ -1,12 +1,11 @@
-from pathlib import Path
-import json
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from fastapi import FastAPI
 
 from common.logger import get_logger
 
 from grants_loader import load_grants
+from industry_classifier import list_naics_codes
 from rules_utils import check_rules, check_rule_groups, estimate_award
 
 app = FastAPI()
@@ -85,22 +84,68 @@ def analyze_eligibility(
             debug_data["selected_group"] = rule_result.get("selected_group")
 
         reasoning = list(rule_result["reasoning"])
-        if rule_result.get("status") == "conditional":
-            missing_fields = rule_result["debug"].get("missing_fields", [])
+        missing_fields = list(rule_result["debug"].get("missing_fields", []))
+        status = rule_result.get("status", "ineligible")
+        eligibility = rule_result.get("eligible")
+        score = rule_result.get("score", 0)
+
+        allowed_industries = [str(code) for code in grant.get("eligible_industries", []) if str(code)]
+        if allowed_industries:
+            allowed_set = set(allowed_industries)
+            business_codes = list_naics_codes(user_data)
+            industry_debug: Dict[str, Any] = {
+                "allowed": sorted(allowed_set),
+                "business_codes": business_codes,
+            }
+            if user_data.get("business_industry_naics") is not None:
+                industry_debug["business_industry_naics"] = user_data.get("business_industry_naics")
+            if business_codes:
+                matched = sorted(allowed_set & set(business_codes))
+                industry_debug["matched"] = matched
+                if matched:
+                    reasoning.append(
+                        f"✅ business_industry_naics = {business_codes} matches allowed industries {sorted(allowed_set)}"
+                    )
+                else:
+                    reasoning.append(
+                        f"❌ business_industry_naics = {business_codes}, expected one of {sorted(allowed_set)}"
+                    )
+                    eligibility = False
+                    status = "ineligible"
+                    score = 0
+            else:
+                industry_debug["matched"] = []
+                reasoning.append(
+                    f"❌ business_industry_naics missing, expected one of {sorted(allowed_set)}"
+                )
+                if eligibility is True:
+                    eligibility = None
+                if status != "ineligible":
+                    status = "conditional"
+                if "business_industry_naics" not in missing_fields:
+                    missing_fields.append("business_industry_naics")
+            debug_data["industry"] = industry_debug
+
+        # ensure missing fields remain unique but preserve order
+        seen_missing = set()
+        deduped_missing: List[str] = []
+        for field in missing_fields:
+            if field not in seen_missing:
+                seen_missing.add(field)
+                deduped_missing.append(field)
+        missing_fields = deduped_missing
+
+        if status == "conditional":
             reasoning.append(
                 f"Conditional result: missing fields {missing_fields} prevent full validation"
             )
-        else:
-            missing_fields = []
 
-        status = rule_result.get("status", "ineligible")
         if status == "eligible":
             rationale = "Meets all eligibility criteria"
         elif status == "conditional":
-            missing = rule_result["debug"].get("missing_fields", [])
             rationale = (
-                f"Missing required fields: {', '.join(missing)}"
-                if missing
+                f"Missing required fields: {', '.join(missing_fields)}"
+                if missing_fields
                 else "Additional information required"
             )
         else:
@@ -111,8 +156,8 @@ def analyze_eligibility(
 
         result = {
             "name": grant.get("name"),
-            "eligible": rule_result["eligible"],
-            "score": rule_result["score"],
+            "eligible": eligibility,
+            "score": score,
             "certainty_level": rule_result.get("certainty"),
             "estimated_amount": amount,
             "reasoning": reasoning,

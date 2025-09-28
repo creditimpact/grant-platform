@@ -2,6 +2,7 @@
   "name": "Urban Small Business Grants (2025)",
   "year": 2025,
   "description": "Composite of city-level grant programs supporting small businesses recovering from COVID-19 or structural damage.",
+  "eligible_industries": ["445", "448", "452", "453", "454", "722"],
   "general_eligibility": "Businesses must be located within city limits, demonstrate COVID-19 or related structural damage impacts, meet size limits, and submit official applications with tax, financial and recovery documentation.",
   "required_fields": [
     "city",

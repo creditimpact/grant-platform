@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
 
+from industry_classifier import assign_industry_naics
+
 FIELD_MAP_PATH = Path(__file__).resolve().parent.parent / "contracts" / "field_map.json"
 
 
@@ -16,6 +18,7 @@ def normalize_payload(analyzer_payload: Dict[str, Any]) -> Dict[str, Any]:
     field_map = load_field_map()
     data = fill_aliases(analyzer_payload, field_map)
     data = coerce_types_and_units(data, field_map)
+    data = assign_industry_naics(data)
     return data
 
 

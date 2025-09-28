@@ -1174,6 +1174,14 @@
     "target": "company_mailing_address",
     "type": "object"
   },
+  "business_industry_naics": {
+    "aliases": [
+      "business.industry.naics",
+      "industry.naics"
+    ],
+    "target": "business_industry_naics",
+    "type": "object"
+  },
   "company_naics": {
     "aliases": ["company.naics", "business.naics"],
     "target": "company_naics",
