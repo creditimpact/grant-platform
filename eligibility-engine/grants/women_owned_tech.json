@@ -2,6 +2,7 @@
   "name": "Women-Owned Tech Grant",
   "year": 2025,
   "description": "Support for tech companies owned by women",
+  "eligible_industries": ["334", "518", "541"],
   "required_fields": [
     "sba_small_business",
     "women_ownership_percent",

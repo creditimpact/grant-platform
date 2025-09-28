@@ -2,6 +2,7 @@
   "name": "Green Energy State Incentive",
   "year": 2025,
   "description": "State and city level grants, tax credits, and rebates for renewable energy projects",
+  "eligible_industries": ["236", "237", "238", "325", "334"],
   "required_fields": [
     "state",
     "applicant_type",
