@@ -181,6 +181,91 @@ every payload with `doc.pii=true` to flag regulated data. **Uploader tip:** if
 the application is split across multiple scans, upload every page—the analyzer
 merges the sections into a single normalized payload for the case file.
 
+### Veteran Certification Documents
+
+Veteran-owned certification packets are routed to dedicated extractors. The
+detector looks for phrases such as “Veteran Small Business Certification”,
+“SDVOSB Certification Application”, “VetCert”, “This certifies that…”, “Approval
+Letter”, “Certification valid through”, and issuer references like “U.S. Small
+Business Administration”, “Department of Veterans Affairs”, “OSDBU”, or “CVE”.
+Negative cues (W-2, 1099, DBE uniform application) down-rank false positives.
+
+- **Applications** (`VOSB_SDVOSB_Application`) capture the full packet under
+  `veteranCert.application`. Business identity, NAICS, ownership percentages,
+  veteran/service-disabled flags, control matrix, loans, banking, and affidavit
+  attestations are normalized. Document-level warnings summarize issues such as
+  `ownership_below_51`, `missing_dd214`, `missing_va_disability_letter`,
+  `missing_affidavit`, or `control_not_demonstrated`.
+- **Certificates & approval letters** (`VOSB_Certificate`, `SDVOSB_Certificate`,
+  `VOSB_SDVOSB_Approval_Letter`) populate `veteranCert.doc` and
+  `veteranCert.proof` with issuer, program, certificate ID, status, validity
+  window, certified type (VOSB/SDVOSB), NAICS list, and status derivation
+  (`active`, `expired`, `revoked`, `pending`).
+
+Sample application payload (trimmed for brevity):
+
+```json
+{
+  "doc_type": "VOSB_SDVOSB_Application",
+  "fields_clean": {
+    "veteranCert": {
+      "application": {
+        "doc": {"type": "VOSB_SDVOSB_Application", "issuer": "SBA", "program": "VetCert", "version": "SDVOSB Certification Application – Aug 2023"},
+        "business": {
+          "legalName": {"value": "Valor Tech Industries LLC", "confidence": 0.95},
+          "ein": {"value": "12-3456789", "confidence": 0.9},
+          "naics": [{"value": "541330", "confidence": 0.85}, {"value": "541512", "confidence": 0.85}]
+        },
+        "owners": [
+          {
+            "fullName": {"value": "Jordan Carter"},
+            "ownershipPct": {"value": 60.0},
+            "isVeteran": {"value": true},
+            "isServiceDisabledVeteran": {"value": true}
+          }
+        ],
+        "veteran": {
+          "dd214Present": {"value": true},
+          "vaDisabilityLetterPresent": {"value": false},
+          "disabilityRatingPercent": {"value": 70.0}
+        },
+        "control": {"signsChecks": {"value": true}, "executesContracts": {"value": true}},
+        "warnings": ["missing_va_disability_letter"]
+      }
+    },
+    "business.ein": "12-3456789",
+    "owners": [{"name": "Jordan Carter", "percent": 60.0, "isVeteran": true, "isSDV": true}]
+  }
+}
+```
+
+Sample certificate payload:
+
+```json
+{
+  "doc_type": "SDVOSB_Certificate",
+  "fields_clean": {
+    "veteranCert": {
+      "doc": {"type": "SDVOSB_Certificate", "issuer": "SBA", "program": "VetCert"},
+      "proof": {
+        "businessName": {"value": "Valor Tech Industries LLC"},
+        "certificateId": {"value": "SBA-VC-123456"},
+        "certifiedAs": {"value": "SDVOSB"},
+        "issueDate": {"value": "2023-09-12"},
+        "validThrough": {"value": "2026-09-12"},
+        "status": {"value": "active"}
+      }
+    },
+    "proof.status": "active",
+    "proof.naics": ["541330", "541512"]
+  }
+}
+```
+
+All extracted identifiers (EIN, phone, NAICS codes, currency) are normalized, and
+existing masking utilities continue to redact sensitive data when free-form text
+contains SSNs/TINs.
+
 ### Payroll Total Extraction
 
 The analyzer detects company‑wide payroll totals using phrases like "Total Payroll",

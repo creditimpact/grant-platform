@@ -2,7 +2,8 @@
   "employer_identification_number": {
     "aliases": [
       "ein",
-      "tin"
+      "tin",
+      "business.ein"
     ],
     "target": "employer_identification_number",
     "type": "ein",
@@ -1159,7 +1160,7 @@
     "type": "currency"
   },
   "company_name": {
-    "aliases": ["company.name"],
+    "aliases": ["company.name", "business.legalName"],
     "target": "company_name",
     "type": "string"
   },
@@ -1174,7 +1175,7 @@
     "type": "object"
   },
   "company_naics": {
-    "aliases": ["company.naics"],
+    "aliases": ["company.naics", "business.naics"],
     "target": "company_naics",
     "type": "array"
   },
@@ -1192,6 +1193,46 @@
     "aliases": ["licenses"],
     "target": "licenses_list",
     "type": "array"
+  },
+  "veteran.proofs.dd214Present": {
+    "aliases": ["veteran.dd214Present"],
+    "target": "veteran.proofs.dd214Present",
+    "type": "bool"
+  },
+  "veteran.proofs.vaLetterPresent": {
+    "aliases": ["veteran.vaDisabilityLetterPresent"],
+    "target": "veteran.proofs.vaLetterPresent",
+    "type": "bool"
+  },
+  "veteran.disabilityPercent": {
+    "aliases": ["veteran.disabilityRatingPercent"],
+    "target": "veteran.disabilityPercent",
+    "type": "percent"
+  },
+  "veteran.cert.type": {
+    "aliases": ["proof.type"],
+    "target": "veteran.cert.type",
+    "type": "string"
+  },
+  "veteran.cert.issuer": {
+    "aliases": ["proof.issuer"],
+    "target": "veteran.cert.issuer",
+    "type": "string"
+  },
+  "veteran.cert.validThrough": {
+    "aliases": ["proof.validThrough"],
+    "target": "veteran.cert.validThrough",
+    "type": "date"
+  },
+  "veteran.cert.status": {
+    "aliases": ["proof.status"],
+    "target": "veteran.cert.status",
+    "type": "string"
+  },
+  "veteran.cert.certifiedAs": {
+    "aliases": ["proof.certifiedAs"],
+    "target": "veteran.cert.certifiedAs",
+    "type": "string"
   },
   "revenue_history": {
     "aliases": ["revenue.history"],
