@@ -133,11 +133,35 @@ export default function EligibilityReport() {
             ))}
           </div>
 
+          {/* Required documents */}
+          {Array.isArray(snapshot.requiredDocuments) &&
+          snapshot.requiredDocuments.length ? (
+            <div>
+              <h2 className="font-semibold mt-4">Required Documents</h2>
+              <ul className="list-disc list-inside text-sm">
+                {snapshot.requiredDocuments.map((doc) => (
+                  <li key={doc.doc_type || doc.key}>
+                    {doc.label || doc.doc_type || doc.key}
+                    {doc.status && !['uploaded', 'extracted'].includes(doc.status) ? (
+                      <span className="text-red-600"> — missing</span>
+                    ) : (
+                      <span className="text-green-600"> — received</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           {/* Required forms */}
           {(() => {
-            const forms = Array.from(
-              new Set(snapshot.eligibility.flatMap((r) => r.requiredForms || []))
-            );
+            const forms = snapshot.pendingForms && snapshot.pendingForms.length
+              ? snapshot.pendingForms
+              : Array.from(
+                  new Set(
+                    snapshot.eligibility.flatMap((r) => r.requiredForms || []),
+                  ),
+                );
             return forms.length ? (
               <div>
                 <h2 className="font-semibold mt-4">Required Forms</h2>

@@ -18,6 +18,7 @@ const {
   getDocType,
   loadGrantsLibrary,
 } = require('../utils/documentLibrary');
+const { normalizeKey } = require('../utils/documentAliases');
 const { normalizeFields } = require('../utils/fieldNormalizer');
 const { buildChecklist } = require('../utils/checklistBuilder');
 const { preferCleanFields } = require('../utils/preferCleanFields');
@@ -202,8 +203,8 @@ router.post('/files/upload', (req, res) => {
     const currentGrantKey = grant_key || grantKey || c?.grantKey;
     if (currentGrantKey) {
       const required = getRequiredDocs(currentGrantKey) || [];
-      const allowedKeys = new Set(required.map((d) => d.key));
-      if (evidence_key && !allowedKeys.has(evidence_key)) {
+      const allowedKeys = new Set(required.map((d) => normalizeKey(d.key)));
+      if (evidence_key && !allowedKeys.has(normalizeKey(evidence_key))) {
         return res
           .status(400)
           .json({ error: 'evidence_key not expected for this grant' });
@@ -230,8 +231,10 @@ router.post('/files/upload', (req, res) => {
     const now = new Date().toISOString();
     let documents = [...(c.documents || [])];
 
-    if (doc_type && docFields) {
-      const spec = getDocType(doc_type);
+    let canonicalDocType = doc_type ? normalizeKey(doc_type) : null;
+
+    if (canonicalDocType && docFields) {
+      const spec = getDocType(canonicalDocType);
       if (!spec) {
         return res.status(400).json({ error: 'Unknown doc_type' });
       }
@@ -256,16 +259,16 @@ router.post('/files/upload', (req, res) => {
           .split('T')[0];
       }
       let status = 'extracted';
-      if (key && doc_type && key !== doc_type) {
+      if (key && canonicalDocType && normalizeKey(key) !== canonicalDocType) {
         status = 'mismatch';
       }
-      const existing = documents.find((d) => d.doc_type === doc_type);
+      const existing = documents.find((d) => d.doc_type === canonicalDocType);
       const history = existing ? [...(existing.history || []), existing] : undefined;
-      documents = documents.filter((d) => d.doc_type !== doc_type);
+      documents = documents.filter((d) => d.doc_type !== canonicalDocType);
       documents.push({
-        doc_type,
+        doc_type: canonicalDocType,
         status,
-        evidence_key: evidence_key || key,
+        evidence_key: normalizeKey(evidence_key || key || canonicalDocType),
         analyzer_fields: normFields,
         file_name: req.file.originalname,
         uploadedAt: now,
@@ -273,14 +276,15 @@ router.post('/files/upload', (req, res) => {
         ...(history ? { history } : {}),
       });
     } else {
-      const docType = evidence_key || key;
+      const rawDocType = evidence_key || key || canonicalDocType;
+      const docType = normalizeKey(rawDocType);
       const existing = documents.find((d) => d.doc_type === docType);
       const history = existing ? [...(existing.history || []), existing] : undefined;
       documents = documents.filter((d) => d.doc_type !== docType);
       documents.push({
         doc_type: docType,
         status: 'uploaded',
-        evidence_key: evidence_key || key,
+        evidence_key: docType,
         file_name: req.file.originalname,
         size: req.file.size,
         contentType: req.file.mimetype,

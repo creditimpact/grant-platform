@@ -53,6 +53,7 @@ describe('normalizeEligibility', () => {
         reasoning: 'because',
         next_steps: null,
         requiredForms: 'formA',
+        required_documents: ['docA'],
       },
     ];
     const out = normalizeEligibility(input);
@@ -65,6 +66,7 @@ describe('normalizeEligibility', () => {
         reasoning: ['because'],
         next_steps: undefined,
         requiredForms: ['formA'],
+        requiredDocuments: ['docA'],
       },
     ]);
   });

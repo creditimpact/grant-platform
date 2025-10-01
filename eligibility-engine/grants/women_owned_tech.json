@@ -57,6 +57,17 @@
     "type": "base",
     "base": 20000
   },
+  "required_documents": [
+    "Business_License",
+    "Articles_Of_Incorporation",
+    "W9_Form",
+    "Financial_Statements",
+    "Business_Plan",
+    "Grant_Use_Statement",
+    "Proof_Of_Income",
+    "Owner_ID"
+  ],
+  "required_forms": ["form_sf424"],
   "tags": ["federal", "women", "technology"],
   "ui_questions": [
     "Does your business meet SBA small business standards?",
@@ -74,6 +85,5 @@
   ],
   "complexity_level": "medium",
   "human_summary": "Support for tech companies owned by women",
-  "risk_notes": "",
-  "requiredForms": ["form_sf424"]
+  "risk_notes": ""
 }

@@ -26,7 +26,7 @@ def test_program_fixtures_parity():
         results = analyze_eligibility(normalized)
         result = next(r for r in results if r['name'] == expected['name'])
         for key, value in expected.items():
-            if key == 'requiredForms':
+            if key in {'required_forms', 'required_documents'}:
                 assert sorted(set(result.get(key, []))) == sorted(value)
             else:
                 assert result.get(key) == value

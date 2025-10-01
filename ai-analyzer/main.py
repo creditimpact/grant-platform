@@ -15,6 +15,7 @@ from ai_analyzer.nlp_parser import extract_fields, normalize_text
 from ai_analyzer.config import settings  # type: ignore
 from ai_analyzer.upload_utils import validate_upload
 from src.detectors import detect
+from src.normalization import normalize_doc_type
 try:  # pragma: no cover - optional OpenAI dependency
     from openai import OpenAI  # type: ignore
     openai_client = (
@@ -367,7 +368,7 @@ async def analyze_text_flow(
     }
     det = detect(text)
     type_info = det.get("type", {})
-    response["doc_type"] = type_info.get("key")
+    response["doc_type"] = normalize_doc_type(type_info.get("key"))
     response["doc_confidence"] = type_info.get("confidence", 0)
     extracted = det.get("extracted") or {}
     if isinstance(extracted, dict):

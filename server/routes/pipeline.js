@@ -14,6 +14,7 @@ const { saveDraft } = require('../utils/drafts');
 const { renderPdf } = require('../utils/pdfRenderer');
 const { validateForm8974Calcs } = require('../utils/form8974');
 const { validateForm6765Calcs } = require('../utils/form6765');
+const { normalizeList } = require('../utils/documentAliases');
 const {
   normalizeAnswers,
   toMMDDYYYY,
@@ -158,13 +159,25 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
       await updateCase(caseId, { status: 'error', error: text });
       return res.status(502).json({ message: `Eligibility engine error ${eligResp.status}`, details: text });
     }
-    const eligibility = await eligResp.json();
-    await updateCase(caseId, { status: 'checked', eligibility });
+    const rawEligibility = await eligResp.json();
+    const normalizedEligibility = Array.isArray(rawEligibility)
+      ? rawEligibility
+      : {
+          ...rawEligibility,
+          requiredForms: normalizeList(rawEligibility.required_forms || []),
+          requiredDocuments: normalizeList(rawEligibility.required_documents || []),
+        };
+    await updateCase(caseId, { status: 'checked', eligibility: normalizedEligibility });
 
-    // Aggregate required forms from all eligibility results
-    const requiredForms = Array.isArray(eligibility)
-      ? [...new Set(eligibility.flatMap((r) => r.requiredForms || []))]
-      : eligibility.requiredForms || [];
+    const eligibilityResults = Array.isArray(normalizedEligibility)
+      ? normalizedEligibility
+      : normalizedEligibility.results || [];
+
+    const requiredForms = Array.isArray(normalizedEligibility)
+      ? normalizeList(eligibilityResults.flatMap((r) => r.required_forms || []))
+      : normalizeList(normalizedEligibility.requiredForms || []);
+
+    const eligibility = normalizedEligibility;
 
     const agentBase = process.env.AI_AGENT_URL || 'http://localhost:5001';
     const agentUrl = `${agentBase.replace(/\/$/, '')}/form-fill`;
@@ -339,11 +352,16 @@ router.post('/submit-case', upload.any(), validate(schemas.pipelineSubmit), asyn
       incompleteForms,
     });
 
+    const pendingForms = requiredForms.filter(
+      (formId) => !filledForms.some((f) => f.formId === formId)
+    );
+
     res.json({
       caseId,
       eligibility,
       generatedForms: filledForms,
       incompleteForms,
+      pendingForms,
     });
   } catch (err) {
     for (const f of req.files || []) fs.unlink(f.path, () => {});

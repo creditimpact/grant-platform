@@ -1,0 +1,60 @@
+{
+  "$schema": "./schema.json",
+  "version": 1,
+  "forms": [
+    {
+      "key": "form_sf424",
+      "display_name": "SF-424 Application for Federal Assistance",
+      "path": "form_sf424.json",
+      "tags": ["federal", "application"]
+    },
+    {
+      "key": "form_424A",
+      "display_name": "SF-424A Budget Information",
+      "path": "form_424A.json",
+      "tags": ["budget"]
+    },
+    {
+      "key": "form_RD_400_1",
+      "display_name": "Form RD 400-1 Equal Opportunity Agreement",
+      "path": "form_RD_400_1.json",
+      "tags": ["usda", "compliance"]
+    },
+    {
+      "key": "form_RD_400_4",
+      "display_name": "Form RD 400-4 Assurance Agreement",
+      "path": "form_RD_400_4.json",
+      "tags": ["usda", "compliance"]
+    },
+    {
+      "key": "form_RD_400_8",
+      "display_name": "Form RD 400-8 Compliance Review",
+      "path": "form_RD_400_8.json",
+      "tags": ["usda", "compliance"]
+    },
+    {
+      "key": "form_8974",
+      "display_name": "IRS Form 8974 Qualified Small Business Payroll Tax Credit",
+      "path": "form_8974.json",
+      "tags": ["irs", "tax"]
+    },
+    {
+      "key": "form_6765",
+      "display_name": "IRS Form 6765 Credit for Increasing Research Activities",
+      "path": "form_6765.json",
+      "tags": ["irs", "tax"]
+    },
+    {
+      "key": "grant_use_statement",
+      "display_name": "Grant Use Statement",
+      "path": "grant_use_statement.json",
+      "tags": ["narrative"]
+    },
+    {
+      "key": "IRS_1120X",
+      "display_name": "IRS Form 1120-X Amended U.S. Corporation Income Tax Return",
+      "path": "IRS_1120X.json",
+      "tags": ["irs", "tax"]
+    }
+  ]
+}

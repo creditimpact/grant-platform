@@ -20,7 +20,8 @@ def test_happy_path_envelope():
     assert resp.status_code == 200
     body = resp.json()
     assert "results" in body and isinstance(body["results"], list)
-    assert "requiredForms" in body and isinstance(body["requiredForms"], list)
+    assert "required_forms" in body and isinstance(body["required_forms"], list)
+    assert "required_documents" in body and isinstance(body["required_documents"], list)
 
 
 def test_validation_error_is_422(monkeypatch):

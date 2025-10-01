@@ -23,13 +23,16 @@ export default function SummaryStep({
   const [error, setError] = useState<string | null>(null);
 
   async function handleGenerateForms() {
-    if (!snap.caseId || !snap.requiredForms) return;
+    const formsToGenerate = snap.pendingForms?.length
+      ? snap.pendingForms
+      : snap.requiredForms;
+    if (!snap.caseId || !formsToGenerate || !formsToGenerate.length) return;
     setLoading(true);
     setError(null);
     try {
       const { generatedForms } = await postFormFill(
         snap.caseId,
-        snap.requiredForms,
+        formsToGenerate,
       );
       setSnap({ ...snap, generatedForms });
     } catch (e: any) {
@@ -49,6 +52,23 @@ export default function SummaryStep({
           <ul className="list-disc list-inside text-sm">
             {snap.documents.map((d) => (
               <li key={d.key || d.filename}>{d.filename}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {snap.requiredDocuments && snap.requiredDocuments.length > 0 && (
+        <div>
+          <h3 className="font-semibold">Required Documents</h3>
+          <ul className="list-disc list-inside text-sm">
+            {snap.requiredDocuments.map((doc: any) => (
+              <li key={doc.doc_type || doc.key}>
+                {doc.label || doc.doc_type || doc.key}
+                {doc.status && !['uploaded', 'extracted'].includes(doc.status) ? (
+                  <span className="text-red-600"> — missing</span>
+                ) : (
+                  <span className="text-green-600"> — received</span>
+                )}
+              </li>
             ))}
           </ul>
         </div>
@@ -111,7 +131,8 @@ export default function SummaryStep({
           </ul>
         </div>
       )}
-      {snap.requiredForms?.length && !snap.generatedForms?.length ? (
+      {((snap.pendingForms && snap.pendingForms.length) || snap.requiredForms?.length) &&
+      !snap.generatedForms?.length ? (
         <div className="mt-3">
           <button
             onClick={handleGenerateForms}

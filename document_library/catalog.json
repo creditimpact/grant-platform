@@ -2,47 +2,8 @@
   "$schema": "https://example.com/schemas/document-types-v1.json",
   "version": 1,
   "types": {
-    "Form_1120X": {
-      "display_name": "IRS Form 1120X (Amended U.S. Corporation Income Tax Return)",
-      "identify": {
-        "keywords_any": [
-          "Form 1120X",
-          "Amended U.S. Corporation Income Tax Return"
-        ],
-        "regex_any": [
-          "(?i)\\bForm\\s+1120X\\b"
-        ],
-        "check_pages": [
-          1,
-          2
-        ]
-      },
-      "extract_fields": [
-        "ein",
-        "company_name",
-        "tax_year_ending",
-        "address_line",
-        "city_state_zip",
-        "total_income_c",
-        "total_deductions_c",
-        "taxable_income_c",
-        "total_tax_c",
-        "overpayment",
-        "tax_due"
-      ],
-      "normalize": {
-        "tax_year_ending": "date",
-        "ein": "ein",
-        "overpayment": "currency",
-        "tax_due": "currency"
-      }
-    },
     "Tax_Payment_Receipt": {
       "$ref": "Tax_Payment_Receipt.json"
-    },
-    "IRS_941X": {
-      "$ref": "IRS_941X.json",
-      "display_name": "IRS Form 941-X"
     },
     "Business_License": {
       "detector": {
@@ -701,6 +662,214 @@
         "proof.status": "string",
         "proof.certifiedAs": "string",
         "proof.validThrough": "date"
+      }
+    },
+    "Owner_ID": {
+      "display_name": "Owner Identification",
+      "identify": {
+        "keywords_any": [
+          "Driver License",
+          "Passport",
+          "Identification"
+        ]
+      }
+    },
+    "Tax_Returns": {
+      "display_name": "Business Tax Returns",
+      "identify": {
+        "keywords_any": [
+          "Form 1120",
+          "Form 1040",
+          "Schedule C",
+          "Tax Return"
+        ]
+      }
+    },
+    "Basic_Tax_Return": {
+      "display_name": "Basic Tax Return (1120 / Schedule C)",
+      "identify": {
+        "keywords_any": [
+          "Form 1120",
+          "Schedule C",
+          "Income Tax Return"
+        ]
+      }
+    },
+    "Bank_Statements": {
+      "display_name": "Bank Statements",
+      "identify": {
+        "keywords_any": [
+          "Statement Date",
+          "Ending Balance",
+          "Account Number"
+        ]
+      }
+    },
+    "Government_Order": {
+      "display_name": "Government Shutdown Order",
+      "identify": {
+        "keywords_any": [
+          "Executive Order",
+          "Government Order",
+          "Shutdown Order"
+        ]
+      }
+    },
+    "PPP_Forgiveness_Document": {
+      "display_name": "PPP Forgiveness Documentation",
+      "identify": {
+        "keywords_any": [
+          "PPP Forgiveness",
+          "Paycheck Protection Program",
+          "Forgiveness Application"
+        ]
+      }
+    },
+    "Proof_Of_Income": {
+      "display_name": "Proof of Income",
+      "identify": {
+        "keywords_any": [
+          "Proof of Income",
+          "Income Statement",
+          "Revenue Statement"
+        ]
+      }
+    },
+    "Online_Application": {
+      "display_name": "Online Incentive Application Confirmation",
+      "identify": {
+        "keywords_any": [
+          "Application Confirmation",
+          "Submitted Application",
+          "Confirmation Number"
+        ]
+      }
+    },
+    "SGIP_Form": {
+      "display_name": "SGIP Program Form",
+      "identify": {
+        "keywords_any": [
+          "SGIP",
+          "Self-Generation Incentive Program"
+        ]
+      }
+    },
+    "MA_Tax_Form": {
+      "display_name": "Massachusetts Solar Tax Form",
+      "identify": {
+        "keywords_any": [
+          "Massachusetts Department of Revenue",
+          "Solar Tax Credit"
+        ]
+      }
+    },
+    "TX_Tax_Form": {
+      "display_name": "Texas Solar Tax Form",
+      "identify": {
+        "keywords_any": [
+          "Texas Comptroller",
+          "Solar Tax Credit"
+        ]
+      }
+    },
+    "Team_Details": {
+      "display_name": "Team Details Summary",
+      "identify": {
+        "keywords_any": [
+          "Team Members",
+          "Key Personnel",
+          "Management Team"
+        ]
+      }
+    },
+    "Proof_Of_Activity": {
+      "display_name": "Proof of Business Activity",
+      "identify": {
+        "keywords_any": [
+          "Proof of Activity",
+          "Operational Summary",
+          "Activity Report"
+        ]
+      }
+    },
+    "Client_Project_List": {
+      "display_name": "Client or Project List",
+      "identify": {
+        "keywords_any": [
+          "Client List",
+          "Project Portfolio",
+          "Customer List"
+        ]
+      }
+    },
+    "Letter_Of_Intent": {
+      "display_name": "Letter of Intent",
+      "identify": {
+        "keywords_any": [
+          "Letter of Intent",
+          "Intent Letter",
+          "Statement of Intent"
+        ]
+      }
+    },
+    "Resume": {
+      "display_name": "Resume",
+      "identify": {
+        "keywords_any": [
+          "Resume",
+          "Curriculum Vitae",
+          "CV"
+        ]
+      }
+    },
+    "City_Application": {
+      "display_name": "City Grant Application",
+      "identify": {
+        "keywords_any": [
+          "City of",
+          "Grant Application",
+          "Program Application"
+        ]
+      }
+    },
+    "Recovery_Plan": {
+      "display_name": "Recovery Plan",
+      "identify": {
+        "keywords_any": [
+          "Recovery Plan",
+          "Reopening Plan",
+          "Business Recovery"
+        ]
+      }
+    },
+    "Damage_Photos": {
+      "display_name": "Damage Photographs",
+      "identify": {
+        "keywords_any": [
+          "Damage Photos",
+          "Structural Damage",
+          "Photo Documentation"
+        ]
+      }
+    },
+    "Insurance_Claims": {
+      "display_name": "Insurance Claims Documentation",
+      "identify": {
+        "keywords_any": [
+          "Insurance Claim",
+          "Claim Number",
+          "Adjuster"
+        ]
+      }
+    },
+    "Proof_Of_Service": {
+      "display_name": "Proof of Veteran Service",
+      "identify": {
+        "keywords_any": [
+          "Proof of Service",
+          "DD214",
+          "Service Verification"
+        ]
       }
     }
   }

@@ -119,13 +119,22 @@ async def check(payload: Dict[str, Any]) -> Any:
         return [r.model_dump(by_alias=True, exclude_none=True) for r in typed_results]
 
     agg_forms: List[str] = []
+    agg_documents: List[str] = []
     for r in typed_results:
-        if r.requiredForms:
-            for frm in r.requiredForms:
+        if r.required_forms:
+            for frm in r.required_forms:
                 if frm not in agg_forms:
                     agg_forms.append(frm)
+        if r.required_documents:
+            for doc in r.required_documents:
+                if doc not in agg_documents:
+                    agg_documents.append(doc)
 
-    envelope = ResultsEnvelope(results=typed_results, requiredForms=agg_forms)
+    envelope = ResultsEnvelope(
+        results=typed_results,
+        required_forms=agg_forms,
+        required_documents=agg_documents,
+    )
     return envelope.model_dump(by_alias=True, exclude_none=True)
 
 @app.get("/grants")

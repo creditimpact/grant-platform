@@ -1,0 +1,53 @@
+{
+  "form_name": "form_RD_400_1",
+  "required": [
+    "recipient_name",
+    "recipient_address_street",
+    "recipient_address_city",
+    "recipient_address_state",
+    "recipient_address_zip",
+    "agreement_date",
+    "recipient_title",
+    "signing_date"
+  ],
+  "fields": [
+    { "key": "recipient_name" },
+    { "key": "recipient_address_street" },
+    { "key": "recipient_address_city" },
+    { "key": "recipient_address_state" },
+    { "key": "recipient_address_zip" },
+    { "key": "agreement_date", "type": "date" },
+
+    { "key": "construction_cash_cost_exceeds_10k", "default": "" },
+    { "key": "exemption_applies", "default": "" },
+    { "key": "include_equal_opportunity_clause", "default": "yes" },
+    { "key": "notify_unions" },
+    { "key": "advertising_statement_included" },
+    { "key": "reporting_access_agreed" },
+    { "key": "exec_order_compliance_agreed" },
+    { "key": "subcontractor_flowdown_agreed" },
+    { "key": "debarred_contractor_blocked" },
+
+    { "key": "rd_400_6_required", "default": "yes" },
+    { "key": "ad_425_included", "default": "yes" },
+    { "key": "ad_560_required", "default": "yes" },
+    { "key": "cc_257_required", "default": "yes" },
+
+    { "key": "recipient_signature", "default": "" },
+    {
+      "key": "recipient_title",
+      "prompt": "Infer the official title of the recipient’s authorized signatory based on organization context.",
+      "default": ""
+    },
+    { "key": "signing_date", "type": "date" },
+    { "key": "corporate_seal_required", "type": "boolean", "default": true },
+    {
+      "key": "corporate_recipient_name",
+      "prompt": "If the recipient is a corporation, provide the full corporate name; otherwise leave blank.",
+      "default": ""
+    },
+    { "key": "president_signature", "default": "" },
+    { "key": "secretary_attest", "default": "" }
+  ]
+}
+

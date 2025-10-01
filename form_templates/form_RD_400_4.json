@@ -1,0 +1,40 @@
+{
+  "form_name": "form_RD_400_4",
+  "required": [
+    "recipient_name",
+    "recipient_address_street",
+    "recipient_address_city",
+    "recipient_address_state",
+    "recipient_address_zip",
+    "recipient_title",
+    "date_signed"
+  ],
+  "fields": [
+    { "key": "recipient_name" },
+    { "key": "recipient_address_street" },
+    { "key": "recipient_address_city" },
+    { "key": "recipient_address_state" },
+    { "key": "recipient_address_zip" },
+    {
+      "key": "assurance_compliance_declaration",
+      "default": "The Recipient hereby assures the U.S. Department of Agriculture that Recipient is in compliance with and will continue to comply with Title VI of the Civil Rights Act of 1964 (42 USC 2000d et. seq.), 7 CFR Part 15, and Rural Housing Service, Rural Business-Cooperative Service, Rural Utilities Service, or the Farm Service Agency regulations promulgated thereunder, 7 C.F.R. § 1901.202."
+    },
+    {
+      "key": "assurance_non_discrimination_clause",
+      "default": "In accordance with that Act and the regulations referred to above, Recipient agrees that in connection with any program or activity for which Recipient receives Federal financial assistance (as such term is defined in 7 C.F.R. § 14.2) no person in the United States shall, on the ground of race, color, or national origin, be excluded from participation in, be denied the benefits of, or be otherwise subjected to discrimination."
+    },
+    {
+      "key": "execution_witness_clause",
+      "default": "In witness whereof, on this [DATE] [NAME OF RECIPIENT] has caused this agreement to be executed by its duly authorized officers and its seal affixed hereto, or, if a natural person, has hereunto executed this agreement."
+    },
+    {
+      "key": "recipient_title",
+      "prompt": "Infer the official title of the recipient’s authorized signatory based on organization context."
+    },
+    { "key": "recipient_signature", "default": "" },
+    { "key": "date_signed", "type": "date" },
+    { "key": "attest_signature", "default": "" },
+    { "key": "attest_title", "default": "" },
+    { "key": "seal_required", "type": "boolean", "default": true }
+  ]
+}

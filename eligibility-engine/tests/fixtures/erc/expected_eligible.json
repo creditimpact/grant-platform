@@ -2,5 +2,11 @@
   "name": "Employee Retention Credit",
   "eligible": true,
   "estimated_amount": 7000,
-  "requiredForms": ["941-X"]
+  "required_forms": ["IRS_941X"],
+  "required_documents": [
+    "Payroll_Register",
+    "Profit_And_Loss_Statement",
+    "Government_Order",
+    "PPP_Forgiveness_Document"
+  ]
 }

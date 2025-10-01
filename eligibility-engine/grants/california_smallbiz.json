@@ -43,7 +43,7 @@
         "certified_center_approval": true
       },
       "estimated_award": {"type": "base", "base": 10000},
-      "required_forms": ["W-9", "business_license", "proof_of_income", "action_plan"]
+      "required_documents": ["W9_Form", "Business_License", "Proof_Of_Income", "Grant_Use_Statement"]
     },
     "california_step": {
       "rules": {
@@ -54,7 +54,7 @@
         "sba_standard_compliant": true
       },
       "estimated_award": {"type": "base", "base": 10000},
-      "required_forms": ["W-9", "business_license", "proof_of_income", "action_plan"]
+      "required_documents": ["W9_Form", "Business_License", "Proof_Of_Income", "Grant_Use_Statement"]
     },
     "san_francisco_womens_entrepreneurship_fund": {
       "rules": {
@@ -66,7 +66,7 @@
         "technical_assistance_complete": true
       },
       "estimated_award": {"type": "base", "base": 5000},
-      "required_forms": ["W-9", "business_license", "proof_of_income", "action_plan"]
+      "required_documents": ["W9_Form", "Business_License", "Proof_Of_Income", "Grant_Use_Statement"]
     },
     "route_66_extraordinary_women": {
       "rules": {
@@ -76,7 +76,7 @@
         "number_of_employees_max": 19
       },
       "estimated_award": {"type": "base", "base": 2000},
-      "required_forms": ["W-9", "business_license", "proof_of_income"]
+      "required_documents": ["W9_Form", "Business_License", "Proof_Of_Income"]
     },
     "cdfa_grants": {
       "rules": {
@@ -85,7 +85,7 @@
         "project_type": ["healthy_soils", "infrastructure"]
       },
       "estimated_award": {"type": "base", "base": 100000},
-      "required_forms": ["W-9", "business_license", "action_plan"]
+      "required_documents": ["W9_Form", "Business_License", "Grant_Use_Statement"]
     },
     "rust_grants": {
       "rules": {
@@ -96,7 +96,7 @@
         "health_safety_compliant": true
       },
       "estimated_award": {"type": "base", "base": 70000},
-      "required_forms": ["W-9", "business_license", "proof_of_income"]
+      "required_documents": ["W9_Form", "Business_License", "Proof_Of_Income"]
     },
     "calchamber_small_business_awards": {
       "rules": {
@@ -104,7 +104,7 @@
         "chamber_nomination": true
       },
       "estimated_award": {"type": "base", "base": 5000},
-      "required_forms": ["W-9", "business_license"]
+      "required_documents": ["W9_Form", "Business_License"]
     },
     "la_region_small_business_relief": {
       "rules": {
@@ -116,9 +116,23 @@
         "disaster_affected": true
       },
       "estimated_award": {"type": "base", "base": 25000},
-      "required_forms": ["W-9", "business_license", "proof_of_income", "action_plan"]
+      "required_documents": ["W9_Form", "Business_License", "Proof_Of_Income", "Grant_Use_Statement"]
     }
   },
+  "required_documents": [
+    "Business_License",
+    "Articles_Of_Incorporation",
+    "EIN_Letter",
+    "W9_Form",
+    "Financial_Statements",
+    "Tax_Returns",
+    "Business_Plan",
+    "Grant_Use_Statement",
+    "Proof_Of_Income",
+    "Owner_ID",
+    "Bank_Statements"
+  ],
+  "required_forms": ["form_sf424"],
   "tags": ["state", "california", "small_business"],
   "ui_questions": [
     "In which state is your business located?",
@@ -138,6 +152,5 @@
   ],
   "complexity_level": "high",
   "human_summary": "2025 California programs including Dream Fund, STEP, SF Women's Fund, Route 66 Micro-Grant, CDFA grants, RUST, CalChamber awards and LA Region relief.",
-  "risk_notes": "",
-  "requiredForms": ["form_sf424"]
+  "risk_notes": ""
 }

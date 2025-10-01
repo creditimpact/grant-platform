@@ -2,11 +2,18 @@
   "name": "Rural Development Grant",
   "eligible": true,
   "estimated_amount": 75000,
-  "requiredForms": [
+  "required_forms": [
     "form_sf424",
     "form_424A",
     "form_RD_400_1",
     "form_RD_400_4",
     "form_RD_400_8"
+  ],
+  "required_documents": [
+    "Business_License",
+    "Financial_Statements",
+    "Tax_Returns",
+    "Grant_Use_Statement",
+    "Bank_Statements"
   ]
 }
