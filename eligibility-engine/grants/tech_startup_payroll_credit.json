@@ -53,6 +53,13 @@
     "8974",
     "941"
   ],
+  "required_documents": [
+    "Payroll_Register",
+    "Financial_Statements",
+    "Tax_Returns",
+    "Business_Plan"
+  ],
+  "required_forms": ["form_8974", "form_6765"],
   "tags": [
     "federal",
     "tech",
@@ -69,10 +76,6 @@
     "Do you have any unused credit to carry forward?",
     "In which quarter did you file Form 6765 to elect the credit?",
     "Which quarter are you applying the credit to?"
-  ],
-  "requiredForms": [
-    "form_8974",
-    "form_6765"
   ],
   "complexity_level": "high",
   "human_summary": "Payroll tax credit for young technology startups performing qualified R&D.",

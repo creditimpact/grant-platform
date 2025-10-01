@@ -6,6 +6,7 @@ from common.logger import get_logger
 
 from grants_loader import load_grants
 from industry_classifier import list_naics_codes
+from normalization import normalize_list
 from rules_utils import check_rules, check_rule_groups, estimate_award
 
 app = FastAPI()
@@ -53,6 +54,9 @@ def analyze_eligibility(
             logger.debug("%s missing fields: %s", grant.get("name"), missing)
             continue
 
+        base_documents = normalize_list(grant.get("required_documents", []))
+        base_forms = normalize_list(grant.get("required_forms", []))
+
         if grant.get("eligibility_categories"):
             rule_result = check_rule_groups(user_data, grant.get("eligibility_categories"))
             if rule_result.get("estimated_award"):
@@ -61,7 +65,8 @@ def analyze_eligibility(
                 award_info = estimate_award(user_data, grant.get("estimated_award", {}))
             else:
                 award_info = 0
-            required_forms = grant.get("requiredForms", []) + rule_result.get("required_forms", [])
+            group_forms = normalize_list(rule_result.get("required_forms", []))
+            group_documents = normalize_list(rule_result.get("required_documents", []))
         else:
             rule_result = check_rules(user_data, grant.get("eligibility_rules", {}))
             award_info = (
@@ -69,7 +74,18 @@ def analyze_eligibility(
                 if rule_result["eligible"]
                 else 0
             )
-            required_forms = grant.get("requiredForms", [])
+            group_forms = []
+            group_documents = []
+
+        required_forms = list(base_forms)
+        for form in group_forms:
+            if form not in required_forms:
+                required_forms.append(form)
+
+        required_documents = list(base_documents)
+        for doc in group_documents:
+            if doc not in required_documents:
+                required_documents.append(doc)
 
         if isinstance(award_info, dict):
             amount = award_info.get("amount", 0)
@@ -171,7 +187,9 @@ def analyze_eligibility(
             "rationale": rationale[:200],
         }
         if required_forms:
-            result["requiredForms"] = required_forms
+            result["required_forms"] = required_forms
+        if required_documents:
+            result["required_documents"] = required_documents
         logger.debug(
             "Grant %s result: eligible=%s score=%s",
             grant.get("name"),
@@ -194,7 +212,8 @@ def analyze_eligibility(
                 ],
                 "missing_fields": [],
                 "next_steps": "Provide additional information to match specific grants",
-                "requiredForms": ["form_sf424"],
+                "required_forms": ["form_sf424"],
+                "required_documents": [],
                 "tag_score": {},
                 "reasoning_steps": [],
                 "llm_summary": "",

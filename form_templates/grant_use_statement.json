@@ -1,0 +1,12 @@
+{
+  "template": "Grant Use Statement",
+  "sections": [
+    { "template": "Business Name: {{business_name}}" },
+    { "template": "Funding Request: ${{funding_request_amount}}" },
+    { "template": "Planned Use of Funds:" },
+    { "template": "{{#each intended_categories}}- {{this}}\n{{/each}}" },
+    { "template": "Justification: {{justification}}" },
+    { "template": "Date: {{date_signed}}" },
+    { "template": "Signature: ________________________" }
+  ]
+}

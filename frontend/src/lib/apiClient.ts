@@ -96,20 +96,34 @@ export async function getEligibilityReport(caseId?: string): Promise<Eligibility
     return {
       results: normalizeEligibility(data),
       requiredForms: [],
+      requiredDocuments: [],
     } as EligibilityReport;
   }
 
   // Envelope style
-  const envelope = data as ResultsEnvelope;
-  if (Array.isArray(envelope.results)) {
-    envelope.results = normalizeEligibility(envelope.results);
-  } else {
-    envelope.results = [];
-  }
-  if (!Array.isArray(envelope.requiredForms)) {
-    envelope.requiredForms = [];
-  }
-  return envelope as EligibilityReport;
+  const envelope = data as Partial<ResultsEnvelope> & {
+    required_forms?: string[];
+    required_documents?: string[];
+  };
+  const normalizedResults = Array.isArray(envelope.results)
+    ? normalizeEligibility(envelope.results)
+    : [];
+  const requiredForms = Array.isArray(envelope.requiredForms)
+    ? envelope.requiredForms
+    : Array.isArray(envelope.required_forms)
+    ? envelope.required_forms
+    : [];
+  const requiredDocuments = Array.isArray(envelope.requiredDocuments)
+    ? envelope.requiredDocuments
+    : Array.isArray(envelope.required_documents)
+    ? envelope.required_documents
+    : [];
+
+  return {
+    results: normalizedResults,
+    requiredForms,
+    requiredDocuments,
+  } as EligibilityReport;
 }
 
 // -------------------- FORM FILL --------------------
@@ -170,9 +184,25 @@ function transformCase(data: any): CaseSnapshot {
 
   return {
     caseId: data.caseId,
-    requiredForms: Array.isArray(data.requiredForms) ? data.requiredForms : undefined,
+    requiredForms: Array.isArray(data.requiredForms)
+      ? data.requiredForms
+      : Array.isArray(data.required_forms)
+      ? data.required_forms
+      : undefined,
     requiredDocuments: Array.isArray(data.requiredDocuments)
       ? data.requiredDocuments
+      : Array.isArray(data.required_documents)
+      ? data.required_documents
+      : undefined,
+    pendingForms: Array.isArray(data.pendingForms)
+      ? data.pendingForms
+      : Array.isArray(data.pending_forms)
+      ? data.pending_forms
+      : undefined,
+    missingDocuments: Array.isArray(data.missingDocuments)
+      ? data.missingDocuments
+      : Array.isArray(data.missing_documents)
+      ? data.missing_documents
       : undefined,
     status: data.status,
     documents: data.documents || [],

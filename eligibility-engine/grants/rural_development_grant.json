@@ -8,14 +8,21 @@
     "rural_area": true
   },
   "estimated_award": {"type": "base", "base": 75000},
-  "tags": ["federal", "rural"],
-  "requiredForms": [
+  "required_documents": [
+    "Business_License",
+    "Financial_Statements",
+    "Tax_Returns",
+    "Grant_Use_Statement",
+    "Bank_Statements"
+  ],
+  "required_forms": [
     "form_sf424",
     "form_424A",
     "form_RD_400_1",
     "form_RD_400_4",
     "form_RD_400_8"
   ],
+  "tags": ["federal", "rural"],
   "ui_questions": [
     "What is your business entity type?",
     "Is your business located in a rural area?"

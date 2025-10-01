@@ -15,6 +15,7 @@ const { validateForm8974Calcs } = require('../utils/form8974');
 const { validateForm6765Calcs } = require('../utils/form6765');
 const { buildChecklist } = require('../utils/checklistBuilder');
 const { loadGrantsLibrary } = require('../utils/documentLibrary');
+const { normalizeList, normalizeKey } = require('../utils/documentAliases');
 const {
   normalizeAnswers,
   toMMDDYYYY,
@@ -182,16 +183,19 @@ router.post('/eligibility-report', async (req, res) => {
         ? body.results
         : [];
 
-  // Envelope-level required forms
-  const envForms = Array.isArray(body?.requiredForms) ? body.requiredForms : [];
+  const envForms = Array.isArray(body?.required_forms) ? body.required_forms : [];
+  const envDocs = Array.isArray(body?.required_documents) ? body.required_documents : [];
 
-  // Flatten result-level required forms
   const perResultForms = results.flatMap((r) =>
-    Array.isArray(r?.requiredForms) ? r.requiredForms : []
+    Array.isArray(r?.required_forms) ? r.required_forms : []
+  );
+  const perResultDocs = results.flatMap((r) =>
+    Array.isArray(r?.required_documents) ? r.required_documents : []
   );
 
-  // Final aggregation (unique, preserve order)
-  const requiredForms = [...new Set([...envForms, ...perResultForms])];
+  const requiredForms = normalizeList([...envForms, ...perResultForms]);
+  const requiredDocuments = normalizeList([...envDocs, ...perResultDocs]);
+
   const mappedForms = [];
   for (const f of requiredForms) {
     const normalized = formMap[f] || f;
@@ -205,6 +209,7 @@ router.post('/eligibility-report', async (req, res) => {
   const eligibility = {
     results,
     requiredForms: mappedForms,
+    requiredDocuments: requiredDocuments,
     lastUpdated: new Date().toISOString(),
   };
   await updateCase(caseId, { eligibility });
@@ -422,8 +427,15 @@ router.post('/eligibility-report', async (req, res) => {
     console.log('[eligibility] normalized results', {
       count: results.length,
       requiredForms: mappedForms,
+      requiredDocuments,
     });
   }
+  const pendingForms = mappedForms.filter(
+    (formId) => !filledForms.some((f) => f.formId === formId)
+  );
+  const missingDocuments = (required || [])
+    .filter((item) => !['uploaded', 'extracted'].includes(item.status))
+    .map((item) => normalizeKey(item.doc_type || item.key || item));
   res.json({
     caseId,
     eligibility,
@@ -434,6 +446,8 @@ router.post('/eligibility-report', async (req, res) => {
     generatedForms: c.generatedForms,
     incompleteForms: c.incompleteForms,
     requiredDocuments: c.requiredDocuments,
+    pendingForms,
+    missingDocuments,
     draftPdfUrl: c.generatedForms?.[0]?.url,
   });
 });

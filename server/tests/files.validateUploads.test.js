@@ -90,7 +90,7 @@ test('uploaded doc updates checklist status', async () => {
   const { createCase, updateCase } = require('../utils/pipelineStore');
   const caseId = await createCase('dev-user');
   await updateCase(caseId, {
-    eligibility: { results: [], requiredForms: [], shortlist: ['erc'] },
+    eligibility: { results: [], requiredForms: [], requiredDocuments: [], shortlist: ['erc'] },
   });
   let res = await request(app).get(`/api/case/required-documents?caseId=${caseId}`);
   let item = res.body.required.find((d) => d.doc_type === 'IRS_941X');

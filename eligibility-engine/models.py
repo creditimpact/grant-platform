@@ -11,7 +11,8 @@ class GrantResult(BaseModel):
     reasoning: Optional[List[str]] = None
     missing_fields: Optional[List[str]] = None
     next_steps: Optional[str] = None
-    requiredForms: Optional[List[str]] = None
+    required_forms: Optional[List[str]] = None
+    required_documents: Optional[List[str]] = None
     tag_score: Dict[str, Any] = Field(default_factory=dict)
     reasoning_steps: Optional[List[str]] = None
     llm_summary: Optional[str] = None
@@ -22,4 +23,5 @@ class GrantResult(BaseModel):
 
 class ResultsEnvelope(BaseModel):
     results: List[GrantResult] = Field(default_factory=list)
-    requiredForms: List[str] = Field(default_factory=list)
+    required_forms: List[str] = Field(default_factory=list)
+    required_documents: List[str] = Field(default_factory=list)

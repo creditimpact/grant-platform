@@ -2,7 +2,7 @@ from pathlib import Path
 import json, re
 from typing import Callable, Dict
 
-CATALOG_DIR = Path(__file__).resolve().parents[2] / "shared" / "document_types"
+CATALOG_DIR = Path(__file__).resolve().parents[2] / "document_library"
 CATALOG_PATH = CATALOG_DIR / "catalog.json"
 
 
@@ -34,9 +34,7 @@ DOC_TYPES = _load_doc_types()
 
 # map key -> (module, function)
 EXTRACTORS = {
-    "Form_1120X": ("irs_1120x", "extract"),
     "Tax_Payment_Receipt": ("tax_payment_receipt", "extract"),
-    "IRS_941X": ("irs_941x", "extract"),
     "Business_License": ("business_license", "extract"),
     "Articles_Of_Incorporation": ("articles_of_incorporation", "extract"),
     "EIN_Letter": ("ein_letter", "extract"),

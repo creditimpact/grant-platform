@@ -15,12 +15,19 @@
     "type": "base",
     "base": 10000
   },
+  "required_documents": [
+    "Proof_Of_Service",
+    "Business_License",
+    "W9_Form",
+    "Financial_Statements",
+    "Bank_Statements"
+  ],
+  "required_forms": ["form_sf424"],
   "tags": ["veteran", "small_business"],
   "ui_questions": [
     "Are you or your spouse a veteran with at least 51% ownership?"
   ],
   "complexity_level": "low",
   "human_summary": "Grant for businesses majority-owned by veterans or their spouses",
-  "risk_notes": "Excludes non-qualified ownership structures",
-  "requiredForms": ["form_sf424"]
+  "risk_notes": "Excludes non-qualified ownership structures"
 }

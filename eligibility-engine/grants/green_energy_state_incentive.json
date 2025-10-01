@@ -28,7 +28,12 @@
         "percent": 100,
         "max": 500000
       },
-      "required_forms": ["online_application", "w9", "invoices", "business_license"]
+      "required_documents": [
+        "Online_Application",
+        "W9_Form",
+        "Invoices_or_Quotes",
+        "Business_License"
+      ]
     },
     "nj_clean_energy": {
       "rules": {
@@ -43,7 +48,12 @@
         "percent": 100,
         "max": 10000
       },
-      "required_forms": ["online_application", "w9", "invoices", "business_license"]
+      "required_documents": [
+        "Online_Application",
+        "W9_Form",
+        "Invoices_or_Quotes",
+        "Business_License"
+      ]
     },
     "ca_sgip": {
       "rules": {
@@ -58,7 +68,12 @@
         "percent": 100,
         "max": 1000000
       },
-      "required_forms": ["sgip_form", "w9", "invoices", "installation_contract"]
+      "required_documents": [
+        "SGIP_Form",
+        "W9_Form",
+        "Invoices_or_Quotes",
+        "Installer_Contract"
+      ]
     },
     "ma_solar_tax_credit": {
       "rules": {
@@ -72,7 +87,7 @@
         "type": "base",
         "base": 1000
       },
-      "required_forms": ["ma_tax_form", "w9"]
+      "required_documents": ["MA_Tax_Form", "W9_Form"]
     },
     "tx_solar_tax_credit": {
       "rules": {
@@ -87,7 +102,7 @@
         "per": "system_size_kw",
         "amount": 1000
       },
-      "required_forms": ["tx_tax_form", "w9"]
+      "required_documents": ["TX_Tax_Form", "W9_Form"]
     },
     "fl_solar_rebate": {
       "rules": {
@@ -102,7 +117,12 @@
         "percent": 100,
         "max": 5000
       },
-      "required_forms": ["application", "w9", "invoices", "business_license"]
+      "required_documents": [
+        "Online_Application",
+        "W9_Form",
+        "Invoices_or_Quotes",
+        "Business_License"
+      ]
     },
     "il_solar_rebate": {
       "rules": {
@@ -118,9 +138,28 @@
         "percent": 100,
         "max": 5000
       },
-      "required_forms": ["online_application", "w9", "invoices", "business_license"]
+      "required_documents": [
+        "Online_Application",
+        "W9_Form",
+        "Invoices_or_Quotes",
+        "Business_License"
+      ]
     }
   },
+  "required_documents": [
+    "Online_Application",
+    "W9_Form",
+    "Invoices_or_Quotes",
+    "Business_License",
+    "SGIP_Form",
+    "Installer_Contract",
+    "MA_Tax_Form",
+    "TX_Tax_Form",
+    "Utility_Bill",
+    "Equipment_Specs",
+    "Energy_Savings_Report"
+  ],
+  "required_forms": [],
   "tags": ["state", "energy", "green"],
   "ui_questions": [
     "Which state is your project located in?",
@@ -134,16 +173,5 @@
   ],
   "complexity_level": "high",
   "human_summary": "State and city level green energy grants, rebates, and tax credits for renewable installations.",
-  "risk_notes": "",
-  "requiredForms": [
-    "online_application",
-    "w9",
-    "invoices",
-    "business_license",
-    "sgip_form",
-    "installation_contract",
-    "ma_tax_form",
-    "tx_tax_form",
-    "application"
-  ]
+  "risk_notes": ""
 }

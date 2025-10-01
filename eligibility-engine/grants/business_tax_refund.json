@@ -23,6 +23,15 @@
     "percentage": 0.10,
     "base_amount_field": "tax_paid"
   },
+  "required_documents": [
+    "Tax_Payment_Receipt",
+    "Articles_Of_Incorporation",
+    "EIN_Letter",
+    "Tax_Returns",
+    "Invoices_or_Quotes",
+    "Bank_Statements"
+  ],
+  "required_forms": ["IRS_941X"],
   "tags": ["tax", "refund", "financial"],
   "ui_questions": [
     "What was your total business income for the tax year?",
@@ -35,6 +44,4 @@
   "complexity_level": "high",
   "human_summary": "Refund for eligible businesses that paid tax and meet income and expense thresholds",
   "risk_notes": "Must not have claimed similar refunds previously to avoid duplicate claims"
-  ,
-  "requiredForms": ["941-X"]
 }

@@ -1,0 +1,34 @@
+{
+  "form_name": "form_RD_400_8",
+  "required": [
+    "state",
+    "county",
+    "case_number",
+    "date_of_review",
+    "borrower_name"
+  ],
+  "fields": [
+    { "key": "date_of_review", "type": "date" },
+    { "key": "state" },
+    { "key": "county" },
+    { "key": "case_number" },
+    { "key": "borrower_name" },
+    { "key": "borrower_address" },
+    { "key": "source_of_funds_direct", "type": "boolean" },
+    { "key": "source_of_funds_insured", "type": "boolean" },
+    { "key": "type_of_assistance_housing_preservation_grant", "type": "boolean" },
+    { "key": "type_of_assistance_rbeg", "type": "boolean" },
+    { "key": "type_of_assistance_rbog", "type": "boolean" },
+    { "key": "type_of_assistance_bi_loans", "type": "boolean" },
+    { "key": "type_of_assistance_water_and_waste_disposal_loan_or_grant", "type": "boolean" },
+    { "key": "type_of_assistance_grazing_association", "type": "boolean" },
+    { "key": "type_of_assistance_eo_cooperative", "type": "boolean" },
+    { "key": "type_of_assistance_community_facilities", "type": "boolean" },
+    { "key": "type_of_assistance_intermediary_relending_program", "type": "boolean" },
+    { "key": "type_of_assistance_rural_housing_site_loans", "type": "boolean" },
+    { "key": "type_of_assistance_cooperative_service", "type": "boolean" },
+    { "key": "type_of_assistance_rrh_and_lh_organization", "type": "boolean" },
+    { "key": "type_of_assistance_other", "type": "boolean" },
+    { "key": "type_of_assistance_other_specify" }
+  ]
+}

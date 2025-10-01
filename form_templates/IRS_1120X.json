@@ -1,0 +1,222 @@
+{
+  "form": {
+    "name": "Form 1120X",
+    "title": "Amended U.S. Corporation Income Tax Return",
+    "revision": "Rev. November 2016",
+    "department": "Department of the Treasury",
+    "agency": "Internal Revenue Service",
+    "omb_number": "1545-0123",
+    "information_url": "www.irs.gov/form1120x"
+  },
+  "header_information": {
+    "tax_year_ending": {
+      "label": "For tax year ending",
+      "instruction": "Enter month and year",
+      "value": ""
+    },
+    "company_info": {
+      "name": {
+        "label": "Name",
+        "value": ""
+      },
+      "employer_identification_number": {
+        "label": "Employer identification number",
+        "value": ""
+      },
+      "address": {
+        "street": {
+          "label": "Number, street, and room or suite no. If a P.O. box, see instructions",
+          "value": ""
+        },
+        "city_state_zip": {
+          "label": "City or town, state, and ZIP code",
+          "value": ""
+        }
+      },
+      "telephone": {
+        "label": "Telephone number (optional)",
+        "value": ""
+      }
+    },
+    "original_return_info": {
+      "name_address": {
+        "label": "Enter name and address used on original return. If same as above, write 'Same.'",
+        "value": ""
+      },
+      "irs_center": {
+        "label": "Internal Revenue Service Center where original return was filed",
+        "value": ""
+      }
+    }
+  },
+  "part_i_income_and_deductions": {
+    "instruction": "Fill in applicable items and use Part II on the back to explain any changes",
+    "columns": {
+      "a": "As originally reported or as previously adjusted",
+      "b": "Net change — increase or (decrease) — explain in Part II",
+      "c": "Correct amount"
+    },
+    "income_and_deductions": {
+      "line_1": {
+        "label": "Total income",
+        "column_a": "",
+        "column_b": "",
+        "column_c": ""
+      },
+      "line_2": {
+        "label": "Total deductions",
+        "column_a": "",
+        "column_b": "",
+        "column_c": ""
+      },
+      "line_3": {
+        "label": "Taxable income. Subtract line 2 from line 1",
+        "column_a": "",
+        "column_b": "",
+        "column_c": ""
+      },
+      "line_4": {
+        "label": "Total tax",
+        "column_a": "",
+        "column_b": "",
+        "column_c": ""
+      }
+    }
+  },
+  "payments_and_credits": {
+    "line_5a": {
+      "label": "Overpayment in prior year allowed as a credit",
+      "column_a": "",
+      "column_b": "",
+      "column_c": ""
+    },
+    "line_5b": {
+      "label": "Estimated tax payments",
+      "column_a": "",
+      "column_b": "",
+      "column_c": ""
+    },
+    "line_5c": {
+      "label": "Refund applied for on Form 4466",
+      "column_a": "",
+      "column_b": "",
+      "column_c": ""
+    },
+    "line_5d": {
+      "label": "Subtract line 5c from the sum of lines 5a and 5b",
+      "column_a": "",
+      "column_b": "",
+      "column_c": ""
+    },
+    "line_5e": {
+      "label": "Tax deposited with Form 7004",
+      "column_a": "",
+      "column_b": "",
+      "column_c": ""
+    },
+    "line_5f": {
+      "label": "Credit from Form 2439",
+      "column_a": "",
+      "column_b": "",
+      "column_c": ""
+    },
+    "line_5g": {
+      "label": "Credit for federal tax on fuels and other refundable credits",
+      "column_a": "",
+      "column_b": "",
+      "column_c": ""
+    },
+    "line_6": {
+      "label": "Tax deposited or paid with (or after) the filing of the original return",
+      "column_c": ""
+    },
+    "line_7": {
+      "label": "Add lines 5d through 6, column (c)",
+      "column_c": ""
+    },
+    "line_8": {
+      "label": "Overpayment, if any, as shown on original return or as later adjusted",
+      "column_c": ""
+    },
+    "line_9": {
+      "label": "Subtract line 8 from line 7",
+      "column_c": ""
+    }
+  },
+  "tax_due_or_overpayment": {
+    "line_10": {
+      "label": "Tax due. Subtract line 9 from line 4, column (c). If paying by check, make it payable to the 'United States Treasury'",
+      "value": ""
+    },
+    "line_11": {
+      "label": "Overpayment. Subtract line 4, column (c), from line 9",
+      "value": ""
+    },
+    "line_12": {
+      "label": "Enter the amount of line 11 you want:",
+      "credited_to_estimated_tax": {
+        "amount": "",
+        "year": ""
+      },
+      "refunded": ""
+    }
+  },
+  "signature_section": {
+    "declaration": "Under penalties of perjury, I declare that I have filed an original return and that I have examined this amended return, including accompanying schedules and statements, and to the best of my knowledge and belief, this amended return is true, correct, and complete. Declaration of preparer (other than taxpayer) is based on all information of which preparer has any knowledge.",
+    "officer_signature": {
+      "signature": "",
+      "date": "",
+      "title": ""
+    }
+  },
+  "paid_preparer_section": {
+    "preparer_name": "",
+    "preparer_signature": "",
+    "date": "",
+    "self_employed": false,
+    "ptin": "",
+    "firm_name": "",
+    "firm_address": "",
+    "firm_ein": "",
+    "phone_number": ""
+  },
+  "part_ii_explanation": {
+    "title": "Explanation of Changes to Items in Part I",
+    "instruction": "Enter the line number from Part I for the items you are changing, and give the reason for each change. Show any computation in detail. Also, see What To Attach in the instructions.",
+    "carryback_claim": {
+      "checkbox": false,
+      "label": "If the change is due to a net operating loss carryback, a capital loss carryback, or a general business credit carryback, see Carryback Claims in the instructions, and check here"
+    },
+    "explanations": []
+  },
+  "instructions": {
+    "purpose": [
+      "Correct a Form 1120 as originally filed, or as later adjusted by an amended return, a claim for refund, or an examination",
+      "Make certain elections after the prescribed deadline (see Regulations sections 301.9100-1 through 3)"
+    ],
+    "when_to_file": {
+      "general_rule": "Generally, Form 1120X must be filed within 3 years after the date the corporation filed its original return or within 2 years after the date the corporation paid the tax (if filing a claim for a refund), whichever is later",
+      "special_cases": {
+        "nol_carryback": "A Form 1120X based on an NOL carryback, a capital loss carryback, or general business credit carryback generally must be filed within 3 years after the due date (including extensions) of the return for the tax year of the NOL, capital loss, or unused credit",
+        "bad_debt": "A Form 1120X based on a bad debt or worthless security must be filed within 7 years after the due date of the return for the tax year in which the debt or security became worthless"
+      },
+      "processing_time": "It often takes 3 to 4 months to process Form 1120X"
+    },
+    "do_not_use_for": {
+      "quick_refund": "Apply for a quick refund of estimated tax - use Form 4466 instead",
+      "tentative_refund": "Obtain a tentative refund of taxes - use Form 1139 instead",
+      "accounting_method_change": "Request IRS approval for a change in accounting method - use Form 3115 instead"
+    },
+    "what_to_attach": [
+      "If the corrected amount involves an item of income, deduction, or credit that must be supported with a schedule, statement, or form, attach the appropriate schedule, statement, or form",
+      "For refunds of $1 million or more, attach Form 8302",
+      "For reportable transactions, attach Form 8886",
+      "For carryback claims, attach copies of relevant forms and schedules"
+    ]
+  },
+  "paperwork_reduction_act": {
+    "cat_number": "11530Z",
+    "omb_control_number": "1545-0123",
+    "notice": "We ask for the information on this form to carry out the Internal Revenue laws of the United States. You are required to give us the information."
+  }
+}

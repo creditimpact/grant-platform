@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { getRequiredDocs } = require("../utils/documentLibrary");
+const { normalizeKey } = require("../utils/documentAliases");
 const { getCase, updateCase } = require("../utils/pipelineStore");
 
 router.get("/api/grants/:key/required-documents", async (req, res) => {
@@ -20,8 +21,10 @@ router.post("/api/cases/:caseId/documents", async (req, res) => {
   const { caseId } = req.params;
   const c = await getCase(userId, caseId);
   if (!c) return res.status(404).json({ error: "Case not found" });
+  const canonical = normalizeKey(req.body.docType);
   const doc = {
-    docType: req.body.docType,
+    docType: canonical,
+    doc_type: canonical,
     fields: req.body.fields || {},
     fileUrl: req.body.fileUrl,
     uploadedAt: req.body.uploadedAt || new Date().toISOString(),

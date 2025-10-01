@@ -43,6 +43,7 @@ const pipelineSchema = new mongoose.Schema(
     eligibility: {
       results: { type: [mongoose.Schema.Types.Mixed], default: [] },
       requiredForms: { type: [String], default: [] },
+      requiredDocuments: { type: [String], default: [] },
       lastUpdated: Date,
     },
     documents: { type: [documentSchema], default: [] },

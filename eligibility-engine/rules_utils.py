@@ -3,6 +3,8 @@
 from typing import Any, Dict, List
 import logging
 
+from normalization import normalize_list
+
 
 logger = logging.getLogger(__name__)
 
@@ -229,24 +231,39 @@ def check_rule_groups(data: Dict[str, Any], groups: Dict[str, Dict[str, Any]]):
     eligibility: Any = (False if mode == "any" else True)
     awards: Dict[str, int] = {}
     forms: Dict[str, List[str]] = {}
+    documents: Dict[str, List[str]] = {}
 
     for name, group_cfg in grouped.items():
         logger.debug("Evaluating rule group %s", name)
 
         # Support nested config with rules, award and forms metadata
         if isinstance(group_cfg, dict) and (
-            "rules" in group_cfg or "estimated_award" in group_cfg or "required_forms" in group_cfg
+            "rules" in group_cfg
+            or "estimated_award" in group_cfg
+            or "required_forms" in group_cfg
+            or "required_documents" in group_cfg
         ):
             rules = group_cfg.get(
                 "rules",
-                {k: v for k, v in group_cfg.items() if k not in {"estimated_award", "required_forms"}},
+                {
+                    k: v
+                    for k, v in group_cfg.items()
+                    if k
+                    not in {
+                        "estimated_award",
+                        "required_forms",
+                        "required_documents",
+                    }
+                },
             )
             award_cfg = group_cfg.get("estimated_award")
             req_forms = group_cfg.get("required_forms", [])
+            req_documents = group_cfg.get("required_documents", [])
         else:
             rules = group_cfg
             award_cfg = None
             req_forms = []
+            req_documents = []
 
         result = check_rules(data, rules)
         aggregated_reasoning.extend([f"[{name}] {msg}" for msg in result["reasoning"]])
@@ -268,14 +285,18 @@ def check_rule_groups(data: Dict[str, Any], groups: Dict[str, Dict[str, Any]]):
         if result["eligible"] and award_cfg:
             awards[name] = estimate_award(data, award_cfg)
             if req_forms:
-                forms[name] = req_forms
+                forms[name] = normalize_list(req_forms)
+            if req_documents:
+                documents[name] = normalize_list(req_documents)
 
     selected_group = None
     selected_award = 0
     selected_forms: List[str] = []
+    selected_documents: List[str] = []
     if awards:
         selected_group, selected_award = max(awards.items(), key=lambda x: x[1])
         selected_forms = forms.get(selected_group, [])
+        selected_documents = documents.get(selected_group, [])
 
     score = int(sum(scores) / len(scores)) if scores else 0
     if aggregated_debug["missing_fields"]:
@@ -294,6 +315,7 @@ def check_rule_groups(data: Dict[str, Any], groups: Dict[str, Dict[str, Any]]):
         "estimated_award": selected_award,
         "selected_group": selected_group,
         "required_forms": selected_forms,
+        "required_documents": selected_documents,
     }
 
 

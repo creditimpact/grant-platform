@@ -58,6 +58,7 @@ describe('questionnaire endpoints', () => {
           { missing_fields: ['b', 'c'] },
         ],
         requiredForms: [],
+        requiredDocuments: [],
         lastUpdated: new Date().toISOString(),
       },
     });

@@ -27,8 +27,14 @@
     "type": "base",
     "base": 7000
   },
+  "required_documents": [
+    "Payroll_Register",
+    "Profit_And_Loss_Statement",
+    "Government_Order",
+    "PPP_Forgiveness_Document"
+  ],
+  "required_forms": ["IRS_941X"],
   "tags": ["federal", "payroll", "covid"],
-  "requiredForms": ["941-X"],
   "ui_questions": [
     "How many W-2 employees do you have?",
     "What was your revenue decline compared to the previous year?",

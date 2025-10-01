@@ -49,7 +49,10 @@ export function normalizeEligibility(
           : undefined,
       reasoning: toArray(item.reasoning ?? item.reasoning_steps),
       next_steps: item.next_steps ?? undefined,
-      requiredForms: toArray(item.requiredForms),
+      requiredForms: toArray(item.requiredForms ?? item.required_forms),
+      requiredDocuments: toArray(
+        item.requiredDocuments ?? item.required_documents,
+      ),
       generatedForms: Array.isArray(item.generatedForms)
         ? item.generatedForms.map((f: any) => ({
             formId: f.formId ?? f.formKey ?? '',

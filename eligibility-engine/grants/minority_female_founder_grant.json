@@ -34,23 +34,20 @@
     "type": "base",
     "base": 20000
   },
-  "required_documents": {
-    "application": [
-      "online_application_form",
-      "team_details",
-      "financial_statements",
-      "proof_of_activity",
-      "annual_income_report",
-      "client_or_project_list",
-      "intent_letter",
-      "founder_resume"
-    ],
-    "post_award": [
-      "W-9",
-      "certificate_of_incorporation",
-      "owner_id"
-    ]
-  },
+  "required_documents": [
+    "Online_Application",
+    "Team_Details",
+    "Financial_Statements",
+    "Proof_Of_Activity",
+    "Proof_Of_Income",
+    "Client_Project_List",
+    "Letter_Of_Intent",
+    "Resume",
+    "W9_Form",
+    "Articles_Of_Incorporation",
+    "Owner_ID"
+  ],
+  "required_forms": ["form_sf424"],
   "tags": ["women", "minority", "startup"],
   "ui_questions": [
     "Is your business at least 51% owned and managed by a minority woman?",
@@ -63,6 +60,5 @@
   "notes": "Application fees may apply for some programs. SAM.gov or SF-424 registrations are not required.",
   "complexity_level": "medium",
   "human_summary": "Competitive grants for U.S. businesses with at least 51% minority female ownership, under 50 employees, and less than $3M in revenue.",
-  "risk_notes": "",
-  "requiredForms": ["form_sf424"]
+  "risk_notes": ""
 }

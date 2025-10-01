@@ -29,7 +29,12 @@
         "covid_impact": true
       },
       "estimated_award": {"type": "base", "base": 5000},
-      "required_forms": ["city_application", "W-9", "business_license", "bank_statements"]
+      "required_documents": [
+        "City_Application",
+        "W9_Form",
+        "Business_License",
+        "Bank_Statements"
+      ]
     },
     "rockford_regrow": {
       "rules": {
@@ -40,7 +45,12 @@
         "covid_impact": true
       },
       "estimated_award": {"type": "base", "base": 25000},
-      "required_forms": ["city_application", "W-9", "tax_returns", "bank_statements"]
+      "required_documents": [
+        "City_Application",
+        "W9_Form",
+        "Tax_Returns",
+        "Bank_Statements"
+      ]
     },
     "aurora_resilience": {
       "rules": {
@@ -51,7 +61,12 @@
         "covid_impact": true
       },
       "estimated_award": {"type": "base", "base": 10000},
-      "required_forms": ["city_application", "W-9", "business_license", "recovery_plan"]
+      "required_documents": [
+        "City_Application",
+        "W9_Form",
+        "Business_License",
+        "Recovery_Plan"
+      ]
     },
     "evanston_recovery": {
       "rules": {
@@ -61,7 +76,7 @@
         "covid_impact": true
       },
       "estimated_award": {"type": "base", "base": 7000},
-      "required_forms": ["city_application", "W-9", "tax_returns"]
+      "required_documents": ["City_Application", "W9_Form", "Tax_Returns"]
     },
     "springfield_downtown": {
       "rules": {
@@ -72,7 +87,12 @@
         "business_age_years_min": 1
       },
       "estimated_award": {"type": "base", "base": 10000},
-      "required_forms": ["city_application", "damage_photos", "insurance_claims", "W-9"]
+      "required_documents": [
+        "City_Application",
+        "Damage_Photos",
+        "Insurance_Claims",
+        "W9_Form"
+      ]
     },
     "peoria_restoration": {
       "rules": {
@@ -83,7 +103,12 @@
         "covid_impact": true
       },
       "estimated_award": {"type": "base", "base": 20000},
-      "required_forms": ["city_application", "W-9", "bank_statements", "recovery_plan"]
+      "required_documents": [
+        "City_Application",
+        "W9_Form",
+        "Bank_Statements",
+        "Recovery_Plan"
+      ]
     },
     "naperville_neighborhood": {
       "rules": {
@@ -94,7 +119,12 @@
         "covid_impact": true
       },
       "estimated_award": {"type": "base", "base": 10000},
-      "required_forms": ["city_application", "W-9", "business_license", "bank_statements"]
+      "required_documents": [
+        "City_Application",
+        "W9_Form",
+        "Business_License",
+        "Bank_Statements"
+      ]
     },
     "champaign_urbana_tech": {
       "rules": {
@@ -105,7 +135,7 @@
         "covid_impact": true
       },
       "estimated_award": {"type": "base", "base": 10000},
-      "required_forms": ["city_application", "W-9", "financial_statements"]
+      "required_documents": ["City_Application", "W9_Form", "Financial_Statements"]
     },
     "joliet_sustainability": {
       "rules": {
@@ -116,9 +146,27 @@
         "owner_veteran": true
       },
       "estimated_award": {"type": "base", "base": 15000},
-      "required_forms": ["city_application", "W-9", "proof_of_service", "tax_returns"]
+      "required_documents": [
+        "City_Application",
+        "W9_Form",
+        "Proof_Of_Service",
+        "Tax_Returns"
+      ]
     }
   },
+  "required_documents": [
+    "City_Application",
+    "W9_Form",
+    "Business_License",
+    "Bank_Statements",
+    "Tax_Returns",
+    "Recovery_Plan",
+    "Damage_Photos",
+    "Insurance_Claims",
+    "Financial_Statements",
+    "Proof_Of_Service"
+  ],
+  "required_forms": ["form_424A"],
   "tags": ["city", "covid", "small_business"],
   "ui_questions": [
     "In which city is your business located?",
@@ -135,6 +183,5 @@
   ],
   "complexity_level": "medium",
   "human_summary": "Nine city-level programs offering grants to urban small businesses impacted by COVID-19 or structural damage.",
-  "risk_notes": "Applicants must submit city applications and supporting financial documentation.",
-  "requiredForms": ["form_424A"]
+  "risk_notes": "Applicants must submit city applications and supporting financial documentation."
 }

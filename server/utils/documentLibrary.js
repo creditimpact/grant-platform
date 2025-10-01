@@ -2,35 +2,34 @@ const fs = require("fs");
 const fsPromises = require("fs/promises");
 const path = require("path");
 
-const LIB_PATH = path.resolve(
+const DOC_LIBRARY_PATH = path.resolve(
   __dirname,
-  "../../shared/document_library/grants_v1.json"
+  '../../document_library/catalog.json'
 );
-const DOC_TYPES_DIR = path.resolve(__dirname, "../../shared/document_types");
-const DOC_CATALOG = path.join(DOC_TYPES_DIR, "catalog.json");
+const DOC_LIBRARY_DIR = path.dirname(DOC_LIBRARY_PATH);
+const GRANTS_DIR = path.resolve(__dirname, '../../eligibility-engine/grants');
 
-let cache = null;
+const { normalizeKey, normalizeList } = require('./documentAliases');
+
+let docCatalogCache = null;
 let docTypeCache = null;
-
-const DOC_TYPES = {
-  IRS_941X: { title: "IRS Form 941-X", accept: [".pdf"], minBytes: 10_000 },
-};
+let grantsCache = null;
 
 function loadLibrary() {
-  if (!cache) {
-    cache = JSON.parse(fs.readFileSync(LIB_PATH, "utf8"));
+  if (!docCatalogCache) {
+    docCatalogCache = JSON.parse(fs.readFileSync(DOC_LIBRARY_PATH, 'utf8'));
   }
-  return cache;
+  return docCatalogCache;
 }
 
 function loadDocTypes() {
   if (!docTypeCache) {
-    const raw = JSON.parse(fs.readFileSync(DOC_CATALOG, "utf8")).types;
+    const raw = loadLibrary().types || {};
     docTypeCache = {};
     for (const [key, spec] of Object.entries(raw)) {
       if (spec && spec.$ref) {
-        const p = path.join(DOC_TYPES_DIR, spec.$ref);
-        docTypeCache[key] = JSON.parse(fs.readFileSync(p, "utf8"));
+        const refPath = path.join(DOC_LIBRARY_DIR, spec.$ref);
+        docTypeCache[key] = JSON.parse(fs.readFileSync(refPath, 'utf8'));
       } else {
         docTypeCache[key] = spec;
       }
@@ -43,85 +42,116 @@ function getDocType(key) {
   return loadDocTypes()[key];
 }
 
+function describeDoc(key) {
+  const doc = loadDocTypes()[key];
+  if (!doc) return { label: key };
+  return {
+    label: doc.display_name || doc.title || key,
+    accept: doc.accept || doc.accept_mime || [],
+  };
+}
+
+function normalizeCaseDocuments(caseDocs = []) {
+  return (caseDocs || []).map((doc) => {
+    if (!doc) return doc;
+    const normalized = normalizeKey(doc.doc_type || doc.docType || doc.key);
+    return { ...doc, doc_type: normalized };
+  });
+}
+
 function getRequiredDocs(grantKey, caseDocs = []) {
-  const lib = loadLibrary();
-  const g = lib.grants[grantKey];
-  if (!g) return null;
-  const types = loadDocTypes();
-  const expandDocType = (d) =>
-    d.doc_type === 'Financial_Statements'
-      ? [
-          { ...d, doc_type: 'Profit_And_Loss_Statement' },
-          { ...d, doc_type: 'Balance_Sheet' },
-        ]
-      : [d];
-  const all = [
-    ...(lib.common_documents || []),
-    ...(g.required_documents || g.required_docs || []),
-  ].flatMap(expandDocType);
-  const seen = new Map();
-  for (const d of all) {
-    const key = d.doc_type || d.key;
-    if (!key || seen.has(key)) continue;
-    if (d.doc_type) {
-      const spec = types[d.doc_type] || {};
-      const uploads = caseDocs.filter(
-        (c) => (c.docType || c.doc_type) === d.doc_type
-      );
-      const min = d.min_count || 1;
-      seen.set(key, {
-        key: d.doc_type,
-        doc_type: d.doc_type,
-        label: spec.display_name || d.doc_type,
-        min_count: min,
-        uploads,
-        fulfilled: uploads.length >= min,
-      });
-    } else {
-      const uploads = caseDocs.filter(
-        (c) => (c.key || c.evidence_key) === key
-      );
-      const min = d.min_count || 1;
-      seen.set(key, {
-        key,
-        doc_type: key,
-        label: d.label || key,
-        min_count: min,
-        uploads,
-        fulfilled: uploads.length >= min,
-      });
+  const grants = loadGrantsLibrarySync();
+  const grant = grants[grantKey];
+  if (!grant) return [];
+  const docs = normalizeList([
+    ...(grant.common_docs || []),
+    ...(grant.required_docs || []),
+  ]);
+  const seen = new Set();
+  const uploads = normalizeCaseDocuments(caseDocs);
+  return docs
+    .filter((doc) => {
+      if (seen.has(doc)) return false;
+      seen.add(doc);
+      return true;
+    })
+    .map((doc) => {
+      const matches = uploads.filter((d) => d.doc_type === doc);
+      const meta = describeDoc(doc);
+      return {
+        key: doc,
+        doc_type: doc,
+        label: meta.label,
+        uploads: matches,
+        fulfilled: matches.length > 0,
+      };
+    });
+}
+
+function loadGrantsLibrarySync() {
+  if (!grantsCache) {
+    const entries = {};
+    const files = fs.readdirSync(GRANTS_DIR).filter((f) => f.endsWith('.json'));
+    for (const file of files) {
+      const grantKey = path.basename(file, '.json');
+      try {
+        const raw = JSON.parse(
+          fs.readFileSync(path.join(GRANTS_DIR, file), 'utf8')
+        );
+        entries[grantKey] = {
+          required_docs: normalizeList(raw.required_documents || []),
+          required_forms: normalizeList(
+            raw.required_forms || raw.requiredForms || []
+          ),
+          common_docs: normalizeList(raw.common_documents || []),
+        };
+      } catch (err) {
+        entries[grantKey] = { required_docs: [], required_forms: [], common_docs: [] };
+      }
     }
+    grantsCache = entries;
   }
-  return Array.from(seen.values());
+  return grantsCache;
 }
 
 async function loadGrantsLibrary() {
-  const raw = await fsPromises.readFile(LIB_PATH, "utf8");
-  const parsed = JSON.parse(raw);
-  const globalCommon = (parsed.common_documents || []).map(
-    (d) => d.doc_type || d.key || d
-  );
-  const out = {};
-  for (const [key, cfg] of Object.entries(parsed.grants || {})) {
-    const grantCommon = (cfg.common_docs || cfg.common_documents || []).map(
-      (d) => d.doc_type || d.key || d
-    );
-    const required = (cfg.required_docs || cfg.required_documents || []).map(
-      (d) => d.doc_type || d.key || d
-    );
-    out[key] = {
-      common_docs: Array.from(new Set([...globalCommon, ...grantCommon])),
-      required_docs: required,
-    };
+  if (grantsCache) return grantsCache;
+  const entries = {};
+  const files = await fsPromises.readdir(GRANTS_DIR);
+  for (const file of files) {
+    if (!file.endsWith('.json')) continue;
+    const grantKey = path.basename(file, '.json');
+    try {
+      const raw = JSON.parse(
+        await fsPromises.readFile(path.join(GRANTS_DIR, file), 'utf8')
+      );
+      entries[grantKey] = {
+        required_docs: normalizeList(raw.required_documents || []),
+        required_forms: normalizeList(
+          raw.required_forms || raw.requiredForms || []
+        ),
+        common_docs: normalizeList(raw.common_documents || []),
+      };
+    } catch (err) {
+      entries[grantKey] = { required_docs: [], required_forms: [], common_docs: [] };
+    }
   }
-  return out;
+  grantsCache = entries;
+  return grantsCache;
+}
+
+function resetCache() {
+  docCatalogCache = null;
+  docTypeCache = null;
+  grantsCache = null;
 }
 
 module.exports = {
   loadLibrary,
-  getRequiredDocs,
   loadDocTypes,
   getDocType,
-  DOC_TYPES,
+  getRequiredDocs,
   loadGrantsLibrary,
+  loadGrantsLibrarySync,
+  resetCache,
 };

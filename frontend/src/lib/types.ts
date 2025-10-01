@@ -22,6 +22,7 @@ export interface EligibilityItem {
   reasoning?: string[];
   next_steps?: string;
   requiredForms?: string[];
+  requiredDocuments?: string[];
   eligibility_percent?: number;
   status?: 'eligible' | 'conditional' | 'ineligible';
   rationale?: string;
@@ -47,6 +48,8 @@ export interface CaseSnapshot {
   caseId: string | null;
   requiredForms?: string[];
   requiredDocuments?: string[];
+  pendingForms?: string[];
+  missingDocuments?: string[];
   status?: CaseStatus;
   documents?: CaseDoc[];
   analyzerFields?: Record<string, unknown>;
@@ -65,6 +68,7 @@ export interface CaseSnapshot {
 export type ResultsEnvelope = {
   results: EligibilityItem[];
   requiredForms: string[];
+  requiredDocuments: string[];
 };
 
 export type EligibilityReport = ResultsEnvelope | EligibilityItem[];

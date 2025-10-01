@@ -12,7 +12,7 @@ from config import settings
 from document_utils import extract_fields, guess_attachment
 from nlp_utils import normalize_text_field, infer_state_from_zip, llm_complete
 
-FORM_DIR = Path(__file__).parent / "form_templates"
+FORM_DIR = Path(__file__).resolve().parents[1] / "form_templates"
 logger = get_logger(__name__)
 
 ZIP_STATE = {

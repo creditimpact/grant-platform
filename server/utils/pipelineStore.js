@@ -13,7 +13,7 @@ async function createCase(userId, caseId) {
       status: 'open',
       analyzer: { fields: {}, lastUpdated: null },
       questionnaire: { data: {}, lastUpdated: null },
-      eligibility: { results: [], requiredForms: [], shortlist: [], lastUpdated: null },
+      eligibility: { results: [], requiredForms: [], requiredDocuments: [], shortlist: [], lastUpdated: null },
       documents: [],
       requiredDocuments: [],
       generatedForms: [],
