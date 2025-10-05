@@ -1,9 +1,9 @@
-"""Field extraction logic for bank statement documents."""
 from __future__ import annotations
 
 import re
-from typing import Iterable, Tuple
+from typing import Any, Dict, Iterable, Tuple
 
+from document_library import catalog_index
 from document_library.aliases import get_aliases_for
 
 DATE_TOKEN = r"(?:[A-Za-z]{3,9}\s+\d{1,2},?\s*\d{2,4}|\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}-\d{1,2}-\d{1,2})"
@@ -19,6 +19,11 @@ COMBINED_PERIOD_PATTERNS = [
         rf"(?P<start>{DATE_TOKEN})\s*{RANGE_SEPARATOR}\s*(?P<end>{DATE_TOKEN})"
     ),
 ]
+
+
+def _schema_fields() -> Tuple[str, ...]:
+    definition = catalog_index().get("Bank_Statements")
+    return definition.schema_fields if definition else ()
 
 
 def _normalize_numeric_token(token: str | None) -> str | None:
@@ -133,47 +138,66 @@ def _extract_statement_period(
     return start, end
 
 
-def extract_fields(text: str) -> dict:
-    if not text:
-        text = ""
+def _assign_field(container: Dict[str, Any], field: str, value: Any) -> None:
+    parts = field.split(".")
+    cursor: Dict[str, Any] = container
+    for part in parts[:-1]:
+        cursor = cursor.setdefault(part, {})
+    cursor[parts[-1]] = value
 
+
+def extract(text: str) -> dict[str, Any]:
+    cleaned = text or ""
     aliases = get_aliases_for("Bank_Statements")
+    schema = set(_schema_fields())
 
     start_date, end_date = _extract_statement_period(
-        text,
+        cleaned,
         aliases.get("statement_period.start", []),
         aliases.get("statement_period.end", []),
     )
 
-    return {
-        "bank_name": _extract_text_field(text, aliases.get("bank_name", [])),
-        "account_holder_name": _extract_text_field(
-            text, aliases.get("account_holder_name", [])
-        ),
-        "account_number_last4": _extract_account_last4(
-            text, aliases.get("account_number_last4", [])
-        ),
-        "statement_period": {
-            "start": start_date,
-            "end": end_date,
-        },
-        "beginning_balance": _extract_numeric_field(
-            text, aliases.get("beginning_balance", [])
-        ),
-        "ending_balance": _extract_numeric_field(
-            text, aliases.get("ending_balance", [])
-        ),
-        "totals": {
-            "deposits": _extract_numeric_field(
-                text, aliases.get("totals.deposits", [])
-            ),
-            "withdrawals": _extract_numeric_field(
-                text, aliases.get("totals.withdrawals", [])
-            ),
-        },
-        "currency": _extract_currency(text, aliases.get("currency", [])),
-    }
+    extracted: Dict[str, Any] = {}
+
+    def maybe_assign(field: str, value: Any) -> None:
+        if field not in schema:
+            return
+        if value is None:
+            return
+        if isinstance(value, str) and not value.strip():
+            return
+        _assign_field(extracted, field, value)
+
+    maybe_assign("bank_name", _extract_text_field(cleaned, aliases.get("bank_name", [])))
+    maybe_assign(
+        "account_holder_name",
+        _extract_text_field(cleaned, aliases.get("account_holder_name", [])),
+    )
+    maybe_assign(
+        "account_number_last4",
+        _extract_account_last4(cleaned, aliases.get("account_number_last4", [])),
+    )
+    maybe_assign("statement_period.start", start_date)
+    maybe_assign("statement_period.end", end_date)
+    maybe_assign(
+        "beginning_balance",
+        _extract_numeric_field(cleaned, aliases.get("beginning_balance", [])),
+    )
+    maybe_assign(
+        "ending_balance",
+        _extract_numeric_field(cleaned, aliases.get("ending_balance", [])),
+    )
+    maybe_assign(
+        "totals.deposits",
+        _extract_numeric_field(cleaned, aliases.get("totals.deposits", [])),
+    )
+    maybe_assign(
+        "totals.withdrawals",
+        _extract_numeric_field(cleaned, aliases.get("totals.withdrawals", [])),
+    )
+    maybe_assign("currency", _extract_currency(cleaned, aliases.get("currency", [])))
+
+    return extracted
 
 
-__all__ = ["extract_fields"]
-
+__all__ = ["extract"]

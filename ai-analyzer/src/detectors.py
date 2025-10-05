@@ -1,39 +1,11 @@
 import re
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional
 
+from document_library import normalize_key
 from document_library.detectors import build_identify_map
 
 
 DOC_TYPES = build_identify_map()
-
-# map key -> (module, function)
-EXTRACTORS = {
-    "Tax_Payment_Receipt": ("tax_payment_receipt", "extract"),
-    "Business_License": ("business_license", "extract"),
-    "Articles_Of_Incorporation": ("articles_of_incorporation", "extract"),
-    "EIN_Letter": ("ein_letter", "extract"),
-    "W9_Form": ("w9_form", "extract"),
-    "W2_Form": ("w2_form", "extract"),
-    "1099_NEC": ("irs_1099_nec", "extract"),
-    "Form1099_Summary": ("irs_1099_summary", "extract_form1099_summary"),
-    "Vendor_1099_Report": ("irs_1099_summary", "extract_vendor_1099_report"),
-    "Profit_And_Loss_Statement": ("p_and_l_statement", "extract"),
-    "Balance_Sheet": ("balance_sheet", "extract"),
-    "Business_Plan": ("business_plan", "extract"),
-    "Grant_Use_Statement": ("grant_use_statement", "extract"),
-    "Utility_Bill": ("utility_bill", "extract"),
-    "Installer_Contract": ("installer_contract", "extract"),
-    "Equipment_Specs": ("equipment_specs", "extract"),
-    "Invoices_or_Quotes": ("invoices_or_quotes", "extract"),
-    "Energy_Savings_Report": ("energy_savings_report", "extract"),
-    "Payroll_Register": ("payroll_register", "extract"),
-    "Payroll_Provider_Report": ("payroll_register", "extract"),
-    "DBE_ACDBE_Uniform_Application": ("dbe_acdbe_uniform_application", "extract"),
-    "VOSB_SDVOSB_Application": ("veteran_cert_application", "extract"),
-    "VOSB_Certificate": ("veteran_cert_proof", "extract"),
-    "SDVOSB_Certificate": ("veteran_cert_proof", "extract"),
-    "VOSB_SDVOSB_Approval_Letter": ("veteran_cert_proof", "extract"),
-}
 
 
 def _score_1099_nec(text: str) -> float:
@@ -168,21 +140,33 @@ CUSTOM_DETECTORS: Dict[str, Callable[[str], float | Dict[str, float | str]]] = {
     "SDVOSB_Certificate": _score_veteran_documents,
     "VOSB_SDVOSB_Approval_Letter": _score_veteran_documents,
 }
-
-
-def identify(doc_text: str) -> dict:
+def identify(doc_text: str, *, filename: Optional[str] = None) -> dict:
     """Return {'type_key': str, 'confidence': float} or {}"""
-    text = doc_text[:20000]  # cap for speed
+
+    text = doc_text[:20000] if doc_text else ""
     best = None
     lowered = text.lower()
+    lowered_filename = filename.lower() if filename else None
+
     for key, spec in DOC_TYPES.items():
-        kw = spec["identify"].get("keywords_any", [])
-        rx = spec["identify"].get("regex_any", [])
+        identify_spec = spec.get("identify", {})
+        kw = identify_spec.get("keywords_any", [])
+        rx = identify_spec.get("regex_any", [])
+        filename_terms = identify_spec.get("filename_contains", [])
+
         score = 0.0
-        if any(k.lower() in lowered for k in kw):
+        text_hits = [term for term in kw if term.lower() in lowered]
+        if text_hits:
             score += 0.5
-        if any(re.search(r, text) for r in rx):
+            score += min(0.3, 0.1 * (len(text_hits) - 1))
+
+        if rx and any(re.search(r, text) for r in rx):
             score += 0.5
+
+        if lowered_filename and filename_terms:
+            if any(term.lower() in lowered_filename for term in filename_terms):
+                score += 0.2
+
         custom = CUSTOM_DETECTORS.get(key)
         override_key = None
         if custom:
@@ -192,26 +176,19 @@ def identify(doc_text: str) -> dict:
                 override_key = custom_res.get("type_key")
             else:
                 score = max(score, float(custom_res))
+
         if score > 0:
-            score += spec["identify"].get("score_bonus", 0)
-        candidate_key = override_key or key
+            score += identify_spec.get("score_bonus", 0)
+
+        candidate_key = normalize_key(override_key or key)
         if score > 0 and (not best or score > best["confidence"]):
             best = {"type_key": candidate_key, "confidence": float(score)}
+
     return best or {}
 
 
-def detect(text: str) -> dict:
-    det = identify(text)
+def detect(text: str, *, filename: Optional[str] = None) -> dict:
+    det = identify(text, filename=filename)
     if not det:
-        return {"type": {}, "extracted": {}}
-    key = det["type_key"]
-    mod_name, func_name = EXTRACTORS.get(key, (None, None))
-    extracted = {}
-    if mod_name:
-        mod = __import__(f"src.extractors.{mod_name}", fromlist=[func_name])
-        func = getattr(mod, func_name)
-        try:
-            extracted = func(text, key)
-        except TypeError:
-            extracted = func(text)
-    return {"type": {"key": key, "confidence": det.get("confidence", 0)}, "extracted": extracted}
+        return {"type": {}}
+    return {"type": {"key": det["type_key"], "confidence": det.get("confidence", 0.0)}}
