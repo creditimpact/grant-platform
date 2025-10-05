@@ -5,7 +5,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 )
 
-from fastapi import FastAPI, UploadFile, HTTPException, Request
+from fastapi import FastAPI, UploadFile, HTTPException, Request, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.concurrency import run_in_threadpool
@@ -168,7 +168,39 @@ class TextAnalyzeRequest(BaseModel):
 
 
 @app.post("/analyze")
-async def analyze(request: Request):
+async def analyze(
+    request: Request,
+    file: UploadFile | None = File(None),
+    text: str | None = Form(None),
+):
+    if text is not None:
+        form_text = text.strip()
+        if form_text:
+            if len(form_text.encode("utf-8")) > settings.MAX_TEXT_LEN:
+                raise HTTPException(status_code=400, detail="Text exceeds limit")
+            return await analyze_text_flow(form_text, source="text")
+        if file is None:
+            raise HTTPException(status_code=400, detail="Provide file or text")
+
+    if file is not None:
+        validate_upload(file)
+        upload_bytes = await file.read()
+        if not upload_bytes:
+            raise HTTPException(status_code=400, detail="Provide file or text")
+        try:
+            extracted = extract_text(upload_bytes)
+        except OCRExtractionError as exc:
+            logger.exception("extract_text failed")
+            raise HTTPException(
+                status_code=500, detail="Failed to extract text"
+            ) from exc
+        return await analyze_text_flow(
+            extracted,
+            source="file",
+            filename=file.filename,
+            content_type=file.content_type,
+        )
+
     ctype = request.headers.get("content-type", "")
 
     if "application/json" in ctype:
@@ -195,52 +227,6 @@ async def analyze(request: Request):
         if not body_text:
             raise HTTPException(status_code=400, detail="Provide file or text")
         return await analyze_text_flow(body_text, source="text")
-
-    if "multipart/form-data" in ctype:
-        body = await request.body()
-        env = {
-            "REQUEST_METHOD": "POST",
-            "CONTENT_TYPE": ctype,
-            "CONTENT_LENGTH": str(len(body)),
-        }
-        form = cgi.FieldStorage(
-            fp=io.BytesIO(body), environ=env, keep_blank_values=True
-        )
-        text_val = None
-        upload_bytes = None
-        filename = None
-        content_type_file = None
-        if "text" in form and not getattr(form["text"], "filename", None):
-            text_val = form["text"].value
-        if "file" in form:
-            field = form["file"]
-            if getattr(field, "filename", None):
-                filename = field.filename
-                content_type_file = field.type
-                upload_bytes = field.file.read()
-        if text_val and text_val.strip():
-            if len(text_val.encode("utf-8")) > settings.MAX_TEXT_LEN:
-                raise HTTPException(
-                    status_code=400, detail="Text exceeds limit"
-                )
-            return await analyze_text_flow(text_val.strip(), source="text")
-        if upload_bytes is None:
-            raise HTTPException(status_code=400, detail="Provide file or text")
-        upload = UploadFile(io.BytesIO(upload_bytes), filename=filename)
-        validate_upload(upload)
-        try:
-            extracted = extract_text(upload_bytes)
-        except OCRExtractionError as exc:
-            logger.exception("extract_text failed")
-            raise HTTPException(
-                status_code=500, detail="Failed to extract text"
-            ) from exc
-        return await analyze_text_flow(
-            extracted,
-            source="file",
-            filename=filename,
-            content_type=content_type_file,
-        )
 
     raise HTTPException(status_code=400, detail="Unsupported Content-Type")
 
