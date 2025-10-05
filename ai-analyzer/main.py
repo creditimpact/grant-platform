@@ -9,6 +9,7 @@ from fastapi import FastAPI, UploadFile, HTTPException, Request, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.concurrency import run_in_threadpool
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 import io
@@ -22,6 +23,7 @@ from ai_analyzer.config import settings  # type: ignore
 from ai_analyzer.upload_utils import validate_upload
 from src.detectors import detect
 from src.normalization import normalize_doc_type
+from src.session_manager import SessionManager
 try:  # pragma: no cover - optional OpenAI dependency
     from openai import OpenAI  # type: ignore
     openai_client = (
@@ -156,6 +158,9 @@ async def ocr_image(request: Request) -> dict[str, str]:
         raise HTTPException(
             status_code=500, detail="Failed to extract text"
         ) from exc
+    decoded = file_bytes.decode("utf-8", errors="ignore").strip()
+    if not text.strip() or text.strip() == decoded:
+        raise HTTPException(status_code=500, detail="Failed to extract text")
     return {"text": text}
 
 
@@ -178,28 +183,34 @@ async def analyze(
         if form_text:
             if len(form_text.encode("utf-8")) > settings.MAX_TEXT_LEN:
                 raise HTTPException(status_code=400, detail="Text exceeds limit")
-            return await analyze_text_flow(form_text, source="text")
+            session_id = SessionManager.create_session()
+            analysis_result, _ = await run_analysis_session(
+                session_id=session_id,
+                source="text",
+                text_input=form_text,
+                upload_bytes=None,
+                filename=None,
+                content_type=None,
+                raise_on_fail=True,
+            )
+            return analysis_result or {}
         if file is None:
             raise HTTPException(status_code=400, detail="Provide file or text")
 
     if file is not None:
         validate_upload(file)
         upload_bytes = await file.read()
-        if not upload_bytes:
-            raise HTTPException(status_code=400, detail="Provide file or text")
-        try:
-            extracted = extract_text(upload_bytes)
-        except OCRExtractionError as exc:
-            logger.exception("extract_text failed")
-            raise HTTPException(
-                status_code=500, detail="Failed to extract text"
-            ) from exc
-        return await analyze_text_flow(
-            extracted,
+        session_id = SessionManager.create_session()
+        analysis_result, _ = await run_analysis_session(
+            session_id=session_id,
             source="file",
+            text_input=None,
+            upload_bytes=upload_bytes,
             filename=file.filename,
             content_type=file.content_type,
+            raise_on_fail=True,
         )
+        return analysis_result or {}
 
     ctype = request.headers.get("content-type", "")
 
@@ -217,7 +228,17 @@ async def analyze(
             raise HTTPException(
                 status_code=422, detail="Invalid JSON shape"
             ) from exc
-        return await analyze_text_flow(req.text, source="text")
+        session_id = SessionManager.create_session()
+        analysis_result, _ = await run_analysis_session(
+            session_id=session_id,
+            source="text",
+            text_input=req.text,
+            upload_bytes=None,
+            filename=None,
+            content_type="application/json",
+            raise_on_fail=True,
+        )
+        return analysis_result or {}
 
     if "text/plain" in ctype:
         raw = await request.body()
@@ -226,9 +247,99 @@ async def analyze(
         body_text = raw.decode("utf-8", errors="replace").strip()
         if not body_text:
             raise HTTPException(status_code=400, detail="Provide file or text")
-        return await analyze_text_flow(body_text, source="text")
+        session_id = SessionManager.create_session()
+        analysis_result, _ = await run_analysis_session(
+            session_id=session_id,
+            source="text",
+            text_input=body_text,
+            upload_bytes=None,
+            filename=None,
+            content_type="text/plain",
+            raise_on_fail=True,
+        )
+        return analysis_result or {}
 
     raise HTTPException(status_code=400, detail="Unsupported Content-Type")
+
+
+@app.post("/diagnose")
+async def diagnose(
+    request: Request,
+    file: UploadFile | None = File(None),
+    text: str | None = Form(None),
+):
+    session_id = SessionManager.create_session()
+    errors: list[str] = []
+    upload_bytes: bytes | None = None
+    filename: str | None = None
+    content_type: str | None = None
+    text_input: str | None = None
+
+    if text is not None:
+        form_text = text.strip()
+        if form_text:
+            if len(form_text.encode("utf-8")) > settings.MAX_TEXT_LEN:
+                errors.append("Text exceeds allowed limit; ignoring text input.")
+            else:
+                text_input = form_text
+        else:
+            errors.append("Text form field was provided but empty.")
+
+    if file is not None:
+        try:
+            validate_upload(file)
+            upload_bytes = await file.read()
+            if not upload_bytes:
+                errors.append("Uploaded file was empty.")
+            else:
+                filename = file.filename
+                content_type = file.content_type
+        except HTTPException as exc:
+            errors.append(f"Upload validation failed: {exc.detail}")
+        except Exception as exc:  # pragma: no cover - unexpected validation errors
+            logger.exception("diagnose upload validation failed", extra={"session_id": session_id})
+            errors.append(f"Upload validation error: {exc}")
+
+    if text_input is None and upload_bytes is None:
+        ctype = request.headers.get("content-type", "")
+        if "application/json" in ctype:
+            try:
+                payload = await request.json()
+                req = TextAnalyzeRequest(**payload)
+                text_input = req.text
+            except Exception as exc:
+                errors.append(f"Invalid JSON payload: {exc}")
+        elif "text/plain" in ctype:
+            raw = await request.body()
+            if len(raw) > settings.MAX_TEXT_LEN:
+                errors.append("Text exceeds allowed limit; ignoring text input.")
+            else:
+                body_text = raw.decode("utf-8", errors="replace").strip()
+                if body_text:
+                    text_input = body_text
+                else:
+                    errors.append("Plain text body was empty.")
+        elif "multipart/form-data" in ctype:
+            errors.append("Multipart request missing file or text payload.")
+
+    if upload_bytes is not None and text_input:
+        errors.append("Both file and text provided; prioritizing file for analysis.")
+        text_input = None
+
+    source = "file" if upload_bytes else "text"
+
+    _, report = await run_analysis_session(
+        session_id=session_id,
+        source=source,
+        text_input=text_input,
+        upload_bytes=upload_bytes,
+        filename=filename,
+        content_type=content_type,
+        raise_on_fail=False,
+        initial_errors=errors,
+    )
+
+    return report
 
 
 @app.post("/analyze-ai")
@@ -396,6 +507,285 @@ EXPECTED_FIELDS = [
     "ppp_reference",
     "ertc_reference",
 ]
+
+
+def _sanitize_filename(name: str | None) -> str:
+    if not name:
+        return "upload.bin"
+    return Path(name).name or "upload.bin"
+
+
+def _build_diagnostic_report(
+    *,
+    session_id: str,
+    start_time: datetime,
+    end_time: datetime,
+    source: str,
+    file_info: dict[str, Any],
+    ocr_status: str,
+    ocr_text: str,
+    detect_result: dict | None,
+    analysis_result: dict | None,
+    catalog_entries: int | None,
+    matched_rule: str | None,
+    errors: list[str],
+) -> dict[str, Any]:
+    duration = (end_time - start_time).total_seconds()
+    doc_type = None
+    doc_confidence = None
+    if detect_result:
+        det_type = detect_result.get("type", {})
+        doc_type = det_type.get("key")
+        doc_confidence = det_type.get("confidence")
+
+    analyzer_fields: dict[str, Any] = {}
+    if analysis_result:
+        if isinstance(analysis_result.get("fields_clean"), dict):
+            analyzer_fields = analysis_result["fields_clean"]  # type: ignore[index]
+        elif isinstance(analysis_result.get("fields"), dict):
+            analyzer_fields = analysis_result["fields"]  # type: ignore[index]
+
+    example_field = None
+    if analyzer_fields:
+        for key, value in analyzer_fields.items():
+            example_field = {key: value}
+            break
+
+    report = {
+        "session_id": session_id,
+        "started_at": start_time.isoformat(),
+        "completed_at": end_time.isoformat(),
+        "duration_seconds": duration,
+        "source": source,
+        "file": file_info,
+        "ocr": {
+            "status": ocr_status,
+            "character_count": len(ocr_text),
+            "sample_text": ocr_text[:500],
+        },
+        "detector": {
+            "doc_type": doc_type,
+            "confidence": doc_confidence,
+        },
+        "analyzer": {
+            "field_count": len(analyzer_fields),
+            "example_field": example_field,
+        },
+        "catalog": {
+            "entries": catalog_entries,
+            "matched_rule": matched_rule,
+        },
+        "errors": list(errors),
+        "debug_path": str(SessionManager.get_session_path(session_id)),
+    }
+    if analysis_result:
+        report["analyzer"].update(
+            {
+                "confidence": analysis_result.get("confidence"),
+                "source": analysis_result.get("source"),
+            }
+        )
+    return report
+
+
+async def run_analysis_session(
+    *,
+    session_id: str,
+    source: str,
+    text_input: str | None,
+    upload_bytes: bytes | None,
+    filename: str | None,
+    content_type: str | None,
+    raise_on_fail: bool,
+    initial_errors: list[str] | None = None,
+) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    start_time = datetime.now(timezone.utc)
+    errors: list[str] = list(initial_errors or [])
+    ocr_text = ""
+    ocr_status = "not_run"
+    detect_result: dict | None = None
+    analysis_result: dict[str, Any] | None = None
+    catalog_entries: int | None = None
+    matched_rule: str | None = None
+    file_info: dict[str, Any] = {
+        "name": _sanitize_filename(filename) if filename else None,
+        "size": None,
+        "content_type": content_type,
+    }
+    pending_http_exc: HTTPException | None = None
+    pending_exc: Exception | None = None
+
+    try:
+        if upload_bytes is not None:
+            file_info["name"] = _sanitize_filename(filename)
+            file_info["size"] = len(upload_bytes)
+            if len(upload_bytes) == 0:
+                errors.append("Uploaded file was empty")
+                if raise_on_fail:
+                    raise HTTPException(status_code=400, detail="Provide file or text")
+            try:
+                SessionManager.save_bytes(
+                    session_id, "raw", file_info["name"] or "upload.bin", upload_bytes
+                )
+            except Exception as exc:  # pragma: no cover - filesystem edge
+                logger.exception("Failed to save raw upload", extra={"session_id": session_id})
+                errors.append(f"Failed to save raw upload: {exc}")
+        elif text_input is not None:
+            file_info["size"] = len(text_input.encode("utf-8"))
+            try:
+                SessionManager.save_text(session_id, "raw", "input_text.txt", text_input)
+            except Exception as exc:  # pragma: no cover - filesystem edge
+                logger.exception("Failed to save raw text", extra={"session_id": session_id})
+                errors.append(f"Failed to save raw text: {exc}")
+
+        if upload_bytes is not None and len(upload_bytes) > 0:
+            try:
+                ocr_text = extract_text(upload_bytes)
+                ocr_status = "success"
+                if not ocr_text.strip():
+                    errors.append("OCR returned no text from upload.")
+                    ocr_status = "empty"
+                    if raise_on_fail:
+                        raise HTTPException(
+                            status_code=500, detail="Failed to extract text"
+                        )
+                elif upload_bytes.lstrip().startswith(b"%PDF") and ocr_text.strip().startswith("%PDF"):
+                    errors.append("OCR returned raw PDF header; treating as failure.")
+                    ocr_status = "error"
+                    if raise_on_fail:
+                        raise HTTPException(
+                            status_code=500, detail="Failed to extract text"
+                        )
+                    ocr_text = ""
+                else:
+                    raw_decoded = upload_bytes.decode("utf-8", errors="ignore").strip()
+                    if (
+                        ocr_text.strip() == raw_decoded
+                        and content_type
+                        and not content_type.startswith("text/")
+                    ):
+                        errors.append(
+                            "OCR fell back to raw byte decode; treating as failure."
+                        )
+                        ocr_status = "error"
+                        if raise_on_fail:
+                            raise HTTPException(
+                                status_code=500, detail="Failed to extract text"
+                            )
+                        ocr_text = ""
+            except OCRExtractionError as exc:
+                ocr_status = "error"
+                logger.exception("extract_text failed", extra={"session_id": session_id})
+                errors.append(f"OCR extraction failed: {exc}")
+                if raise_on_fail:
+                    raise HTTPException(status_code=500, detail="Failed to extract text") from exc
+            except Exception as exc:  # pragma: no cover - unexpected OCR errors
+                ocr_status = "error"
+                logger.exception("Unexpected OCR failure", extra={"session_id": session_id})
+                errors.append(f"Unexpected OCR failure: {exc}")
+                if raise_on_fail:
+                    raise HTTPException(status_code=500, detail="Failed to extract text") from exc
+        elif text_input is not None:
+            ocr_text = text_input
+            ocr_status = "provided"
+        else:
+            if not raise_on_fail:
+                errors.append("No text available for analysis")
+            else:
+                raise HTTPException(status_code=400, detail="Provide file or text")
+
+        if ocr_text:
+            try:
+                SessionManager.save_text(session_id, "ocr", "ocr_output.txt", ocr_text)
+            except Exception as exc:  # pragma: no cover - filesystem edge
+                logger.exception("Failed to save OCR text", extra={"session_id": session_id})
+                errors.append(f"Failed to save OCR text: {exc}")
+
+        if ocr_text:
+            try:
+                detect_result = detect(ocr_text)
+                matched_rule = detect_result.get("type", {}).get("key")
+                SessionManager.save_json(
+                    session_id, "detect", "detect_result.json", detect_result
+                )
+            except Exception as exc:  # pragma: no cover - detector errors
+                logger.exception("Detector failed", extra={"session_id": session_id})
+                errors.append(f"Detector failed: {exc}")
+                if raise_on_fail:
+                    raise
+
+        if ocr_text and (detect_result or not raise_on_fail):
+            try:
+                analysis_result = await analyze_text_flow(
+                    ocr_text,
+                    source=source,
+                    filename=filename,
+                    content_type=content_type,
+                )
+                SessionManager.save_json(
+                    session_id, "analyze", "fields.json", analysis_result
+                )
+            except Exception as exc:  # pragma: no cover - analyzer errors
+                logger.exception("Analyzer failed", extra={"session_id": session_id})
+                errors.append(f"Analyzer failed: {exc}")
+                if raise_on_fail:
+                    raise
+
+        try:
+            catalog_path = (
+                Path(__file__).resolve().parents[1] / "document_library" / "catalog.json"
+            )
+            catalog_snapshot = json.loads(catalog_path.read_text(encoding="utf-8"))
+            catalog_entries = len(catalog_snapshot.get("documents", []))
+            SessionManager.save_json(
+                session_id, "catalog", "catalog_snapshot.json", catalog_snapshot
+            )
+        except Exception as exc:  # pragma: no cover - filesystem edge
+            logger.exception("Failed to snapshot catalog", extra={"session_id": session_id})
+            errors.append(f"Failed to snapshot catalog: {exc}")
+
+    except HTTPException as exc:
+        if raise_on_fail:
+            pending_http_exc = exc
+        else:
+            errors.append(f"HTTP error: {exc.detail}")
+    except Exception as exc:  # pragma: no cover - unexpected fallthrough
+        logger.exception("Unexpected analysis failure", extra={"session_id": session_id})
+        if raise_on_fail:
+            pending_exc = exc
+        else:
+            errors.append(f"Unexpected failure: {exc}")
+    finally:
+        end_time = datetime.now(timezone.utc)
+        report = _build_diagnostic_report(
+            session_id=session_id,
+            start_time=start_time,
+            end_time=end_time,
+            source=source,
+            file_info=file_info,
+            ocr_status=ocr_status,
+            ocr_text=ocr_text,
+            detect_result=detect_result,
+            analysis_result=analysis_result,
+            catalog_entries=catalog_entries,
+            matched_rule=matched_rule,
+            errors=errors,
+        )
+        try:
+            SessionManager.save_json(
+                session_id, "report", "diagnostic_report.json", report
+            )
+        except Exception as exc:  # pragma: no cover - filesystem edge
+            logger.exception("Failed to save diagnostic report", extra={"session_id": session_id})
+            errors.append(f"Failed to save diagnostic report: {exc}")
+            report["errors"] = list(errors)
+
+    if pending_http_exc is not None:
+        raise pending_http_exc
+    if pending_exc is not None:
+        raise pending_exc
+
+    return analysis_result, report
 
 
 async def call_openai_structured(text: str) -> dict[str, Any]:
