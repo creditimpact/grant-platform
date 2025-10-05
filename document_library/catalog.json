@@ -1,224 +1,183 @@
 {
-  "$schema": "https://example.com/schemas/document-types-v1.json",
   "version": 1,
-  "types": {
-    "Tax_Payment_Receipt": {
-      "$ref": "Tax_Payment_Receipt.json"
-    },
-    "Business_License": {
+  "documents": [
+    {
+      "key": "1099_NEC",
+      "display_name": "IRS Form 1099-NEC (Nonemployee Compensation)",
+      "family": "Payroll",
+      "aliases": [
+        "1099",
+        "1099-nec"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
       "detector": {
-        "keywords": [
-          "Application for General Business License",
-          "Business License",
-          "Applicant Information",
-          "Business Information"
-        ]
-      },
-      "extractor": "business_license",
-      "fields": {
-        "applicant_name": "string",
-        "date_of_birth": "date",
-        "home_address": "string",
-        "business_name": "string",
-        "business_address": "string",
-        "type_of_business": "string"
+        "filename_contains": [],
+        "text_contains": [
+          "Form 1099-NEC",
+          "Nonemployee Compensation",
+          "OMB No. 1545-0116",
+          "Copy A",
+          "Copy B",
+          "Copy 1",
+          "Copy 2",
+          "For calendar year",
+          "irs.gov/Form1099NEC"
+        ],
+        "text_regex": [
+          "(?i)Form\\s+1099[-\\u2011]?NEC",
+          "(?i)Nonemployee\\s+Comp(?:ensation)?",
+          "(?i)irs\\.gov/Form1099NEC"
+        ],
+        "page_hints": [
+          1
+        ],
+        "score_bonus": 0.2
       }
     },
-    "Articles_Of_Incorporation": {
+    {
+      "key": "Articles_Of_Incorporation",
+      "display_name": "Articles Of Incorporation",
+      "family": "BusinessRegistration",
+      "aliases": [
+        "certificate_of_incorporation",
+        "articles_of_organization",
+        "articles_of_incorporation"
+      ],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "business_name",
+        "entity_type",
+        "date_of_incorporation",
+        "state_of_incorporation",
+        "registered_agent"
+      ],
       "detector": {
-        "keywords": [
+        "filename_contains": [],
+        "text_contains": [
           "Articles of Incorporation",
           "Articles of Organization",
           "Certificate of Incorporation",
           "Certificate of Formation",
           "Secretary of State"
-        ]
-      },
-      "extractor": "articles_of_incorporation",
-      "fields": {
-        "business_name": "string",
-        "entity_type": "string",
-        "date_of_incorporation": "date",
-        "state_of_incorporation": "string",
-        "registered_agent": "string"
+        ],
+        "text_regex": []
       }
     },
-    "EIN_Letter": {
-      "detector": {
-        "keywords": [
-          "CP 575",
-          "EIN Confirmation Letter",
-          "Employer Identification Number",
-          "Internal Revenue Service",
-          "Department of the Treasury",
-          "This is your Employer Identification Number"
-        ]
-      },
-      "extractor": "ein_letter",
-      "fields": {
-        "ein": "string",
-        "business_name": "string",
-        "address": "string",
-        "issue_date": "date",
-        "notice_code": "string"
-      },
-      "examples": [
-        "IRS Notice CP-575 EIN assignment letter"
-      ]
-    },
-    "W9_Form": {
-      "extractor": "w9_form",
-      "detector": {
-        "keywords": [
-          "Form W-9",
-          "Request for Taxpayer Identification Number and Certification",
-          "W-9 (Rev.",
-          "Taxpayer Identification Number",
-          "TIN",
-          "Employer Identification Number",
-          "Social Security Number"
-        ],
-        "regex": [
-          "(?i)\\bForm\\s+W-9\\b",
-          "(?i)Request\\s+for\\s+Taxpayer\\s+Identification\\s+Number",
-          "(?i)Rev\\.\\s+October"
-        ]
-      },
-      "fields": {
-        "legal_name": "string",
-        "business_name": "string",
-        "entity_type": "string",
-        "tin": "string",
-        "address": "string",
-        "date_signed": "date"
-      },
-      "examples": [
-        "IRS Form W-9"
-      ]
-    },
-    "W2_Form": {
-      "display_name": "IRS Form W-2 (Wage and Tax Statement)",
-      "identify": {
-        "keywords_any": [
-          "Form W-2 Wage and Tax Statement",
-          "Wage and Tax Statement",
-          "OMB No. 1545-0029"
-        ],
-        "regex_any": [
-          "(?i)Form\\s+W-2\\s+Wage\\s+and\\s+Tax\\s+Statement",
-          "(?i)OMB\\s+No\\.\\s*1545-0029",
-          "(?i)Copy\\s+(?:A|B|C|D|1|2)"
-        ],
-        "score_bonus": 0.2,
-        "check_pages": [
-          1
-        ]
-      },
-      "extract_fields": [
-        "ein",
-        "employee_ssn",
-        "box1_wages",
-        "box2_federal_income_tax_withheld"
+    {
+      "key": "Balance_Sheet",
+      "display_name": "Balance Sheet",
+      "family": "Financial",
+      "aliases": [
+        "balance_sheet"
       ],
-      "normalize": {
-        "ein": "ein"
-      }
-    },
-    "Profit_And_Loss_Statement": {
-      "extractor": "p_and_l_statement",
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "as_of_date",
+        "total_assets",
+        "total_liabilities",
+        "total_equity",
+        "currency"
+      ],
       "detector": {
-        "keywords": [
-          "Profit and Loss",
-          "P&L",
-          "Income Statement",
-          "Statement of Operations"
-        ]
-      },
-      "fields": {
-        "period_start": "date",
-        "period_end": "date",
-        "total_revenue": "number",
-        "cogs": "number",
-        "gross_profit": "number",
-        "total_expenses": "number",
-        "net_income": "number",
-        "currency": "string"
-      },
-      "examples": [
-        "P&L statement showing revenues, expenses and net income"
-      ]
-    },
-    "Payroll_Register": {
-      "display_name": "Payroll Register",
-      "identify": {
-        "keywords_any": [
-          "Payroll Register",
-          "Payroll Journal",
-          "Payroll Summary",
-          "Payroll Detail",
-          "Pay Period",
-          "Check Date"
-        ],
-        "regex_any": [
-          "(?i)\\bEmp\\.?\\s*(?:No|ID)\\b",
-          "(?i)\\bGross\\s+Pay\\b",
-          "(?i)\\bNet\\s+Pay\\b"
-        ],
-        "score_bonus": 0.2
-      },
-      "fields": {
-        "pay_period": "object",
-        "employees": "array",
-        "document_totals": "object"
-      }
-    },
-    "Payroll_Provider_Report": {
-      "display_name": "Payroll Provider Report",
-      "identify": {
-        "keywords_any": [
-          "ADP",
-          "Gusto",
-          "QuickBooks Payroll",
-          "Intuit Payroll",
-          "Paychex",
-          "Zenefits"
-        ],
-        "regex_any": [
-          "(?i)Payroll\\s+(?:Register|Detail|Summary)",
-          "(?i)Check\\s+Date",
-          "(?i)Employee\\s+Name"
-        ],
-        "score_bonus": 0.1
-      },
-      "fields": {
-        "pay_period": "object",
-        "employees": "array",
-        "document_totals": "object"
-      }
-    },
-    "Balance_Sheet": {
-      "extractor": "balance_sheet",
-      "detector": {
-        "keywords": [
+        "filename_contains": [],
+        "text_contains": [
           "Balance Sheet",
           "Statement of Financial Position"
-        ]
-      },
-      "fields": {
-        "as_of_date": "date",
-        "total_assets": "number",
-        "total_liabilities": "number",
-        "total_equity": "number",
-        "currency": "string"
-      },
-      "examples": [
-        "Balance Sheet showing Assets, Liabilities, Equity"
-      ]
+        ],
+        "text_regex": []
+      }
     },
-    "Business_Plan": {
-      "extractor": "business_plan",
+    {
+      "key": "Bank_Statements",
+      "display_name": "Bank Statements",
+      "family": "Financial",
+      "aliases": [
+        "bank_statement",
+        "bank_statements"
+      ],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [],
       "detector": {
-        "keywords": [
+        "filename_contains": [],
+        "text_contains": [
+          "Statement Date",
+          "Ending Balance",
+          "Account Number"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Basic_Tax_Return",
+      "display_name": "Basic Tax Return (1120 / Schedule C)",
+      "family": "General",
+      "aliases": [
+        "basic_tax_return",
+        "basic_tax_returns"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Form 1120",
+          "Schedule C",
+          "Income Tax Return"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Business_License",
+      "display_name": "Business License",
+      "family": "BusinessRegistration",
+      "aliases": [
+        "business_license"
+      ],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "applicant_name",
+        "date_of_birth",
+        "home_address",
+        "business_name",
+        "business_address",
+        "type_of_business"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Application for General Business License",
+          "Business License",
+          "Applicant Information",
+          "Business Information"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Business_Plan",
+      "display_name": "Business Plan",
+      "family": "Supporting",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [
+        "business_name",
+        "executive_summary",
+        "funding_request_amount",
+        "period_years",
+        "last_updated"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
           "Business Plan",
           "Executive Summary",
           "Company Description",
@@ -227,154 +186,166 @@
           "Funding Request",
           "Go-to-Market",
           "Operations Plan"
-        ]
-      },
-      "fields": {
-        "business_name": "string",
-        "executive_summary": "string",
-        "funding_request_amount": "number",
-        "period_years": "number",
-        "last_updated": "date"
+        ],
+        "text_regex": []
       },
       "description": "Full business plan including executive summary, company details, market analysis, funding request,\n        and financial projections."
     },
-    "Grant_Use_Statement": {
-      "extractor": "grant_use_statement",
+    {
+      "key": "City_Application",
+      "display_name": "City Grant Application",
+      "family": "Supporting",
+      "aliases": [
+        "city_application"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
       "detector": {
-        "keywords": [
-          "Use of Funds",
-          "Grant Use Statement",
-          "Intended Use of Grant Funds",
-          "Statement of Intended Use",
-          "Funding Request"
+        "filename_contains": [],
+        "text_contains": [
+          "City of",
+          "Grant Application",
+          "Program Application"
         ],
-        "regex": [
-          "(?i)use of funds"
-        ]
-      },
-      "fields": {
-        "business_name": "string",
-        "funding_request_amount": "number",
-        "intended_categories": "array",
-        "justification": "string",
-        "date_signed": "date"
-      },
-      "description": "Declaration of how grant funds will be used, including categories, amounts, and justification."
+        "text_regex": []
+      }
     },
-    "Utility_Bill": {
-      "extractor": "utility_bill",
+    {
+      "key": "Client_Project_List",
+      "display_name": "Client or Project List",
+      "family": "General",
+      "aliases": [
+        "client_or_project_list",
+        "client_list"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
       "detector": {
-        "keywords": [
-          "Electricity Bill",
-          "Utility Bill",
-          "kWh",
-          "Meter Read",
-          "Service Address",
-          "Billing Period"
-        ]
-      },
-      "fields": {
-        "utility_provider": "string",
-        "service_address": "string",
-        "billing_period_start": "date",
-        "billing_period_end": "date",
-        "total_kwh": "number",
-        "total_amount_due": "number",
-        "account_number": "string",
-        "statement_date": "date"
-      },
-      "description": "Monthly electricity/utility bill showing service address, billing period, kWh usage and amount due."
-    },
-    "Installer_Contract": {
-      "extractor": "installer_contract",
-      "detector": {
-        "keywords": [
-          "Installation Contract",
-          "Installer Agreement",
-          "Supply, Delivery and Installation",
-          "Solar Installation",
-          "HVAC INSTALLATION CONTRACT",
-          "Installation Agreement"
+        "filename_contains": [],
+        "text_contains": [
+          "Client List",
+          "Project Portfolio",
+          "Customer List"
         ],
-        "regex": [
-          "(?i)Contract Number"
-        ]
-      },
-      "fields": {
-        "provider_name": "string",
-        "client_name": "string",
-        "service_description": "string",
-        "contract_start_date": "date",
-        "contract_end_date": "date",
-        "total_amount": "number",
-        "contract_number": "string",
-        "signature_dates": "array"
-      },
-      "description": "Signed agreement with a certified installer describing scope of work, dates, and price for green-energy equipment installation."
+        "text_regex": []
+      }
     },
-    "Equipment_Specs": {
-      "extractor": "equipment_specs",
+    {
+      "key": "DBE_ACDBE_Uniform_Application",
+      "display_name": "U.S. DOT DBE/ACDBE Uniform Certification Application",
+      "family": "Supporting",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [
+        "dbe.application.programsSelected",
+        "biz.legalName",
+        "biz.streetAddress",
+        "owners",
+        "control.officers",
+        "acdbe.concessionSpaces",
+        "affidavit"
+      ],
       "detector": {
-        "keywords": [
-          "Equipment Specifications",
-          "Technical Datasheet",
-          "Equipment Specs",
-          "Manufacturer Datasheet",
-          "Model Specifications"
+        "filename_contains": [],
+        "text_contains": [
+          "UNIFORM CERTIFICATION APPLICATION",
+          "DISADVANTAGED BUSINESS ENTERPRISE",
+          "AIRPORT CONCESSION DISADVANTAGED BUSINESS ENTERPRISE",
+          "U.S. DOT Uniform DBE/ACDBE Certification Application",
+          "Section 1: CERTIFICATION INFORMATION",
+          "Affidavit of Certification"
         ],
-        "regex": [
-          "(?i)Equipment\\s+Specifications"
-        ]
-      },
-      "fields": {
-        "equipment_name": "string",
-        "model_number": "string",
-        "capacity_kw": "number",
-        "efficiency_percent": "number",
-        "certifications": "array",
-        "manufacturer": "string",
-        "issue_date": "date"
-      },
-      "description": "Manufacturer\u2019s technical datasheet for equipment, including power rating, efficiency, certifications, and model details."
+        "text_regex": [
+          "(?i)49\\s*C\\.F\\.R\\.\\s*Parts\\s*(23|26)",
+          "(?i)Roadmap for Applicants"
+        ],
+        "page_hints": [
+          1,
+          2
+        ],
+        "score_bonus": 0.4
+      }
     },
-    "Invoices_or_Quotes": {
-      "extractor": "invoices_or_quotes",
+    {
+      "key": "Damage_Photos",
+      "display_name": "Damage Photographs",
+      "family": "Supporting",
+      "aliases": [
+        "damage_photos"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
       "detector": {
-        "keywords": [
-          "Invoice",
-          "Tax Invoice",
-          "Commercial Invoice",
-          "Quote",
-          "Quotation",
-          "Estimate",
-          "Proposal"
-        ]
-      },
-      "fields": {
-        "doc_variant": "string",
-        "vendor_name": "string",
-        "vendor_tax_id": "string",
-        "customer_name": "string",
-        "customer_address": "string",
-        "invoice_number": "string",
-        "quote_number": "string",
-        "issue_date": "date",
-        "due_date": "date",
-        "quote_valid_until": "date",
-        "item_description": "string",
-        "quantity": "number",
-        "unit_price": "number",
-        "subtotal_amount": "number",
-        "tax_amount": "number",
-        "total_amount": "number",
-        "currency": "string"
-      },
-      "description": "Vendor invoice or quote/estimate showing equipment/services, unit costs, totals, and dates. Used to substantiate project costs."
+        "filename_contains": [],
+        "text_contains": [
+          "Damage Photos",
+          "Structural Damage",
+          "Photo Documentation"
+        ],
+        "text_regex": []
+      }
     },
-    "Energy_Savings_Report": {
-      "extractor": "energy_savings_report",
+    {
+      "key": "EIN_Letter",
+      "display_name": "EIN Letter",
+      "family": "Supporting",
+      "aliases": [],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "ein",
+        "business_name",
+        "address",
+        "issue_date",
+        "notice_code"
+      ],
       "detector": {
-        "keywords": [
+        "filename_contains": [],
+        "text_contains": [
+          "CP 575",
+          "EIN Confirmation Letter",
+          "Employer Identification Number",
+          "Internal Revenue Service",
+          "Department of the Treasury",
+          "This is your Employer Identification Number"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Energy_Savings_Report",
+      "display_name": "Energy Savings Report",
+      "family": "Supporting",
+      "aliases": [],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "report_date",
+        "business_name",
+        "site_address",
+        "measure_type",
+        "baseline_kwh_annual",
+        "post_kwh_annual",
+        "kwh_saved_annual",
+        "demand_reduction_kw",
+        "tariff_rate_usd_per_kwh",
+        "annual_savings_usd",
+        "capex_usd",
+        "opex_usd",
+        "payback_years",
+        "npv_usd",
+        "irr_percent",
+        "standards_refs",
+        "prepared_by_name",
+        "prepared_by_license"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
           "Energy Savings Report",
           "Engineering Report",
           "Measurement and Verification",
@@ -388,76 +359,72 @@
           "ASHRAE",
           "IPMVP"
         ],
-        "regex": [
+        "text_regex": [
           "(?i)energy savings report"
         ]
       },
-      "fields": {
-        "report_date": "date",
-        "business_name": "string",
-        "site_address": "string",
-        "measure_type": "string",
-        "baseline_kwh_annual": "number",
-        "post_kwh_annual": "number",
-        "kwh_saved_annual": "number",
-        "demand_reduction_kw": "number",
-        "tariff_rate_usd_per_kwh": "number",
-        "annual_savings_usd": "number",
-        "capex_usd": "number",
-        "opex_usd": "number",
-        "payback_years": "number",
-        "npv_usd": "number",
-        "irr_percent": "number",
-        "standards_refs": "array",
-        "prepared_by_name": "string",
-        "prepared_by_license": "string"
-      },
       "description": "Engineering/M&V report documenting baseline vs. post energy use, kWh savings, demand reduction, financial metrics, and standards compliance."
     },
-    "Financial_Statements": {
-      "composite": true,
-      "expands_to": [
-        "Profit_And_Loss_Statement",
-        "Balance_Sheet"
+    {
+      "key": "Equipment_Specs",
+      "display_name": "Equipment Specs",
+      "family": "General",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [
+        "equipment_name",
+        "model_number",
+        "capacity_kw",
+        "efficiency_percent",
+        "certifications",
+        "manufacturer",
+        "issue_date"
       ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Equipment Specifications",
+          "Technical Datasheet",
+          "Equipment Specs",
+          "Manufacturer Datasheet",
+          "Model Specifications"
+        ],
+        "text_regex": [
+          "(?i)Equipment\\s+Specifications"
+        ]
+      },
+      "description": "Manufacturer\u2019s technical datasheet for equipment, including power rating, efficiency, certifications, and model details."
+    },
+    {
+      "key": "Financial_Statements",
+      "display_name": "Financial Statements",
+      "family": "Financial",
+      "aliases": [
+        "financial_statement",
+        "financial_statements"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [],
+        "text_regex": []
+      },
       "description": "Complete financial statements (P&L and Balance Sheet)"
     },
-    "1099_NEC": {
-      "display_name": "IRS Form 1099-NEC (Nonemployee Compensation)",
-      "identify": {
-        "keywords_any": [
-          "Form 1099-NEC",
-          "Nonemployee Compensation",
-          "OMB No. 1545-0116",
-          "Copy A",
-          "Copy B",
-          "Copy 1",
-          "Copy 2",
-          "For calendar year",
-          "irs.gov/Form1099NEC"
-        ],
-        "regex_any": [
-          "(?i)Form\\s+1099[-\\u2011]?NEC",
-          "(?i)Nonemployee\\s+Comp(?:ensation)?",
-          "(?i)irs\\.gov/Form1099NEC"
-        ],
-        "score_bonus": 0.2,
-        "check_pages": [
-          1
-        ]
-      },
-      "extract_fields": [
-        "payer_name",
-        "payer_tin",
-        "recipient_name",
-        "recipient_tin",
-        "box1_nonemployee_comp"
-      ]
-    },
-    "Form1099_Summary": {
+    {
+      "key": "Form1099_Summary",
       "display_name": "1099 Summary Report",
-      "identify": {
-        "keywords_any": [
+      "family": "Payroll",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
           "1099 Summary",
           "Vendor 1099 Summary",
           "1099 NEC Summary",
@@ -465,79 +432,684 @@
           "Total 1099 Amount",
           "Nonemployee compensation"
         ],
-        "regex_any": [
+        "text_regex": [
           "(?i)1099\\s+(?:NEC\\s+)?Summary",
           "(?i)1099\\s+Report",
           "(?i)Vendor\\s+1099"
         ],
         "score_bonus": 0.1
-      },
-      "extract_fields": [
-        "tax_year",
-        "contractors",
-        "totals"
-      ]
-    },
-    "Vendor_1099_Report": {
-      "display_name": "Vendor 1099 Report",
-      "identify": {
-        "keywords_any": [
-          "1099 Summary",
-          "Vendor 1099 Summary",
-          "1099 NEC Summary",
-          "1099 Report",
-          "Total 1099 Amount",
-          "Nonemployee compensation"
-        ],
-        "regex_any": [
-          "(?i)1099\\s+(?:NEC\\s+)?Summary",
-          "(?i)1099\\s+Report",
-          "(?i)Vendor\\s+1099"
-        ],
-        "score_bonus": 0.1
-      },
-      "extract_fields": [
-        "tax_year",
-        "contractors",
-        "totals"
-      ]
-    },
-    "DBE_ACDBE_Uniform_Application": {
-      "display_name": "U.S. DOT DBE/ACDBE Uniform Certification Application",
-      "identify": {
-        "keywords_any": [
-          "UNIFORM CERTIFICATION APPLICATION",
-          "DISADVANTAGED BUSINESS ENTERPRISE",
-          "AIRPORT CONCESSION DISADVANTAGED BUSINESS ENTERPRISE",
-          "U.S. DOT Uniform DBE/ACDBE Certification Application",
-          "Section 1: CERTIFICATION INFORMATION",
-          "Affidavit of Certification"
-        ],
-        "regex_any": [
-          "(?i)49\\s*C\\.F\\.R\\.\\s*Parts\\s*(23|26)",
-          "(?i)Roadmap for Applicants"
-        ],
-        "score_bonus": 0.4,
-        "check_pages": [
-          1,
-          2
-        ]
-      },
-      "extractor": "dbe_acdbe_uniform_application",
-      "fields": {
-        "dbe.application.programsSelected": "array",
-        "biz.legalName": "string",
-        "biz.streetAddress": "string",
-        "owners": "array",
-        "control.officers": "array",
-        "acdbe.concessionSpaces": "array",
-        "affidavit": "object"
       }
     },
-    "VOSB_SDVOSB_Application": {
+    {
+      "key": "Government_Order",
+      "display_name": "Government Shutdown Order",
+      "family": "General",
+      "aliases": [
+        "shutdown_orders",
+        "government_order",
+        "shutdown_order"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Executive Order",
+          "Government Order",
+          "Shutdown Order"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Grant_Use_Statement",
+      "display_name": "Grant Use Statement",
+      "family": "Supporting",
+      "aliases": [
+        "action_plan"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [
+        "business_name",
+        "funding_request_amount",
+        "intended_categories",
+        "justification",
+        "date_signed"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Use of Funds",
+          "Grant Use Statement",
+          "Intended Use of Grant Funds",
+          "Statement of Intended Use",
+          "Funding Request"
+        ],
+        "text_regex": [
+          "(?i)use of funds"
+        ]
+      },
+      "description": "Declaration of how grant funds will be used, including categories, amounts, and justification."
+    },
+    {
+      "key": "Installer_Contract",
+      "display_name": "Installer Contract",
+      "family": "Operations",
+      "aliases": [],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "provider_name",
+        "client_name",
+        "service_description",
+        "contract_start_date",
+        "contract_end_date",
+        "total_amount",
+        "contract_number",
+        "signature_dates"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Installation Contract",
+          "Installer Agreement",
+          "Supply, Delivery and Installation",
+          "Solar Installation",
+          "HVAC INSTALLATION CONTRACT",
+          "Installation Agreement"
+        ],
+        "text_regex": [
+          "(?i)Contract Number"
+        ]
+      },
+      "description": "Signed agreement with a certified installer describing scope of work, dates, and price for green-energy equipment installation."
+    },
+    {
+      "key": "Insurance_Claims",
+      "display_name": "Insurance Claims Documentation",
+      "family": "General",
+      "aliases": [
+        "insurance_claims"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Insurance Claim",
+          "Claim Number",
+          "Adjuster"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Invoices_or_Quotes",
+      "display_name": "Invoices or Quotes",
+      "family": "Operations",
+      "aliases": [
+        "invoices",
+        "quotes"
+      ],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "doc_variant",
+        "vendor_name",
+        "vendor_tax_id",
+        "customer_name",
+        "customer_address",
+        "invoice_number",
+        "quote_number",
+        "issue_date",
+        "due_date",
+        "quote_valid_until",
+        "item_description",
+        "quantity",
+        "unit_price",
+        "subtotal_amount",
+        "tax_amount",
+        "total_amount",
+        "currency"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Invoice",
+          "Tax Invoice",
+          "Commercial Invoice",
+          "Quote",
+          "Quotation",
+          "Estimate",
+          "Proposal"
+        ],
+        "text_regex": []
+      },
+      "description": "Vendor invoice or quote/estimate showing equipment/services, unit costs, totals, and dates. Used to substantiate project costs."
+    },
+    {
+      "key": "Letter_Of_Intent",
+      "display_name": "Letter of Intent",
+      "family": "Supporting",
+      "aliases": [
+        "intent_letter",
+        "letter_of_intent"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Letter of Intent",
+          "Intent Letter",
+          "Statement of Intent"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "MA_Tax_Form",
+      "display_name": "Massachusetts Solar Tax Form",
+      "family": "General",
+      "aliases": [
+        "ma_tax_form"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Massachusetts Department of Revenue",
+          "Solar Tax Credit"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Online_Application",
+      "display_name": "Online Incentive Application Confirmation",
+      "family": "Supporting",
+      "aliases": [
+        "online_application",
+        "application"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Application Confirmation",
+          "Submitted Application",
+          "Confirmation Number"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Owner_ID",
+      "display_name": "Owner Identification",
+      "family": "General",
+      "aliases": [
+        "owner_id",
+        "owner_identification",
+        "owner-id"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Driver License",
+          "Passport",
+          "Identification"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "PPP_Forgiveness_Document",
+      "display_name": "PPP Forgiveness Documentation",
+      "family": "General",
+      "aliases": [
+        "ppp_docs",
+        "ppp_forgiveness",
+        "ppp_forgiveness_letter"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "PPP Forgiveness",
+          "Paycheck Protection Program",
+          "Forgiveness Application"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Payroll_Provider_Report",
+      "display_name": "Payroll Provider Report",
+      "family": "Payroll",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [
+        "pay_period",
+        "employees",
+        "document_totals"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "ADP",
+          "Gusto",
+          "QuickBooks Payroll",
+          "Intuit Payroll",
+          "Paychex",
+          "Zenefits"
+        ],
+        "text_regex": [
+          "(?i)Payroll\\s+(?:Register|Detail|Summary)",
+          "(?i)Check\\s+Date",
+          "(?i)Employee\\s+Name"
+        ],
+        "score_bonus": 0.1
+      }
+    },
+    {
+      "key": "Payroll_Register",
+      "display_name": "Payroll Register",
+      "family": "Payroll",
+      "aliases": [],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "pay_period",
+        "employees",
+        "document_totals"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Payroll Register",
+          "Payroll Journal",
+          "Payroll Summary",
+          "Payroll Detail",
+          "Pay Period",
+          "Check Date"
+        ],
+        "text_regex": [
+          "(?i)\\bEmp\\.?\\s*(?:No|ID)\\b",
+          "(?i)\\bGross\\s+Pay\\b",
+          "(?i)\\bNet\\s+Pay\\b"
+        ],
+        "score_bonus": 0.2
+      }
+    },
+    {
+      "key": "Profit_And_Loss_Statement",
+      "display_name": "Profit And Loss Statement",
+      "family": "Financial",
+      "aliases": [
+        "proof_of_revenue",
+        "p&l",
+        "profit_and_loss"
+      ],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "period_start",
+        "period_end",
+        "total_revenue",
+        "cogs",
+        "gross_profit",
+        "total_expenses",
+        "net_income",
+        "currency"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Profit and Loss",
+          "P&L",
+          "Income Statement",
+          "Statement of Operations"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Proof_Of_Activity",
+      "display_name": "Proof of Business Activity",
+      "family": "Supporting",
+      "aliases": [
+        "proof_of_activity"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Proof of Activity",
+          "Operational Summary",
+          "Activity Report"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Proof_Of_Income",
+      "display_name": "Proof of Income",
+      "family": "Supporting",
+      "aliases": [
+        "proof_of_income",
+        "income_statement"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Proof of Income",
+          "Income Statement",
+          "Revenue Statement"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Proof_Of_Service",
+      "display_name": "Proof of Veteran Service",
+      "family": "Supporting",
+      "aliases": [
+        "proof_of_service"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Proof of Service",
+          "DD214",
+          "Service Verification"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Recovery_Plan",
+      "display_name": "Recovery Plan",
+      "family": "Supporting",
+      "aliases": [
+        "recovery_plan"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Recovery Plan",
+          "Reopening Plan",
+          "Business Recovery"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Resume",
+      "display_name": "Resume",
+      "family": "General",
+      "aliases": [
+        "founder_resume",
+        "resume"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Resume",
+          "Curriculum Vitae",
+          "CV"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "SDVOSB_Certificate",
+      "display_name": "Service-Disabled Veteran-Owned Small Business Certificate",
+      "family": "BusinessRegistration",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [
+        "veteranCert",
+        "proof.certifiedAs",
+        "proof.status",
+        "proof.validThrough",
+        "proof.issueDate"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Service-Disabled Veteran-Owned Small Business",
+          "SDVOSB Certificate",
+          "This certifies that",
+          "Certification valid through",
+          "Certificate ID",
+          "Service-disabled"
+        ],
+        "text_regex": [
+          "(?i)Service[-\\s]+Disabled",
+          "(?i)has\\s+been\\s+verified",
+          "(?i)Certification\\s+valid\\s+through"
+        ],
+        "page_hints": [
+          1
+        ],
+        "score_bonus": 0.35
+      }
+    },
+    {
+      "key": "SGIP_Form",
+      "display_name": "SGIP Program Form",
+      "family": "General",
+      "aliases": [
+        "sgip_form"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "SGIP",
+          "Self-Generation Incentive Program"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "TX_Tax_Form",
+      "display_name": "Texas Solar Tax Form",
+      "family": "General",
+      "aliases": [
+        "tx_tax_form"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Texas Comptroller",
+          "Solar Tax Credit"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Tax_Payment_Receipt",
+      "display_name": "Tax Payment Receipt",
+      "family": "General",
+      "aliases": [],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Tax_Returns",
+      "display_name": "Business Tax Returns",
+      "family": "General",
+      "aliases": [
+        "tax_return",
+        "tax_returns"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Form 1120",
+          "Form 1040",
+          "Schedule C",
+          "Tax Return"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Team_Details",
+      "display_name": "Team Details Summary",
+      "family": "General",
+      "aliases": [
+        "team_details"
+      ],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Team Members",
+          "Key Personnel",
+          "Management Team"
+        ],
+        "text_regex": []
+      }
+    },
+    {
+      "key": "Utility_Bill",
+      "display_name": "Utility Bill",
+      "family": "Operations",
+      "aliases": [],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "utility_provider",
+        "service_address",
+        "billing_period_start",
+        "billing_period_end",
+        "total_kwh",
+        "total_amount_due",
+        "account_number",
+        "statement_date"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Electricity Bill",
+          "Utility Bill",
+          "kWh",
+          "Meter Read",
+          "Service Address",
+          "Billing Period"
+        ],
+        "text_regex": []
+      },
+      "description": "Monthly electricity/utility bill showing service address, billing period, kWh usage and amount due."
+    },
+    {
+      "key": "VOSB_Certificate",
+      "display_name": "Veteran-Owned Small Business Certificate",
+      "family": "BusinessRegistration",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [
+        "veteranCert",
+        "proof.certifiedAs",
+        "proof.status",
+        "proof.validThrough",
+        "proof.issueDate"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Veteran Small Business Certification",
+          "VOSB Certificate",
+          "This certifies that",
+          "Certification valid through",
+          "Certificate ID",
+          "Verified"
+        ],
+        "text_regex": [
+          "(?i)Veteran[-\\s]+Owned",
+          "(?i)has\\s+been\\s+verified",
+          "(?i)Certification\\s+valid\\s+through"
+        ],
+        "page_hints": [
+          1
+        ],
+        "score_bonus": 0.3
+      }
+    },
+    {
+      "key": "VOSB_SDVOSB_Application",
       "display_name": "Veteran-Owned Small Business Certification Application",
-      "identify": {
-        "keywords_any": [
+      "family": "Supporting",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [
+        "veteranCert",
+        "business.legalName",
+        "business.ein",
+        "business.naics",
+        "owners",
+        "veteran.dd214Present",
+        "veteran.vaDisabilityLetterPresent",
+        "veteran.disabilityRatingPercent",
+        "control.signsChecks",
+        "control.executesContracts",
+        "control.hiresFires",
+        "control.majorPurchases",
+        "affidavit.present",
+        "requestedType"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
           "Veteran Small Business Certification",
           "SDVOSB Certification Application",
           "VOSB Certification Application",
@@ -546,331 +1118,143 @@
           "Service-connected disability",
           "DD-214"
         ],
-        "regex_any": [
+        "text_regex": [
           "(?i)Veteran\\s+Small\\s+Business\\s+Certification",
           "(?i)SDVOSB\\s+Certification\\s+Application",
           "(?i)VOSB\\s+Certification\\s+Application"
         ],
-        "score_bonus": 0.35,
-        "check_pages": [
+        "page_hints": [
           1,
           2
-        ]
-      },
-      "extractor": "veteran_cert_application",
-      "fields": {
-        "veteranCert": "object",
-        "business.legalName": "string",
-        "business.ein": "string",
-        "business.naics": "array",
-        "owners": "array",
-        "veteran.dd214Present": "bool",
-        "veteran.vaDisabilityLetterPresent": "bool",
-        "veteran.disabilityRatingPercent": "number",
-        "control.signsChecks": "bool",
-        "control.executesContracts": "bool",
-        "control.hiresFires": "bool",
-        "control.majorPurchases": "bool",
-        "affidavit.present": "bool",
-        "requestedType": "string"
+        ],
+        "score_bonus": 0.35
       }
     },
-    "VOSB_Certificate": {
-      "display_name": "Veteran-Owned Small Business Certificate",
-      "identify": {
-        "keywords_any": [
-          "Veteran Small Business Certification",
-          "VOSB Certificate",
-          "This certifies that",
-          "Certification valid through",
-          "Certificate ID",
-          "Verified"
-        ],
-        "regex_any": [
-          "(?i)Veteran[-\\s]+Owned",
-          "(?i)has\\s+been\\s+verified",
-          "(?i)Certification\\s+valid\\s+through"
-        ],
-        "score_bonus": 0.3,
-        "check_pages": [
-          1
-        ]
-      },
-      "extractor": "veteran_cert_proof",
-      "fields": {
-        "veteranCert": "object",
-        "proof.certifiedAs": "string",
-        "proof.status": "string",
-        "proof.validThrough": "date",
-        "proof.issueDate": "date"
-      }
-    },
-    "SDVOSB_Certificate": {
-      "display_name": "Service-Disabled Veteran-Owned Small Business Certificate",
-      "identify": {
-        "keywords_any": [
-          "Service-Disabled Veteran-Owned Small Business",
-          "SDVOSB Certificate",
-          "This certifies that",
-          "Certification valid through",
-          "Certificate ID",
-          "Service-disabled"
-        ],
-        "regex_any": [
-          "(?i)Service[-\\s]+Disabled",
-          "(?i)has\\s+been\\s+verified",
-          "(?i)Certification\\s+valid\\s+through"
-        ],
-        "score_bonus": 0.35,
-        "check_pages": [
-          1
-        ]
-      },
-      "extractor": "veteran_cert_proof",
-      "fields": {
-        "veteranCert": "object",
-        "proof.certifiedAs": "string",
-        "proof.status": "string",
-        "proof.validThrough": "date",
-        "proof.issueDate": "date"
-      }
-    },
-    "VOSB_SDVOSB_Approval_Letter": {
+    {
+      "key": "VOSB_SDVOSB_Approval_Letter",
       "display_name": "Veteran Certification Approval Letter",
-      "identify": {
-        "keywords_any": [
+      "family": "Supporting",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [
+        "veteranCert",
+        "proof.status",
+        "proof.certifiedAs",
+        "proof.validThrough"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
           "Veteran Small Business Certification",
           "Approval Letter",
           "Verification Letter",
           "VetCert",
           "has been approved"
         ],
-        "regex_any": [
+        "text_regex": [
           "(?i)approval\\s+letter",
           "(?i)verification\\s+letter",
           "(?i)under\\s+review",
           "(?i)pending"
         ],
-        "score_bonus": 0.25,
-        "check_pages": [
+        "page_hints": [
           1
-        ]
-      },
-      "extractor": "veteran_cert_proof",
-      "fields": {
-        "veteranCert": "object",
-        "proof.status": "string",
-        "proof.certifiedAs": "string",
-        "proof.validThrough": "date"
+        ],
+        "score_bonus": 0.25
       }
     },
-    "Owner_ID": {
-      "display_name": "Owner Identification",
-      "identify": {
-        "keywords_any": [
-          "Driver License",
-          "Passport",
-          "Identification"
-        ]
+    {
+      "key": "Vendor_1099_Report",
+      "display_name": "Vendor 1099 Report",
+      "family": "Payroll",
+      "aliases": [],
+      "core_level": "Supporting",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "1099 Summary",
+          "Vendor 1099 Summary",
+          "1099 NEC Summary",
+          "1099 Report",
+          "Total 1099 Amount",
+          "Nonemployee compensation"
+        ],
+        "text_regex": [
+          "(?i)1099\\s+(?:NEC\\s+)?Summary",
+          "(?i)1099\\s+Report",
+          "(?i)Vendor\\s+1099"
+        ],
+        "score_bonus": 0.1
       }
     },
-    "Tax_Returns": {
-      "display_name": "Business Tax Returns",
-      "identify": {
-        "keywords_any": [
-          "Form 1120",
-          "Form 1040",
-          "Schedule C",
-          "Tax Return"
-        ]
+    {
+      "key": "W2_Form",
+      "display_name": "IRS Form W-2 (Wage and Tax Statement)",
+      "family": "Payroll",
+      "aliases": [
+        "w-2",
+        "w2"
+      ],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Form W-2 Wage and Tax Statement",
+          "Wage and Tax Statement",
+          "OMB No. 1545-0029"
+        ],
+        "text_regex": [
+          "(?i)Form\\s+W-2\\s+Wage\\s+and\\s+Tax\\s+Statement",
+          "(?i)OMB\\s+No\\.\\s*1545-0029",
+          "(?i)Copy\\s+(?:A|B|C|D|1|2)"
+        ],
+        "page_hints": [
+          1
+        ],
+        "score_bonus": 0.2
       }
     },
-    "Basic_Tax_Return": {
-      "display_name": "Basic Tax Return (1120 / Schedule C)",
-      "identify": {
-        "keywords_any": [
-          "Form 1120",
-          "Schedule C",
-          "Income Tax Return"
-        ]
-      }
-    },
-    "Bank_Statements": {
-      "display_name": "Bank Statements",
-      "identify": {
-        "keywords_any": [
-          "Statement Date",
-          "Ending Balance",
-          "Account Number"
-        ]
-      }
-    },
-    "Government_Order": {
-      "display_name": "Government Shutdown Order",
-      "identify": {
-        "keywords_any": [
-          "Executive Order",
-          "Government Order",
-          "Shutdown Order"
-        ]
-      }
-    },
-    "PPP_Forgiveness_Document": {
-      "display_name": "PPP Forgiveness Documentation",
-      "identify": {
-        "keywords_any": [
-          "PPP Forgiveness",
-          "Paycheck Protection Program",
-          "Forgiveness Application"
-        ]
-      }
-    },
-    "Proof_Of_Income": {
-      "display_name": "Proof of Income",
-      "identify": {
-        "keywords_any": [
-          "Proof of Income",
-          "Income Statement",
-          "Revenue Statement"
-        ]
-      }
-    },
-    "Online_Application": {
-      "display_name": "Online Incentive Application Confirmation",
-      "identify": {
-        "keywords_any": [
-          "Application Confirmation",
-          "Submitted Application",
-          "Confirmation Number"
-        ]
-      }
-    },
-    "SGIP_Form": {
-      "display_name": "SGIP Program Form",
-      "identify": {
-        "keywords_any": [
-          "SGIP",
-          "Self-Generation Incentive Program"
-        ]
-      }
-    },
-    "MA_Tax_Form": {
-      "display_name": "Massachusetts Solar Tax Form",
-      "identify": {
-        "keywords_any": [
-          "Massachusetts Department of Revenue",
-          "Solar Tax Credit"
-        ]
-      }
-    },
-    "TX_Tax_Form": {
-      "display_name": "Texas Solar Tax Form",
-      "identify": {
-        "keywords_any": [
-          "Texas Comptroller",
-          "Solar Tax Credit"
-        ]
-      }
-    },
-    "Team_Details": {
-      "display_name": "Team Details Summary",
-      "identify": {
-        "keywords_any": [
-          "Team Members",
-          "Key Personnel",
-          "Management Team"
-        ]
-      }
-    },
-    "Proof_Of_Activity": {
-      "display_name": "Proof of Business Activity",
-      "identify": {
-        "keywords_any": [
-          "Proof of Activity",
-          "Operational Summary",
-          "Activity Report"
-        ]
-      }
-    },
-    "Client_Project_List": {
-      "display_name": "Client or Project List",
-      "identify": {
-        "keywords_any": [
-          "Client List",
-          "Project Portfolio",
-          "Customer List"
-        ]
-      }
-    },
-    "Letter_Of_Intent": {
-      "display_name": "Letter of Intent",
-      "identify": {
-        "keywords_any": [
-          "Letter of Intent",
-          "Intent Letter",
-          "Statement of Intent"
-        ]
-      }
-    },
-    "Resume": {
-      "display_name": "Resume",
-      "identify": {
-        "keywords_any": [
-          "Resume",
-          "Curriculum Vitae",
-          "CV"
-        ]
-      }
-    },
-    "City_Application": {
-      "display_name": "City Grant Application",
-      "identify": {
-        "keywords_any": [
-          "City of",
-          "Grant Application",
-          "Program Application"
-        ]
-      }
-    },
-    "Recovery_Plan": {
-      "display_name": "Recovery Plan",
-      "identify": {
-        "keywords_any": [
-          "Recovery Plan",
-          "Reopening Plan",
-          "Business Recovery"
-        ]
-      }
-    },
-    "Damage_Photos": {
-      "display_name": "Damage Photographs",
-      "identify": {
-        "keywords_any": [
-          "Damage Photos",
-          "Structural Damage",
-          "Photo Documentation"
-        ]
-      }
-    },
-    "Insurance_Claims": {
-      "display_name": "Insurance Claims Documentation",
-      "identify": {
-        "keywords_any": [
-          "Insurance Claim",
-          "Claim Number",
-          "Adjuster"
-        ]
-      }
-    },
-    "Proof_Of_Service": {
-      "display_name": "Proof of Veteran Service",
-      "identify": {
-        "keywords_any": [
-          "Proof of Service",
-          "DD214",
-          "Service Verification"
+    {
+      "key": "W9_Form",
+      "display_name": "W9 Form",
+      "family": "Payroll",
+      "aliases": [
+        "w9",
+        "form_w9",
+        "w-9"
+      ],
+      "core_level": "Core",
+      "used_in_grants": [],
+      "schema_fields": [
+        "legal_name",
+        "business_name",
+        "entity_type",
+        "tin",
+        "address",
+        "date_signed"
+      ],
+      "detector": {
+        "filename_contains": [],
+        "text_contains": [
+          "Form W-9",
+          "Request for Taxpayer Identification Number and Certification",
+          "W-9 (Rev.",
+          "Taxpayer Identification Number",
+          "TIN",
+          "Employer Identification Number",
+          "Social Security Number"
+        ],
+        "text_regex": [
+          "(?i)\\bForm\\s+W-9\\b",
+          "(?i)Request\\s+for\\s+Taxpayer\\s+Identification\\s+Number",
+          "(?i)Rev\\.\\s+October"
         ]
       }
     }
-  }
+  ]
 }
