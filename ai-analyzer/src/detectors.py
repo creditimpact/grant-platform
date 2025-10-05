@@ -1,36 +1,10 @@
-from pathlib import Path
-import json, re
+import re
 from typing import Callable, Dict
 
-CATALOG_DIR = Path(__file__).resolve().parents[2] / "document_library"
-CATALOG_PATH = CATALOG_DIR / "catalog.json"
+from document_library.detectors import build_identify_map
 
 
-def _load_doc_types() -> dict:
-    with open(CATALOG_PATH, "r", encoding="utf-8") as f:
-        raw = json.load(f)["types"]
-    out = {}
-    for key, spec in raw.items():
-        if isinstance(spec, dict) and "$ref" in spec:
-            ref_path = CATALOG_DIR / spec["$ref"]
-            with open(ref_path, "r", encoding="utf-8") as rf:
-                out[key] = json.load(rf)
-        else:
-            out[key] = spec
-        if "detector" in out[key] and "identify" not in out[key]:
-            det = out[key].pop("detector")
-            out[key]["identify"] = {
-                "keywords_any": det.get("keywords", []),
-                "regex_any": det.get("regex", []),
-            }
-            if "score_bonus" in det:
-                out[key]["identify"]["score_bonus"] = det["score_bonus"]
-        if "identify" not in out[key]:
-            out[key]["identify"] = {"keywords_any": [], "regex_any": []}
-    return out
-
-
-DOC_TYPES = _load_doc_types()
+DOC_TYPES = build_identify_map()
 
 # map key -> (module, function)
 EXTRACTORS = {

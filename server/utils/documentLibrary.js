@@ -6,7 +6,6 @@ const DOC_LIBRARY_PATH = path.resolve(
   __dirname,
   '../../document_library/catalog.json'
 );
-const DOC_LIBRARY_DIR = path.dirname(DOC_LIBRARY_PATH);
 const GRANTS_DIR = path.resolve(__dirname, '../../eligibility-engine/grants');
 
 const { normalizeKey, normalizeList } = require('./documentAliases');
@@ -24,15 +23,11 @@ function loadLibrary() {
 
 function loadDocTypes() {
   if (!docTypeCache) {
-    const raw = loadLibrary().types || {};
+    const documents = loadLibrary().documents || [];
     docTypeCache = {};
-    for (const [key, spec] of Object.entries(raw)) {
-      if (spec && spec.$ref) {
-        const refPath = path.join(DOC_LIBRARY_DIR, spec.$ref);
-        docTypeCache[key] = JSON.parse(fs.readFileSync(refPath, 'utf8'));
-      } else {
-        docTypeCache[key] = spec;
-      }
+    for (const doc of documents) {
+      if (!doc || !doc.key) continue;
+      docTypeCache[doc.key] = doc;
     }
   }
   return docTypeCache;
@@ -47,7 +42,9 @@ function describeDoc(key) {
   if (!doc) return { label: key };
   return {
     label: doc.display_name || doc.title || key,
-    accept: doc.accept || doc.accept_mime || [],
+    accept: doc.supported_formats || doc.accept || doc.accept_mime || [],
+    family: doc.family,
+    core_level: doc.core_level,
   };
 }
 
