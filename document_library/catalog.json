@@ -101,16 +101,45 @@
       ],
       "core_level": "Core",
       "used_in_grants": [],
-      "schema_fields": [],
+      "schema_fields": [
+        "bank_name",
+        "account_number_last4",
+        "statement_period.start",
+        "statement_period.end",
+        "beginning_balance",
+        "ending_balance",
+        "totals.deposits",
+        "totals.withdrawals",
+        "account_holder_name",
+        "currency"
+      ],
       "detector": {
-        "filename_contains": [],
+        "filename_contains": [
+          "statement",
+          "bank"
+        ],
         "text_contains": [
           "Statement Date",
           "Ending Balance",
-          "Account Number"
+          "Account Number",
+          "Statement Period",
+          "Period Covered",
+          "Closing Balance",
+          "Available Balance",
+          "Bank of America",
+          "Chase Bank",
+          "Wells Fargo",
+          "CitiBank",
+          "Capital One"
         ],
-        "text_regex": []
-      }
+        "text_regex": [
+          "(?i)(ending|closing)\\s+balance",
+          "(?i)account\\s+(number|no|#)",
+          "(?i)statement\\s+(period|date)",
+          "(?i)period\\s+(covered|from|to)"
+        ]
+      },
+      "description": "Monthly or quarterly bank account statement used for business grants and refund validations, verifying active operations, balances, and transaction activity."
     },
     {
       "key": "Basic_Tax_Return",

@@ -82,6 +82,82 @@
     "w2": "W2_Form",
     "w9": "W9_Form"
   },
+  "field_aliases": {
+    "Bank_Statements": {
+      "bank_name": [
+        "Bank Name",
+        "Financial Institution",
+        "Bank",
+        "Issued By"
+      ],
+      "account_number_last4": [
+        "Account Number",
+        "Acct No",
+        "A/C No",
+        "Account #",
+        "Account Ending In",
+        "Account ID"
+      ],
+      "statement_period.start": [
+        "Statement Start Date",
+        "From Date",
+        "Period Start",
+        "Start of Cycle",
+        "Period Covered From"
+      ],
+      "statement_period.end": [
+        "Statement End Date",
+        "To Date",
+        "Period End",
+        "End of Cycle",
+        "Period Covered To"
+      ],
+      "beginning_balance": [
+        "Beginning Balance",
+        "Opening Balance",
+        "Balance Brought Forward",
+        "Prior Balance"
+      ],
+      "ending_balance": [
+        "Ending Balance",
+        "Closing Balance",
+        "Available Balance",
+        "Final Balance",
+        "End of Period Balance"
+      ],
+      "totals.deposits": [
+        "Total Deposits",
+        "Credits",
+        "Total Inflows",
+        "Deposits Summary",
+        "Total Credits Posted",
+        "Incoming Transfers"
+      ],
+      "totals.withdrawals": [
+        "Total Withdrawals",
+        "Debits",
+        "Total Outflows",
+        "Withdrawals Summary",
+        "Total Debits Posted",
+        "Outgoing Transfers"
+      ],
+      "account_holder_name": [
+        "Account Holder",
+        "Account Owner",
+        "Customer Name",
+        "Business Name",
+        "Company Name"
+      ],
+      "currency": [
+        "Currency",
+        "Denomination",
+        "USD",
+        "EUR",
+        "GBP",
+        "CAD"
+      ]
+    }
+  },
   "family_aliases": {
     "tax return": "TaxReturn",
     "tax": "TaxReturn",
