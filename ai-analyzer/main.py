@@ -18,9 +18,12 @@ import json
 import time
 from pydantic import BaseModel, constr
 from ai_analyzer.ocr_utils import extract_text, OCRExtractionError
-from ai_analyzer.nlp_parser import extract_fields, normalize_text
+from importlib import import_module
+
+from ai_analyzer.nlp_parser import extract_fields as extract_generic_fields, normalize_text
 from ai_analyzer.config import settings  # type: ignore
 from ai_analyzer.upload_utils import validate_upload
+from document_library import catalog_index
 from src.detectors import detect
 from src.normalization import normalize_doc_type
 from src.session_manager import SessionManager
@@ -421,69 +424,152 @@ async def analyze_ai(request: Request):
     raise HTTPException(status_code=400, detail="Unsupported Content-Type")
 
 
+def _catalog_definition(doc_type: str | None) -> Any:
+    if not doc_type:
+        return None
+    return catalog_index().get(doc_type)
+
+
+def _get_nested_value(payload: Any, path: str) -> Any:
+    if not isinstance(payload, dict):
+        return None
+    parts = path.split(".")
+    current: Any = payload
+    for part in parts:
+        if not isinstance(current, dict) or part not in current:
+            return None
+        current = current[part]
+    return current
+
+
+def _set_nested_value(target: dict, path: str, value: Any) -> None:
+    parts = path.split(".")
+    cursor = target
+    for part in parts[:-1]:
+        cursor = cursor.setdefault(part, {})
+    cursor[parts[-1]] = value
+
+
+def _iter_field_paths(payload: Any, prefix: str = "") -> list[str]:
+    if not isinstance(payload, dict):
+        return []
+    paths: list[str] = []
+    for key, value in payload.items():
+        path = f"{prefix}.{key}" if prefix else str(key)
+        if isinstance(value, dict):
+            paths.extend(_iter_field_paths(value, path))
+        else:
+            paths.append(path)
+    return paths
+
+
+def _filter_schema_fields(
+    extracted: dict[str, Any], schema_fields: list[str]
+) -> tuple[dict[str, Any], list[str]]:
+    filtered: dict[str, Any] = {}
+    schema_set = set(schema_fields)
+    skipped: list[str] = []
+
+    for field in schema_fields:
+        value = _get_nested_value(extracted, field)
+        if value is not None:
+            _set_nested_value(filtered, field, value)
+
+    for path in _iter_field_paths(extracted):
+        if path not in schema_set:
+            skipped.append(path)
+
+    return filtered, skipped
+
+
+def _import_extractor(doc_type: str):
+    try:
+        return import_module(f"src.extractors.{doc_type}")
+    except ModuleNotFoundError:
+        return None
+
+
 async def analyze_text_flow(
     text: str,
     *,
     source: str,
     filename: str | None = None,
     content_type: str | None = None,
+    session_id: str | None = None,
 ) -> dict:
     normalized = normalize_text(text)
-    fields, confidence, ambiguities = extract_fields(
-        normalized, enable_secondary=settings.ENABLE_SECONDARY_FIELDS
-    )
+    detection = detect(text, filename=filename)
+    type_info = detection.get("type", {})
+    normalized_type = normalize_doc_type(type_info.get("key"))
+    confidence = float(type_info.get("confidence", 0.0) or 0.0)
+
     response: dict[str, Any] = {
-        "ein": fields.get("ein"),
-        "w2_employee_count": fields.get("w2_employee_count"),
-        "quarterly_revenues": fields.get("quarterly_revenues", {}),
-        "entity_type": fields.get("entity_type"),
-        "year_founded": fields.get("year_founded")
-        if settings.ENABLE_SECONDARY_FIELDS
-        else None,
-        "annual_revenue": fields.get("annual_revenue")
-        if settings.ENABLE_SECONDARY_FIELDS
-        else None,
-        "location_state": fields.get("location_state")
-        if settings.ENABLE_SECONDARY_FIELDS
-        else None,
-        "location_country": fields.get("location_country")
-        if settings.ENABLE_SECONDARY_FIELDS
-        else None,
-        "minority_owned": fields.get("minority_owned")
-        if settings.ENABLE_SECONDARY_FIELDS
-        else None,
-        "female_owned": fields.get("female_owned")
-        if settings.ENABLE_SECONDARY_FIELDS
-        else None,
-        "veteran_owned": fields.get("veteran_owned")
-        if settings.ENABLE_SECONDARY_FIELDS
-        else None,
-        "ppp_reference": fields.get("ppp_reference")
-        if settings.ENABLE_SECONDARY_FIELDS
-        else None,
-        "ertc_reference": fields.get("ertc_reference")
-        if settings.ENABLE_SECONDARY_FIELDS
-        else None,
+        "doc_type": normalized_type or "untyped",
+        "doc_confidence": confidence,
+        "schema_fields": [],
+        "fields": {},
         "confidence": confidence,
-        "ambiguities": ambiguities,
         "raw_text_preview": normalized[:2000],
         "source": source,
     }
-    det = detect(text)
-    type_info = det.get("type", {})
-    response["doc_type"] = normalize_doc_type(type_info.get("key"))
-    response["doc_confidence"] = type_info.get("confidence", 0)
-    extracted = det.get("extracted") or {}
-    if isinstance(extracted, dict):
-        response["fields"] = extracted.get("fields", {})
-        if "fields_clean" in extracted:
-            response["fields_clean"] = extracted.get("fields_clean", {})
-        for meta_key in ("field_sources", "field_confidence", "warnings"):
-            if meta_key in extracted:
-                response[meta_key] = extracted.get(meta_key)
+
+    extractor_name: str | None = None
+    skipped_fields: list[str] = []
+    schema_fields: list[str] = []
+
+    if normalized_type and confidence >= 0.6:
+        definition = _catalog_definition(normalized_type)
+        if definition:
+            schema_fields = list(definition.schema_fields)
+            extractor_module = _import_extractor(normalized_type)
+            if extractor_module and hasattr(extractor_module, "extract"):
+                extractor_name = f"{extractor_module.__name__}.extract"
+                extracted_fields = extractor_module.extract(text)
+                filtered, skipped_fields = _filter_schema_fields(
+                    extracted_fields or {}, schema_fields
+                )
+                response["fields"] = filtered
+            else:
+                skipped_fields.append("__missing_extractor__")
+        else:
+            skipped_fields.append("__missing_schema__")
+        response["schema_fields"] = schema_fields
     else:
-        response["fields"] = extracted
-    extra = {"source": source}
+        (
+            generic_fields,
+            generic_confidence_map,
+            ambiguities,
+        ) = extract_generic_fields(
+            normalized, enable_secondary=settings.ENABLE_SECONDARY_FIELDS
+        )
+        response["doc_type"] = "untyped"
+        response["schema_fields"] = sorted(generic_fields.keys())
+        response["fields"] = generic_fields
+        response["ambiguities"] = ambiguities
+        response["field_confidence"] = generic_confidence_map
+
+    debug_payload = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "detected_type": type_info.get("key"),
+        "normalized_type": normalized_type,
+        "confidence": confidence,
+        "schema_fields": schema_fields,
+        "skipped_fields": skipped_fields,
+        "extractor": extractor_name,
+        "used_fallback": response["doc_type"] == "untyped",
+    }
+
+    try:
+        base = Path("/tmp/sessions")
+        base.mkdir(parents=True, exist_ok=True)
+        folder = base / (session_id or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f"))
+        folder.mkdir(parents=True, exist_ok=True)
+        with (folder / "analyzer_debug.json").open("w", encoding="utf-8") as fh:
+            json.dump(debug_payload, fh, ensure_ascii=False, indent=2)
+    except Exception:  # pragma: no cover - diagnostics should not break flow
+        logger.exception("failed to write analyzer debug trace")
+
+    extra = {"source": source, "doc_type": response["doc_type"], "confidence": confidence}
     if filename:
         extra["upload_filename"] = filename
     if content_type:
@@ -703,7 +789,7 @@ async def run_analysis_session(
 
         if ocr_text:
             try:
-                detect_result = detect(ocr_text)
+                detect_result = detect(ocr_text, filename=filename)
                 matched_rule = detect_result.get("type", {}).get("key")
                 SessionManager.save_json(
                     session_id, "detect", "detect_result.json", detect_result
@@ -721,6 +807,7 @@ async def run_analysis_session(
                     source=source,
                     filename=filename,
                     content_type=content_type,
+                    session_id=session_id,
                 )
                 SessionManager.save_json(
                     session_id, "analyze", "fields.json", analysis_result

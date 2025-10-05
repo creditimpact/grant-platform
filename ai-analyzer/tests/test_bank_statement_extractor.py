@@ -1,6 +1,6 @@
 import pytest
 
-from src.extractors.bank_statement import extract_fields
+from src.extractors.Bank_Statements import extract
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def sample_bank_pdf_text() -> str:
 
 
 def test_extract_bank_statement_fields(sample_bank_pdf_text: str) -> None:
-    result = extract_fields(sample_bank_pdf_text)
+    result = extract(sample_bank_pdf_text)
     assert result["bank_name"] == "Bank of America"
     assert result["account_holder_name"] == "Paulsson Inc."
     assert result["account_number_last4"] == "1234"

@@ -1,5 +1,5 @@
 from src.detectors import identify
-from src.extractors.business_license import detect_business_license, extract
+from src.extractors.Business_License import extract
 
 SAMPLE = """
 Application for General Business License
@@ -11,16 +11,16 @@ Business Address: 456 Biz Ave
 Type of Business: Consulting
 """
 
+
 def test_detect_business_license():
-    assert detect_business_license(SAMPLE)
     det = identify(SAMPLE)
     assert det["type_key"] == "Business_License"
-    assert det["confidence"] >= 0.5
+    assert det["confidence"] >= 0.6
+
 
 def test_extract_fields():
     result = extract(SAMPLE)
-    fields = result["fields"]
-    assert fields["applicant_name"] == "Jane Doe"
-    assert fields["business_name"] == "Doe Ventures"
-    assert fields["type_of_business"] == "Consulting"
-    assert fields["date_of_birth"] == "1990-01-01"
+    assert result["applicant_name"] == "Jane Doe"
+    assert result["business_name"] == "Doe Ventures"
+    assert result["type_of_business"] == "Consulting"
+    assert result["date_of_birth"] == "1990-01-01"
