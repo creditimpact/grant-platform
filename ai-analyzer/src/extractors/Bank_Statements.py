@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import logging
 import re
 from typing import Any, Dict, Iterable, Tuple
 
 from document_library import catalog_index
 from document_library.aliases import get_aliases_for
+
+
+logger = logging.getLogger(__name__)
+logger.debug("[DEBUG] Bank_Statements extractor successfully imported.")
 
 DATE_TOKEN = r"(?:[A-Za-z]{3,9}\s+\d{1,2},?\s*\d{2,4}|\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}-\d{1,2}-\d{1,2})"
 RANGE_SEPARATOR = r"(?:to|through|thru|\-|–|—)"
