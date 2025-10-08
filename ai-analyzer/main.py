@@ -517,19 +517,43 @@ async def analyze_text_flow(
     skipped_fields: list[str] = []
     schema_fields: list[str] = []
 
+    detected_label = normalized_type or type_info.get("key") or "unknown"
+    logger.debug(
+        "[DEBUG] Detected doc_type=%s (confidence=%s)",
+        detected_label,
+        confidence,
+    )
+
     if normalized_type and confidence >= 0.6:
         definition = _catalog_definition(normalized_type)
         if definition:
             schema_fields = list(definition.schema_fields)
             extractor_module = _import_extractor(normalized_type)
             if extractor_module and hasattr(extractor_module, "extract"):
+                logger.debug(
+                    "[DEBUG] Extractor import resolved: %s",
+                    extractor_module.__name__,
+                )
                 extractor_name = f"{extractor_module.__name__}.extract"
                 extracted_fields = extractor_module.extract(text)
+                extracted_keys = (
+                    sorted(extracted_fields.keys())
+                    if isinstance(extracted_fields, dict)
+                    else None
+                )
+                logger.debug(
+                    "[DEBUG] Extractor returned fields: %s",
+                    extracted_keys,
+                )
                 filtered, skipped_fields = _filter_schema_fields(
                     extracted_fields or {}, schema_fields
                 )
                 response["fields"] = filtered
             else:
+                logger.debug(
+                    "[DEBUG] Extractor import resolved: %s",
+                    None,
+                )
                 skipped_fields.append("__missing_extractor__")
         else:
             skipped_fields.append("__missing_schema__")
