@@ -92,12 +92,68 @@ def _to_decimal(value: str | None) -> Decimal | None:
 def extract(document_text: str) -> Dict[str, Any]:
     """Extract structured data from a bank statement text."""
 
-    text = (document_text or "").replace("\n", " ").replace("\r", " ")
+    raw_text = (document_text or "").replace("\r", " ")
+    normalized_raw = re.sub(r"([A-Z])\s+([a-z]{2,})", r"\1\2", raw_text)
+    text = normalized_raw.replace("\n", " ")
     logger.debug("[Bank_Statements] Starting extraction for %d characters", len(text))
 
     result: Dict[str, Any] = {}
     field_confidence: Dict[str, float] = {}
     warnings: list[str] = []
+
+    table_values: list[str] | None = None
+    table_match = re.search(
+        r"Beginning balance.*?(-?\$?\(?[0-9,]+\.[0-9]{2}\)?).*?Total credits.*?(-?\$?\(?[0-9,]+\.[0-9]{2}\)?).*?Total debits.*?(-?\$?\(?[0-9,]+\.[0-9]{2}\)?).*?Ending balance.*?(-?\$?\(?[0-9,]+\.[0-9]{2}\)?)",
+        text,
+        re.IGNORECASE | re.DOTALL,
+    )
+    if table_match:
+        table_values = [table_match.group(idx) for idx in range(1, 5)]
+    else:
+        normalized_lines = [line.strip() for line in normalized_raw.split("\n") if line.strip()]
+        for index, line in enumerate(normalized_lines):
+            lowered = line.lower()
+            if (
+                "beginning balance" in lowered
+                and "total credits" in lowered
+                and "total debits" in lowered
+                and "ending balance" in lowered
+            ):
+                for next_line in normalized_lines[index + 1 :]:
+                    amounts = re.findall(r"-?\$?\(?[0-9,]+\.[0-9]{2}\)?", next_line)
+                    if len(amounts) >= 4:
+                        table_values = amounts[:4]
+                        break
+                if table_values:
+                    break
+
+    if table_values:
+        parsed_keys = (
+            "beginning_balance",
+            "totals.deposits",
+            "totals.withdrawals",
+            "ending_balance",
+        )
+        for key, value in zip(parsed_keys, table_values, strict=False):
+            normalized_value = _normalize_amount(value)
+            if normalized_value is None:
+                continue
+            if re.match(r"^\d{6,}$", normalized_value):
+                logger.debug(
+                    "Skipping likely account number in balance context: %s", normalized_value
+                )
+                continue
+            if key.startswith("totals") and normalized_value.startswith("-"):
+                normalized_value = normalized_value[1:]
+            if key.startswith("totals"):
+                totals_key = key.split(".", 1)[1]
+                result.setdefault("totals", {})[totals_key] = normalized_value
+                field_confidence[f"totals.{totals_key}"] = 0.78
+            else:
+                result[key] = normalized_value
+                field_confidence[key] = 0.8
+        if "beginning_balance" in result and "ending_balance" in result:
+            logger.debug("[Bank_Statements] Parsed compact summary row: %s", result)
 
     # --- Account number (last 4 digits) ---
     acct_match = re.search(r"Account number[:\s]+.*?(\d{4})\b", text, re.IGNORECASE)
@@ -138,9 +194,14 @@ def extract(document_text: str) -> Dict[str, Any]:
     if begin_match:
         normalized = _normalize_amount(begin_match.group(1))
         if normalized is not None:
-            result["beginning_balance"] = normalized
-            field_confidence["beginning_balance"] = 0.8
-            logger.debug("Found beginning_balance=%s", normalized)
+            if re.match(r"^\d{6,}$", normalized):
+                logger.debug(
+                    "Skipping likely account number in balance context: %s", normalized
+                )
+            else:
+                result["beginning_balance"] = normalized
+                field_confidence["beginning_balance"] = 0.8
+                logger.debug("Found beginning_balance=%s", normalized)
 
     # --- Ending balance ---
     end_match = re.search(
@@ -151,9 +212,14 @@ def extract(document_text: str) -> Dict[str, Any]:
     if end_match:
         normalized = _normalize_amount(end_match.group(1))
         if normalized is not None:
-            result["ending_balance"] = normalized
-            field_confidence["ending_balance"] = 0.8
-            logger.debug("Found ending_balance=%s", normalized)
+            if re.match(r"^\d{6,}$", normalized):
+                logger.debug(
+                    "Skipping likely account number in balance context: %s", normalized
+                )
+            else:
+                result["ending_balance"] = normalized
+                field_confidence["ending_balance"] = 0.8
+                logger.debug("Found ending_balance=%s", normalized)
 
     # --- Total credits / deposits ---
     credit_match = re.search(
@@ -164,9 +230,14 @@ def extract(document_text: str) -> Dict[str, Any]:
     if credit_match:
         normalized = _normalize_amount(credit_match.group(1))
         if normalized is not None:
-            result.setdefault("totals", {})["deposits"] = normalized
-            field_confidence["totals.deposits"] = 0.78
-            logger.debug("Found total_deposits=%s", normalized)
+            if re.match(r"^\d{6,}$", normalized):
+                logger.debug(
+                    "Skipping likely account number in balance context: %s", normalized
+                )
+            else:
+                result.setdefault("totals", {})["deposits"] = normalized
+                field_confidence["totals.deposits"] = 0.78
+                logger.debug("Found total_deposits=%s", normalized)
 
     # --- Total debits / withdrawals ---
     debit_match = re.search(
@@ -177,9 +248,14 @@ def extract(document_text: str) -> Dict[str, Any]:
     if debit_match:
         normalized = _normalize_amount(debit_match.group(1))
         if normalized is not None:
-            result.setdefault("totals", {})["withdrawals"] = normalized
-            field_confidence["totals.withdrawals"] = 0.78
-            logger.debug("Found total_withdrawals=%s", normalized)
+            if re.match(r"^\d{6,}$", normalized):
+                logger.debug(
+                    "Skipping likely account number in balance context: %s", normalized
+                )
+            else:
+                result.setdefault("totals", {})["withdrawals"] = normalized
+                field_confidence["totals.withdrawals"] = 0.78
+                logger.debug("Found total_withdrawals=%s", normalized)
 
     # --- Sanity filters for long numeric strings ---
     for key in list(result.keys()):
