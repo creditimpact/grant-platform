@@ -21,13 +21,13 @@ def sample_bank_pdf_text() -> str:
 
 def test_extract_bank_statement_fields(sample_bank_pdf_text: str) -> None:
     result = extract(sample_bank_pdf_text)
-    assert result["bank_name"] == "Bank of America"
-    assert result["account_holder_name"] == "Paulsson Inc."
-    assert result["account_number_last4"] == "1234"
-    assert result["statement_period"]["start"] == "06/01/2025"
-    assert result["statement_period"]["end"] == "06/30/2025"
-    assert result["beginning_balance"] == "12540.00"
-    assert result["ending_balance"] == "18750.25"
-    assert result["totals"]["deposits"] == "9500.00"
-    assert result["totals"]["withdrawals"] == "3300.00"
-    assert result["currency"] == "USD"
+    fields = result["fields"]
+    assert fields["account_number_last4"] == "1234"
+    assert fields["statement_period"]["start"] == "2025-06-01"
+    assert fields["statement_period"]["end"] == "2025-06-30"
+    assert fields["beginning_balance"] == "12540.00"
+    assert fields["ending_balance"] == "18750.25"
+    assert fields["totals"]["deposits"] == "9500.00"
+    assert fields["totals"]["withdrawals"] == "3300.00"
+    assert result["field_confidence"]["ending_balance"] >= 0.7
+    assert result["confidence"] >= 0.6

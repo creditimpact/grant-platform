@@ -116,14 +116,16 @@
         "Beginning Balance",
         "Opening Balance",
         "Balance Brought Forward",
-        "Prior Balance"
+        "Prior Balance",
+        "Start Balance"
       ],
       "ending_balance": [
         "Ending Balance",
         "Closing Balance",
         "Available Balance",
         "Final Balance",
-        "End of Period Balance"
+        "End of Period Balance",
+        "End Balance"
       ],
       "totals.deposits": [
         "Total Deposits",
@@ -131,7 +133,9 @@
         "Total Inflows",
         "Deposits Summary",
         "Total Credits Posted",
-        "Incoming Transfers"
+        "Incoming Transfers",
+        "Credits Total",
+        "Deposits"
       ],
       "totals.withdrawals": [
         "Total Withdrawals",
@@ -139,7 +143,10 @@
         "Total Outflows",
         "Withdrawals Summary",
         "Total Debits Posted",
-        "Outgoing Transfers"
+        "Outgoing Transfers",
+        "Total Debits",
+        "Withdrawals",
+        "Total Checks Paid"
       ],
       "account_holder_name": [
         "Account Holder",

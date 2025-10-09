@@ -47,6 +47,9 @@ async def test_bank_statement_dynamic_flow():
     flat_fields = _flatten_fields(result["fields"])
     assert set(flat_fields).issubset(set(schema))
     assert flat_fields["ending_balance"] == "54743.63"
+    assert flat_fields["statement_period.start"] == "2025-06-01"
+    assert flat_fields["statement_period.end"] == "2025-06-30"
+    assert result["field_confidence"]["ending_balance"] >= 0.65
     debug_path = Path("/tmp/sessions") / session_id / "analyzer_debug.json"
     assert debug_path.exists()
     debug_data = json.loads(debug_path.read_text(encoding="utf-8"))
