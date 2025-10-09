@@ -528,6 +528,7 @@ async def analyze_text_flow(
         definition = _catalog_definition(normalized_type)
         if definition:
             schema_fields = list(definition.schema_fields)
+            schema_field_set = set(schema_fields)
             extractor_module = _import_extractor(normalized_type)
             if extractor_module and hasattr(extractor_module, "extract"):
                 logger.debug(
@@ -535,20 +536,70 @@ async def analyze_text_flow(
                     extractor_module.__name__,
                 )
                 extractor_name = f"{extractor_module.__name__}.extract"
-                extracted_fields = extractor_module.extract(text)
+                extracted_payload = extractor_module.extract(text)
+                raw_fields: dict[str, Any] | None = None
+                field_confidence_map: dict[str, float] = {}
+                extractor_confidence: float | None = None
+                payload_warnings: list[str] = []
+
+                if isinstance(extracted_payload, dict):
+                    candidate_fields = extracted_payload.get("fields")
+                    if isinstance(candidate_fields, dict):
+                        raw_fields = candidate_fields
+                    elif all(
+                        isinstance(key, str) for key in extracted_payload.keys()
+                    ):
+                        raw_fields = extracted_payload  # backward compatibility
+
+                    candidate_conf = extracted_payload.get("field_confidence")
+                    if isinstance(candidate_conf, dict):
+                        field_confidence_map = {
+                            str(k): float(v)
+                            for k, v in candidate_conf.items()
+                            if isinstance(v, (int, float))
+                        }
+
+                    if "confidence" in extracted_payload:
+                        try:
+                            extractor_confidence = float(
+                                extracted_payload.get("confidence") or 0.0
+                            )
+                        except (TypeError, ValueError):
+                            extractor_confidence = None
+
+                    candidate_warnings = extracted_payload.get("warnings")
+                    if isinstance(candidate_warnings, list):
+                        payload_warnings = [str(item) for item in candidate_warnings]
+
+                if raw_fields is None and isinstance(extracted_payload, dict):
+                    raw_fields = {
+                        k: v
+                        for k, v in extracted_payload.items()
+                        if isinstance(k, str)
+                    }
+                elif raw_fields is None:
+                    raw_fields = extracted_payload if isinstance(extracted_payload, dict) else {}
+
                 extracted_keys = (
-                    sorted(extracted_fields.keys())
-                    if isinstance(extracted_fields, dict)
-                    else None
+                    sorted(raw_fields.keys()) if isinstance(raw_fields, dict) else None
                 )
                 logger.debug(
                     "[DEBUG] Extractor returned fields: %s",
                     extracted_keys,
                 )
                 filtered, skipped_fields = _filter_schema_fields(
-                    extracted_fields or {}, schema_fields
+                    raw_fields or {}, schema_fields
                 )
                 response["fields"] = filtered
+                response["field_confidence"] = {
+                    key: field_confidence_map[key]
+                    for key in sorted(field_confidence_map.keys())
+                    if key in schema_field_set
+                }
+                if extractor_confidence is not None:
+                    response["extractor_confidence"] = extractor_confidence
+                if payload_warnings:
+                    response.setdefault("warnings", []).extend(payload_warnings)
             else:
                 logger.debug(
                     "[DEBUG] Extractor import resolved: %s",
