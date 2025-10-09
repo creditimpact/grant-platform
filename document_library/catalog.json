@@ -101,17 +101,15 @@
       ],
       "core_level": "Core",
       "used_in_grants": [],
+      "extractor": "Bank_Statements",
       "schema_fields": [
-        "bank_name",
         "account_number_last4",
         "statement_period.start",
         "statement_period.end",
         "beginning_balance",
         "ending_balance",
         "totals.deposits",
-        "totals.withdrawals",
-        "account_holder_name",
-        "currency"
+        "totals.withdrawals"
       ],
       "detector": {
         "filename_contains": [
@@ -139,7 +137,7 @@
           "(?i)period\\s+(covered|from|to)"
         ]
       },
-      "description": "Monthly or quarterly bank account statement used for business grants and refund validations, verifying active operations, balances, and transaction activity."
+      "description": "Analyzed business checking account statement"
     },
     {
       "key": "Basic_Tax_Return",
