@@ -99,7 +99,7 @@ def main() -> None:
         return
 
     try:
-        from ai_analyzer.ocr_utils import extract_text as ocr_extract_text
+        from ai_analyzer.ocr_utils import extract_text_with_metadata as ocr_extract_text
         from src.detectors import detect
         from src.normalization import normalize_doc_type
     except Exception as exc:
@@ -107,10 +107,20 @@ def main() -> None:
         return
 
     file_bytes = pdf_path.read_bytes()
-    text = ocr_extract_text(file_bytes)
+    text, structured = ocr_extract_text(file_bytes)
     if not text:
         logger.warning("OCR extraction returned no text for %s", pdf_path.name)
         return
+
+    json_output_path = LOG_DIR / "ocr_output.json"
+    try:
+        json_output_path.write_text(
+            json.dumps(structured, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        logger.info("Structured OCR output written to %s", json_output_path)
+    except Exception as exc:  # pragma: no cover - filesystem edge
+        logger.warning("Failed to persist structured OCR output: %s", exc)
 
     detection = detect(text, filename=pdf_path.name)
     type_info = detection.get("type", {})
