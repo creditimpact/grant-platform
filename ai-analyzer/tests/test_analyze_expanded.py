@@ -1,5 +1,6 @@
 import io
 from pathlib import Path
+from typing import Any
 
 import pytest
 import env_setup  # noqa: F401
@@ -56,8 +57,22 @@ def test_analyze_multipart_file(monkeypatch: pytest.MonkeyPatch) -> None:
     def mock_extract_text(_: bytes) -> str:
         return "Q1 2023 revenue $5000; EIN 11-1111111"
 
+    def mock_extract_text_with_metadata(_: bytes) -> tuple[str, dict[str, Any]]:
+        text = mock_extract_text(b"")
+        return text, {
+            "pages": [
+                {
+                    "page": 1,
+                    "lines": [{"text": text}],
+                    "raw_text": text,
+                }
+            ]
+        }
+
     monkeypatch.setattr("ai_analyzer.ocr_utils.extract_text", mock_extract_text)
+    monkeypatch.setattr("ai_analyzer.ocr_utils.extract_text_with_metadata", mock_extract_text_with_metadata)
     monkeypatch.setattr("ai_analyzer.main.extract_text", mock_extract_text)
+    monkeypatch.setattr("ai_analyzer.main.extract_text_with_metadata", mock_extract_text_with_metadata)
 
     file_content = io.BytesIO(b"dummy")
     resp = client.post(

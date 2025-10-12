@@ -17,7 +17,12 @@ import cgi
 import json
 import time
 from pydantic import BaseModel, constr
-from ai_analyzer.ocr_utils import extract_text, OCRExtractionError
+from ai_analyzer.ocr_utils import (
+    OCRExtractionError,
+    build_structured_from_text,
+    extract_text,
+    extract_text_with_metadata,
+)
 from importlib import import_module
 
 from ai_analyzer.nlp_parser import extract_fields as extract_generic_fields, normalize_text
@@ -196,7 +201,7 @@ async def analyze(
                 content_type=None,
                 raise_on_fail=True,
             )
-            return analysis_result or {}
+            return _format_analysis_result(analysis_result)
         if file is None:
             raise HTTPException(status_code=400, detail="Provide file or text")
 
@@ -213,7 +218,7 @@ async def analyze(
             content_type=file.content_type,
             raise_on_fail=True,
         )
-        return analysis_result or {}
+        return _format_analysis_result(analysis_result)
 
     ctype = request.headers.get("content-type", "")
 
@@ -241,7 +246,7 @@ async def analyze(
             content_type="application/json",
             raise_on_fail=True,
         )
-        return analysis_result or {}
+        return _format_analysis_result(analysis_result)
 
     if "text/plain" in ctype:
         raw = await request.body()
@@ -260,7 +265,7 @@ async def analyze(
             content_type="text/plain",
             raise_on_fail=True,
         )
-        return analysis_result or {}
+        return _format_analysis_result(analysis_result)
 
     raise HTTPException(status_code=400, detail="Unsupported Content-Type")
 
@@ -676,6 +681,21 @@ def _sanitize_filename(name: str | None) -> str:
     return Path(name).name or "upload.bin"
 
 
+def _format_analysis_result(result: dict[str, Any] | None) -> dict[str, Any]:
+    """Flatten nested analyzer fields for backward-compatible responses."""
+
+    if not result:
+        return {}
+
+    payload = dict(result)
+    for field_key in ("fields_clean", "fields"):
+        nested = payload.get(field_key)
+        if isinstance(nested, dict):
+            for key, value in nested.items():
+                payload.setdefault(key, value)
+    return payload
+
+
 def _build_diagnostic_report(
     *,
     session_id: str,
@@ -764,6 +784,7 @@ async def run_analysis_session(
     errors: list[str] = list(initial_errors or [])
     ocr_text = ""
     ocr_status = "not_run"
+    ocr_payload: dict[str, Any] | None = None
     detect_result: dict | None = None
     analysis_result: dict[str, Any] | None = None
     catalog_entries: int | None = None
@@ -801,7 +822,9 @@ async def run_analysis_session(
 
         if upload_bytes is not None and len(upload_bytes) > 0:
             try:
-                ocr_text = extract_text(upload_bytes)
+                ocr_text, ocr_payload = extract_text_with_metadata(upload_bytes)
+                if ocr_payload is None:
+                    ocr_payload = {"pages": []}
                 ocr_status = "success"
                 if not ocr_text.strip():
                     errors.append("OCR returned no text from upload.")
@@ -848,6 +871,7 @@ async def run_analysis_session(
                     raise HTTPException(status_code=500, detail="Failed to extract text") from exc
         elif text_input is not None:
             ocr_text = text_input
+            ocr_payload = build_structured_from_text(text_input)
             ocr_status = "provided"
         else:
             if not raise_on_fail:
@@ -855,12 +879,19 @@ async def run_analysis_session(
             else:
                 raise HTTPException(status_code=400, detail="Provide file or text")
 
-        if ocr_text:
-            try:
-                SessionManager.save_text(session_id, "ocr", "ocr_output.txt", ocr_text)
-            except Exception as exc:  # pragma: no cover - filesystem edge
-                logger.exception("Failed to save OCR text", extra={"session_id": session_id})
-                errors.append(f"Failed to save OCR text: {exc}")
+        if ocr_payload is None:
+            ocr_payload = {"pages": []}
+
+        try:
+            SessionManager.save_json(
+                session_id,
+                "ocr",
+                "ocr_output.json",
+                ocr_payload,
+            )
+        except Exception as exc:  # pragma: no cover - filesystem edge
+            logger.exception("Failed to save OCR payload", extra={"session_id": session_id})
+            errors.append(f"Failed to save OCR payload: {exc}")
 
         if ocr_text:
             try:
