@@ -1,4 +1,16 @@
-"""OCR utilities for document parsing."""
+"""OCR utilities for document parsing.
+
+This module now standardises the OCR payload that gets emitted for each
+document.  The :func:`extract_text_with_metadata` entrypoint returns both the
+plain text string and a structured JSON blob that matches the schema defined in
+``schemas/ocr_output.schema.json``.  The JSON contains page level information,
+stable ``line_index`` assignments, bounding boxes, font size estimates and the
+engine that produced the output.
+
+The helpers in this file are intentionally defensive: external OCR libraries
+may be missing in the test environment, so every import is optional and each
+fallback path gracefully degrades to a minimal text-only payload.
+"""
 
 from __future__ import annotations
 
@@ -32,6 +44,24 @@ except Exception:  # pragma: no cover - gracefully handle missing libs
     convert_from_bytes = None  # type: ignore
 
 try:  # pragma: no cover - external dependency may be missing
+    import pdfminer  # type: ignore
+except Exception:  # pragma: no cover - gracefully handle missing libs
+    pdfminer = None  # type: ignore
+
+try:  # pragma: no cover - external dependency may be missing
+    import pdfplumber as _pdfplumber_module  # type: ignore
+    PDFPLUMBER_VERSION = getattr(_pdfplumber_module, "__version__", "unknown")
+except Exception:  # pragma: no cover - gracefully handle missing libs
+    PDFPLUMBER_VERSION = "unavailable"
+
+PDFMINER_VERSION = getattr(pdfminer, "__version__", "unavailable")
+
+try:  # pragma: no cover - external dependency may be missing
+    TESSERACT_VERSION = str(pytesseract.get_tesseract_version()) if pytesseract else "unavailable"
+except Exception:  # pragma: no cover - gracefully handle missing libs
+    TESSERACT_VERSION = "unknown"
+
+try:  # pragma: no cover - external dependency may be missing
     from pdfminer.high_level import extract_pages  # type: ignore
     from pdfminer.layout import LTChar, LTTextContainer, LTTextLine  # type: ignore
 except Exception:  # pragma: no cover - gracefully handle missing libs
@@ -52,13 +82,25 @@ def _build_page_payload(
     page_number: int,
     lines: Iterable[dict[str, Any]],
 ) -> dict[str, Any]:
-    line_entries = [line for line in lines if line.get("text")]
-    raw_text = "\n".join(entry["text"] for entry in line_entries)
-    return {
+    """Normalise ``lines`` into the canonical page representation."""
+
+    line_entries: list[dict[str, Any]] = []
+    for index, candidate in enumerate(lines):
+        if not candidate or not candidate.get("text"):
+            continue
+        entry = dict(candidate)
+        entry.setdefault("line_index", index)
+        line_entries.append(entry)
+
+    page_text = "\n".join(entry["text"] for entry in line_entries)
+    payload = {
         "page": page_number,
         "lines": line_entries,
-        "raw_text": raw_text,
+        "page_text": page_text,
+        # ``raw_text`` is kept for backward compatibility with legacy tests.
+        "raw_text": page_text,
     }
+    return payload
 
 
 def build_structured_from_text(text: str) -> dict[str, Any]:
@@ -75,6 +117,7 @@ def build_structured_from_text(text: str) -> dict[str, Any]:
             {
                 "page": 1,
                 "lines": lines,
+                "page_text": "\n".join(line["text"] for line in lines),
                 "raw_text": "\n".join(line["text"] for line in lines),
             }
         ]
@@ -134,9 +177,75 @@ def _json_from_page_texts(pages_text: Iterable[str]) -> dict[str, Any]:
     return {"pages": pages}
 
 
+def _finalise_payload(
+    structured: dict[str, Any] | None,
+    *,
+    text: str,
+    engine: str,
+    engine_version: str,
+) -> dict[str, Any]:
+    """Ensure the structured payload conforms to the public schema."""
+
+    payload: dict[str, Any] = dict(structured or {"pages": []})
+    pages = payload.get("pages")
+    if not isinstance(pages, list):
+        pages = []
+    normalised_pages: list[dict[str, Any]] = []
+    for page in pages:
+        if not isinstance(page, dict):
+            continue
+        lines = page.get("lines")
+        if isinstance(lines, list):
+            normalised_lines: list[dict[str, Any]] = []
+            for index, line in enumerate(lines):
+                if not isinstance(line, dict):
+                    continue
+                entry = dict(line)
+                entry.setdefault("line_index", index)
+                if "bbox" in entry and isinstance(entry["bbox"], (list, tuple)):
+                    try:
+                        entry["bbox"] = [float(v) for v in entry["bbox"]]
+                    except (TypeError, ValueError):
+                        entry.pop("bbox", None)
+                if "font_size" in entry:
+                    try:
+                        entry["font_size"] = float(entry["font_size"])
+                    except (TypeError, ValueError):
+                        entry.pop("font_size", None)
+                normalised_lines.append(entry)
+        else:
+            normalised_lines = []
+
+        page_text = page.get("page_text") or page.get("raw_text")
+        if not page_text and normalised_lines:
+            page_text = "\n".join(
+                line.get("text", "") for line in normalised_lines if line.get("text")
+            )
+        normalised_pages.append(
+            {
+                "page": int(page.get("page", len(normalised_pages) + 1)),
+                "lines": normalised_lines,
+                "page_text": page_text or "",
+                "raw_text": page_text or "",
+            }
+        )
+
+    payload["pages"] = normalised_pages
+    payload["text"] = text
+    payload["character_count"] = len(text)
+    payload["engine"] = engine
+    payload["engine_version"] = engine_version
+    return payload
+
+
 def _combine_raw_text(structured: dict[str, Any]) -> str:
     pages = structured.get("pages", []) if isinstance(structured, dict) else []
-    texts = [page.get("raw_text", "") for page in pages if page.get("raw_text")]
+    texts = [
+        page.get("page_text")
+        or page.get("raw_text", "")
+        for page in pages
+        if page.get("page_text") or page.get("raw_text")
+    ]
     combined = "\n".join(texts).strip()
     return combined
 
@@ -145,9 +254,14 @@ def extract_text_with_metadata(file_bytes: bytes) -> tuple[str, dict[str, Any]]:
     """Return extracted text alongside structured JSON metadata."""
 
     if not file_bytes:
-        return "", {"pages": []}
+        empty_payload = _finalise_payload(
+            {"pages": []}, text="", engine="raw", engine_version="empty"
+        )
+        return "", empty_payload
 
     structured: dict[str, Any] | None = None
+    engine = "raw"
+    engine_version = "utf-8"
 
     if file_bytes.lstrip()[:4] == b"%PDF":
         if extract_pages:
@@ -158,6 +272,8 @@ def extract_text_with_metadata(file_bytes: bytes) -> tuple[str, dict[str, Any]]:
                     tmp_path = tmp.name
                 if tmp_path:
                     structured = extract_text_as_json(tmp_path)
+                    engine = "pdfminer"
+                    engine_version = PDFMINER_VERSION
             except Exception:
                 structured = None
             finally:
@@ -171,6 +287,8 @@ def extract_text_with_metadata(file_bytes: bytes) -> tuple[str, dict[str, Any]]:
                 with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
                     page_texts = [page.extract_text() or "" for page in pdf.pages]
                 structured = _json_from_page_texts(page_texts)
+                engine = "pdfplumber"
+                engine_version = PDFPLUMBER_VERSION
             except Exception:
                 structured = None
         if structured is None and pytesseract and convert_from_bytes:
@@ -178,6 +296,8 @@ def extract_text_with_metadata(file_bytes: bytes) -> tuple[str, dict[str, Any]]:
                 pages = convert_from_bytes(file_bytes)
                 page_texts = [pytesseract.image_to_string(page) for page in pages]
                 structured = _json_from_page_texts(page_texts)
+                engine = "tesseract"
+                engine_version = TESSERACT_VERSION
             except Exception:
                 structured = None
 
@@ -185,6 +305,8 @@ def extract_text_with_metadata(file_bytes: bytes) -> tuple[str, dict[str, Any]]:
         try:  # pragma: no cover - relies on external binaries
             image = Image.open(io.BytesIO(file_bytes))
             structured = _json_from_page_texts([pytesseract.image_to_string(image)])
+            engine = "tesseract"
+            engine_version = TESSERACT_VERSION
         except Exception:
             structured = None
 
@@ -192,13 +314,18 @@ def extract_text_with_metadata(file_bytes: bytes) -> tuple[str, dict[str, Any]]:
         try:
             decoded = file_bytes.decode("utf-8", errors="ignore")
             structured = build_structured_from_text(decoded)
+            engine = "raw"
+            engine_version = "utf-8"
         except Exception:
             structured = {"pages": []}
+            engine = "raw"
+            engine_version = "unknown"
 
     text = _combine_raw_text(structured)
+    final_payload = _finalise_payload(structured, text=text, engine=engine, engine_version=engine_version)
     if text:
         print(f"OCR extracted {len(text)} characters")
-    return text, structured
+    return text, final_payload
 
 
 def extract_text(file_bytes: bytes) -> str:
