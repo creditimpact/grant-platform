@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.concurrency import run_in_threadpool
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 import io
 import cgi
 import json
@@ -519,6 +519,7 @@ async def analyze_text_flow(
     }
 
     extractor_name: str | None = None
+    extractor_details: dict[str, Any] | None = None
     skipped_fields: list[str] = []
     schema_fields: list[str] = []
 
@@ -605,6 +606,12 @@ async def analyze_text_flow(
                     response["extractor_confidence"] = extractor_confidence
                 if payload_warnings:
                     response.setdefault("warnings", []).extend(payload_warnings)
+                extractor_details = {
+                    "name": normalized_type or detected_label,
+                    "module": extractor_module.__name__,
+                    "confidence": extractor_confidence,
+                    "warnings": list(payload_warnings),
+                }
             else:
                 logger.debug(
                     "[DEBUG] Extractor import resolved: %s",
@@ -627,6 +634,12 @@ async def analyze_text_flow(
         response["fields"] = generic_fields
         response["ambiguities"] = ambiguities
         response["field_confidence"] = generic_confidence_map
+        extractor_details = {
+            "name": "generic",
+            "module": "ai_analyzer.nlp_parser",
+            "confidence": response.get("confidence"),
+            "warnings": response.get("warnings", []),
+        }
 
     debug_payload = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -655,6 +668,8 @@ async def analyze_text_flow(
     if content_type:
         extra["content_type"] = content_type
     logger.info("analyze", extra=extra)
+    if extractor_details is not None:
+        response["extractor_details"] = extractor_details
     return response
 
 
@@ -694,6 +709,138 @@ def _format_analysis_result(result: dict[str, Any] | None) -> dict[str, Any]:
             for key, value in nested.items():
                 payload.setdefault(key, value)
     return payload
+
+
+def _wrap_with_provenance(
+    values: Any,
+    confidence_map: dict[str, float] | None,
+    *,
+    prefix: str = "",
+) -> Any:
+    """Recursively wrap ``values`` into provenance-aware structures."""
+
+    if isinstance(values, dict):
+        wrapped: dict[str, Any] = {}
+        for key, value in values.items():
+            next_prefix = f"{prefix}.{key}" if prefix else key
+            wrapped[key] = _wrap_with_provenance(value, confidence_map, prefix=next_prefix)
+        return wrapped
+    if isinstance(values, list):
+        wrapped_list: list[Any] = []
+        for index, value in enumerate(values):
+            next_prefix = f"{prefix}[{index}]" if prefix else str(index)
+            wrapped_list.append(_wrap_with_provenance(value, confidence_map, prefix=next_prefix))
+        return wrapped_list
+
+    entry: dict[str, Any] = {"value": values, "provenance": []}
+    if confidence_map and prefix in confidence_map:
+        entry["confidence"] = confidence_map[prefix]
+    return entry
+
+
+def _build_analyzer_output(
+    *,
+    session_id: str,
+    file_info: dict[str, Any],
+    detect_result: dict | None,
+    analysis_result: dict[str, Any] | None,
+    ocr_payload: dict[str, Any] | None,
+    ocr_artifact_path: Path | None,
+    raw_text_preview: str,
+    errors: Sequence[str],
+    catalog_snapshot: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    """Compile the canonical ``analyzer_output.json`` payload."""
+
+    if not detect_result and not analysis_result:
+        return None
+
+    detector_info = detect_result.get("type", {}) if detect_result else {}
+    doc_type = detector_info.get("key")
+    doc_confidence = detector_info.get("confidence")
+
+    field_confidence_map: dict[str, float] = {}
+    raw_fields: dict[str, Any] = {}
+    fields_clean: dict[str, Any] = {}
+    warnings: list[str] = []
+    extractor_confidence = None
+    extractor_details = {}
+
+    if analysis_result:
+        if isinstance(analysis_result.get("field_confidence"), dict):
+            field_confidence_map = {
+                str(key): float(value)
+                for key, value in analysis_result["field_confidence"].items()
+                if isinstance(value, (int, float))
+            }
+        if isinstance(analysis_result.get("fields"), dict):
+            raw_fields = analysis_result["fields"]  # type: ignore[assignment]
+        if isinstance(analysis_result.get("fields_clean"), dict):
+            fields_clean = analysis_result["fields_clean"]  # type: ignore[assignment]
+        elif raw_fields:
+            fields_clean = raw_fields
+        if isinstance(analysis_result.get("warnings"), list):
+            warnings = [str(item) for item in analysis_result["warnings"]]
+        if analysis_result.get("extractor_confidence") is not None:
+            try:
+                extractor_confidence = float(analysis_result["extractor_confidence"])
+            except (TypeError, ValueError):
+                extractor_confidence = None
+        candidate_details = analysis_result.get("extractor_details")
+        if isinstance(candidate_details, dict):
+            extractor_details = {
+                "name": candidate_details.get("name"),
+                "version": candidate_details.get("version", "legacy"),
+                "module": candidate_details.get("module"),
+            }
+            if extractor_confidence is not None:
+                extractor_details["confidence"] = extractor_confidence
+            if warnings:
+                extractor_details["warnings"] = warnings
+
+    wrapped_fields = _wrap_with_provenance(raw_fields, field_confidence_map)
+
+    ocr_character_count = 0
+    if ocr_payload and isinstance(ocr_payload.get("character_count"), int):
+        ocr_character_count = int(ocr_payload["character_count"])
+
+    ocr_info = {
+        "artifact_path": str(ocr_artifact_path) if ocr_artifact_path else None,
+        "character_count": ocr_character_count,
+    }
+    if not ocr_character_count and analysis_result:
+        ocr_info["character_count"] = len(
+            analysis_result.get("raw_text_preview") or raw_text_preview
+        )
+
+    output = {
+        "session_id": session_id,
+        "file": file_info,
+        "detector": {
+            "doc_type": doc_type,
+            "confidence": doc_confidence,
+            "detected_by": "heuristic" if doc_type else None,
+        },
+        "extractor": {
+            "name": extractor_details.get("name") or doc_type,
+            "version": extractor_details.get("version", "legacy"),
+            "confidence": extractor_details.get("confidence", extractor_confidence),
+            "warnings": warnings,
+        },
+        "ocr": ocr_info,
+        "fields": wrapped_fields,
+        "fields_clean": fields_clean,
+        "field_confidence": field_confidence_map,
+        "raw_text_preview": (raw_text_preview or "")[:512],
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "debug": {
+            "catalog_snapshot": catalog_snapshot or {},
+            "detector_raw": detect_result or {},
+            "errors": list(errors),
+        },
+    }
+
+    return output
 
 
 def _build_diagnostic_report(
@@ -789,6 +936,8 @@ async def run_analysis_session(
     analysis_result: dict[str, Any] | None = None
     catalog_entries: int | None = None
     matched_rule: str | None = None
+    ocr_artifact_path: Path | None = None
+    catalog_snapshot_data: dict[str, Any] | None = None
     file_info: dict[str, Any] = {
         "name": _sanitize_filename(filename) if filename else None,
         "size": None,
@@ -883,7 +1032,7 @@ async def run_analysis_session(
             ocr_payload = {"pages": []}
 
         try:
-            SessionManager.save_json(
+            ocr_artifact_path = SessionManager.save_json(
                 session_id,
                 "ocr",
                 "ocr_output.json",
@@ -930,12 +1079,44 @@ async def run_analysis_session(
             )
             catalog_snapshot = json.loads(catalog_path.read_text(encoding="utf-8"))
             catalog_entries = len(catalog_snapshot.get("documents", []))
+            catalog_snapshot_data = catalog_snapshot
             SessionManager.save_json(
                 session_id, "catalog", "catalog_snapshot.json", catalog_snapshot
             )
         except Exception as exc:  # pragma: no cover - filesystem edge
             logger.exception("Failed to snapshot catalog", extra={"session_id": session_id})
             errors.append(f"Failed to snapshot catalog: {exc}")
+
+        analyzer_output = _build_analyzer_output(
+            session_id=session_id,
+            file_info=file_info,
+            detect_result=detect_result,
+            analysis_result=analysis_result,
+            ocr_payload=ocr_payload,
+            ocr_artifact_path=ocr_artifact_path,
+            raw_text_preview=(
+                (analysis_result or {}).get("raw_text_preview")
+                if analysis_result
+                else ocr_text[:512]
+            )
+            or ocr_text[:512],
+            errors=errors,
+            catalog_snapshot=catalog_snapshot_data,
+        )
+        if analyzer_output:
+            try:
+                SessionManager.save_json(
+                    session_id,
+                    "analyze",
+                    "analyzer_output.json",
+                    analyzer_output,
+                )
+            except Exception as exc:  # pragma: no cover - filesystem edge
+                logger.exception(
+                    "Failed to persist analyzer_output",
+                    extra={"session_id": session_id},
+                )
+                errors.append(f"Failed to save analyzer output: {exc}")
 
     except HTTPException as exc:
         if raise_on_fail:

@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Analyzer Output",
+  "type": "object",
+  "required": [
+    "session_id",
+    "file",
+    "detector",
+    "extractor",
+    "ocr",
+    "fields",
+    "fields_clean",
+    "raw_text_preview",
+    "generated_at",
+    "debug"
+  ],
+  "properties": {
+    "session_id": {"type": "string"},
+    "file": {
+      "type": "object",
+      "required": ["name", "size", "content_type"],
+      "properties": {
+        "name": {"type": ["string", "null"]},
+        "size": {"type": ["integer", "null"], "minimum": 0},
+        "content_type": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "detector": {
+      "type": "object",
+      "properties": {
+        "doc_type": {"type": ["string", "null"]},
+        "confidence": {"type": ["number", "null"]},
+        "detected_by": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "extractor": {
+      "type": "object",
+      "properties": {
+        "name": {"type": ["string", "null"]},
+        "version": {"type": "string"},
+        "confidence": {"type": ["number", "null"]},
+        "warnings": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "ocr": {
+      "type": "object",
+      "required": ["artifact_path", "character_count"],
+      "properties": {
+        "artifact_path": {"type": ["string", "null"]},
+        "character_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": true
+    },
+    "fields": {"type": "object"},
+    "fields_clean": {"type": "object"},
+    "field_confidence": {"type": "object"},
+    "raw_text_preview": {"type": "string"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "debug": {
+      "type": "object",
+      "required": ["catalog_snapshot", "detector_raw", "errors"],
+      "properties": {
+        "catalog_snapshot": {"type": "object"},
+        "detector_raw": {"type": "object"},
+        "errors": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
